@@ -1,0 +1,19 @@
+export default function CompraPendiente() {
+  return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="text-center max-w-md px-4">
+        <div className="text-6xl mb-4">⏳</div>
+        <h1 className="text-2xl font-light mb-2">Pago pendiente</h1>
+        <p className="text-white/60 mb-4">
+          Tu pago está siendo procesado. Te notificaremos cuando se confirme.
+        </p>
+        <a
+          href="/"
+          className="inline-block bg-[#ef4444] text-white px-6 py-2 rounded-lg hover:bg-[#ef4444]/80 transition"
+        >
+          Volver al inicio
+        </a>
+      </div>
+    </div>
+  );
+}
