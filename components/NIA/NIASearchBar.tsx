@@ -103,7 +103,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{ duration: 0.5, delay: 0.2 }}
-                                className="absolute -top-20 left-1/2 transform -translate-x-1/2 text-center whitespace-nowrap z-50"
+                                className="absolute top-24 left-1/2 transform -translate-x-1/2 text-center whitespace-nowrap z-50"
                             >
                                 <div className="bg-black/80 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-2 shadow-xl">
                                     <p className="text-white/90 text-sm font-medium tracking-wide">
