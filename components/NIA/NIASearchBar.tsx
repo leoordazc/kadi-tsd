@@ -73,7 +73,6 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
 
     return (
         <>
-            {/* Overlay de desenfoque */}
             <AnimatePresence>
                 {isZoomed && (
                     <motion.div
@@ -87,27 +86,6 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                 )}
             </AnimatePresence>
 
-            {/* MENSAJE DE BIENVENIDA - AHORA FUERA DEL CONTENEDOR PRINCIPAL */}
-            <AnimatePresence>
-                {isZoomed && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className="fixed top-32 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none"
-                    >
-                        <div className="bg-black/80 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-2 shadow-xl">
-                            <p className="text-white/90 text-sm font-medium tracking-wide">
-                                Hola, soy <span className="text-white">NIA</span>
-                            </p>
-                            <p className="text-white/50 text-[10px] -mt-0.5">tu asesor en KADI</p>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Barra de búsqueda principal */}
             <div className="sticky top-[70px] z-30 flex justify-center py-3 pointer-events-none">
                 <motion.div
                     ref={containerRef}
@@ -117,6 +95,26 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                     }}
                     transition={{ duration: 0.5 }}
                 >
+                    {/* Leyenda de bienvenida - centrada y legible */}
+                    <AnimatePresence>
+                        {isZoomed && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.5, delay: 0.2 }}
+                                className="absolute top-24 left-1/2 transform -translate-x-1/2 text-center whitespace-nowrap z-50"
+                            >
+                                <div className="bg-black/80 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-2 shadow-xl">
+                                    <p className="text-white/90 text-sm font-medium tracking-wide">
+                                        Hola, soy <span className="text-white">NIA</span>
+                                    </p>
+                                    <p className="text-white/50 text-[10px] -mt-0.5">tu asesor en KADI</p>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
                     {/* Frase animada */}
                     {!isScrolled && !isFocused && !showWelcome && (
                         <div className="absolute -top-7 left-0 right-0 text-center pointer-events-none">
@@ -210,7 +208,5 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                 </motion.div>
             </div>
         </>
-    );
-}
     );
 }
