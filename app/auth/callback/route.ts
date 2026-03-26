@@ -36,4 +36,11 @@ export async function GET(request: Request) {
 
         await supabase.auth.exchangeCodeForSession(code);
     }
+
+    const redirectUrl = process.env.NEXT_PUBLIC_URL || requestUrl.origin;
+    return NextResponse.redirect(new URL('/', redirectUrl));
+}
+
+        await supabase.auth.exchangeCodeForSession(code);
     }
+
