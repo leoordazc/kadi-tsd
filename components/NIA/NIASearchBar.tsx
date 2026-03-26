@@ -20,13 +20,12 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
 
     const phrases = [
         "Hola, soy NIA, tu asistente",
-        "Puedes preguntarme sobre cualquier producto ",
-        "¿Sabías que el aceite incorrecto daña tu transmisión? ",
-        "Tengo 15 años de experiencia en transmisiones",
-        "Garantía 12 meses en todas mis recomendaciones"
+        "Puedes preguntarme sobre cualquier producto 🔧",
+        "¿Sabías que el aceite incorrecto daña tu transmisión? ⚠️",
+        "Tengo 15 años de experiencia en transmisiones 🏆",
+        "Garantía 12 meses en todas mis recomendaciones ✅"
     ];
 
-    // Animación de bienvenida al cargar la página
     useEffect(() => {
         setIsZoomed(true);
         
@@ -45,7 +44,6 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
         return () => clearTimeout(zoomTimer);
     }, []);
 
-    // Detectar scroll
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 100);
@@ -54,7 +52,6 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    // Frases solo cuando NO está enfocado y NO ha hecho scroll
     useEffect(() => {
         if (!isFocused && !isScrolled && !showWelcome) {
             const interval = setInterval(() => {
@@ -76,7 +73,6 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
 
     return (
         <>
-            {/* Overlay de desenfoque para todo el contenido (solo durante el zoom) */}
             <AnimatePresence>
                 {isZoomed && (
                     <motion.div
@@ -84,91 +80,70 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-md"
+                        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
                         style={{ pointerEvents: "none" }}
                     />
                 )}
             </AnimatePresence>
 
-            {/* Barra de búsqueda con Z-INDEX más alto */}
-            <div className={`sticky top-[70px] z-[200] flex justify-center py-4 pointer-events-none transition-all duration-500 ${
-                isZoomed ? 'scale-110' : 'scale-100'
-            }`}>
+            <div className="sticky top-[70px] z-30 flex justify-center py-3 pointer-events-none">
                 <motion.div
                     ref={containerRef}
                     className="relative w-full max-w-2xl pointer-events-auto"
                     animate={{
-                        width: isZoomed ? "90%" : (isFocused ? "100%" : "80%"),
-                        maxWidth: isZoomed ? "800px" : (isFocused ? "100%" : "640px"),
-                        scale: isZoomed ? 1.05 : 1,
+                        scale: isZoomed ? 1.02 : 1,
                     }}
-                    transition={{ 
-                        duration: isZoomed ? 0.8 : 0.4, 
-                        ease: "easeOut"
-                    }}
+                    transition={{ duration: 0.5 }}
                 >
-                    {/* Contenedor principal con efecto glassmorphism (neutro) */}
-                    <motion.div 
-                        className={`relative backdrop-blur-xl rounded-2xl border transition-all duration-300 ${
-                            isFocused 
-                                ? 'bg-black/60 border-white/20 shadow-lg shadow-white/5' 
-                                : 'bg-black/40 border-white/10 hover:border-white/15'
-                        }`}
-                        animate={{
-                            boxShadow: showLightBar ? [
-                                "0 0 0px rgba(255, 255, 255, 0)",
-                                "0 0 20px rgba(255, 255, 255, 0.3)",
-                                "0 0 40px rgba(255, 255, 255, 0.2)",
-                                "0 0 20px rgba(255, 255, 255, 0.1)",
-                                "0 0 0px rgba(255, 255, 255, 0)"
-                            ] : "none"
-                        }}
-                        transition={{ duration: 1.2, ease: "easeOut" }}
-                    >
-                        {/* Leyenda de bienvenida durante el zoom */}
-                        <AnimatePresence>
-                            {isZoomed && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -30 }}
-                                    transition={{ duration: 0.6, delay: 0.2 }}
-                                    className="absolute -top-20 left-0 right-0 text-center pointer-events-none z-20"
-                                >
-                                    <div className="inline-block bg-gradient-to-r from-neutral-800 to-neutral-900 text-white/90 px-8 py-4 rounded-2xl shadow-2xl border border-white/10">
-                                        <p className="text-xl font-light tracking-wide"> Hola, soy <span className="text-white font-medium">NIA</span> </p>
-                                        <p className="text-sm text-white/60 mt-1">Tu asesor en KADI</p>
-                                        <p className="text-xs text-white/40 mt-2">Si necesitas algo, no dudes en consultarme</p>
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-
-                        {/* Frase animada de NIA */}
-                        {!isScrolled && !isFocused && !showWelcome && (
-                            <div className="absolute -top-8 left-0 right-0 text-center pointer-events-none">
-                                <AnimatePresence mode="wait">
-                                    <motion.div
-                                        key={currentPhrase}
-                                        initial={{ opacity: 0, y: 5 }}
-                                        animate={{ opacity: 0.5, y: 0 }}
-                                        exit={{ opacity: 0, y: -5 }}
-                                        transition={{ duration: 0.4 }}
-                                        className="text-xs text-white/20 tracking-wide whitespace-nowrap overflow-x-auto scrollbar-hide"
-                                    >
-                                        {phrases[currentPhrase]}
-                                    </motion.div>
-                                </AnimatePresence>
-                            </div>
+                    {/* Leyenda de bienvenida - centrada y legible */}
+                    <AnimatePresence>
+                        {isZoomed && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.5, delay: 0.2 }}
+                                className="absolute -top-14 left-1/2 transform -translate-x-1/2 text-center whitespace-nowrap z-20"
+                            >
+                                <div className="bg-black/80 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-2 shadow-xl">
+                                    <p className="text-white/90 text-sm font-medium tracking-wide">
+                                        Hola, soy <span className="text-white">NIA</span>
+                                    </p>
+                                    <p className="text-white/50 text-[10px] -mt-0.5">tu asesor en KADI</p>
+                                </div>
+                            </motion.div>
                         )}
+                    </AnimatePresence>
 
-                        {/* Input de búsqueda */}
-                        <form onSubmit={handleSubmit} className="relative">
+                    {/* Frase animada */}
+                    {!isScrolled && !isFocused && !showWelcome && (
+                        <div className="absolute -top-7 left-0 right-0 text-center pointer-events-none">
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={currentPhrase}
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 0.6, y: 0 }}
+                                    exit={{ opacity: 0, y: -5 }}
+                                    transition={{ duration: 0.4 }}
+                                    className="text-[11px] text-white/30 tracking-wide whitespace-nowrap"
+                                >
+                                    {phrases[currentPhrase]}
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
+                    )}
+
+                    {/* Input de búsqueda */}
+                    <div className={`relative backdrop-blur-md rounded-full border transition-all duration-300 ${
+                        isFocused 
+                            ? 'bg-black/80 border-white/30' 
+                            : 'bg-black/60 border-white/15'
+                    }`}>
+                        <form onSubmit={handleSubmit}>
                             <div className="flex items-center">
-                                {/* Icono de búsqueda */}
-                                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                                <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
                                     <svg 
-                                        className={`w-4 h-4 transition-colors duration-300 ${
+                                        className={`w-4 h-4 transition-colors ${
                                             isFocused ? 'text-white/60' : 'text-white/30'
                                         }`}
                                         fill="none" 
@@ -187,27 +162,25 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                     onFocus={() => setIsFocused(true)}
                                     onBlur={() => setIsFocused(false)}
                                     placeholder={isFocused ? "Escribe tu búsqueda..." : ""}
-                                    className="w-full bg-transparent text-white/70 text-sm py-3 pl-10 pr-12 focus:outline-none placeholder-white/20"
-                                    style={{ caretColor: "#ffffff" }}
+                                    className="w-full bg-transparent text-white/80 text-sm py-3 pl-12 pr-14 focus:outline-none placeholder-white/30 rounded-full"
+                                    style={{ caretColor: "#ef4444" }}
                                 />
                                 
-                                {/* Indicador de NIA */}
                                 {!isFocused && !inputValue && !isScrolled && !showWelcome && (
-                                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                                        <div className="flex items-center gap-1">
-                                            <span className="text-[9px] text-white/20 tracking-wider">NIA</span>
-                                            <div className="w-1 h-1 bg-white/30 rounded-full animate-pulse" />
+                                    <div className="absolute right-5 top-1/2 transform -translate-y-1/2">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-[10px] text-white/40 tracking-wider">NIA</span>
+                                            <div className="w-1.5 h-1.5 bg-[#ef4444]/60 rounded-full animate-pulse" />
                                         </div>
                                     </div>
                                 )}
                                 
-                                {/* Botón de enviar */}
                                 {inputValue && (
                                     <button
                                         type="submit"
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center"
+                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center"
                                     >
-                                        <svg className="w-3 h-3 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-3.5 h-3.5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                         </svg>
                                     </button>
@@ -215,12 +188,12 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                             </div>
                         </form>
                         
-                        {/* Línea inferior animada */}
+                        {/* Luz animada inferior */}
                         <motion.div
                             className="absolute -bottom-px left-0 right-0 h-px"
                             animate={{
                                 x: isFocused ? ["-100%", "100%"] : "0%",
-                                opacity: isFocused ? [0, 0.4, 0] : 0
+                                opacity: isFocused ? [0, 0.5, 0] : 0
                             }}
                             transition={{
                                 duration: 1.5,
@@ -228,10 +201,10 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                 ease: "easeInOut"
                             }}
                             style={{
-                                background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)"
+                                background: "linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.5), transparent)"
                             }}
                         />
-                    </motion.div>
+                    </div>
                 </motion.div>
             </div>
         </>

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 interface CartItem {
   id: string;
@@ -25,6 +25,23 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  // Cargar carrito desde localStorage al iniciar
+  useEffect(() => {
+    const savedCart = localStorage.getItem("kadi_cart");
+    if (savedCart) {
+      try {
+        setCartItems(JSON.parse(savedCart));
+      } catch (e) {
+        console.error("Error loading cart", e);
+      }
+    }
+  }, []);
+
+  // Guardar carrito en localStorage cada vez que cambie
+  useEffect(() => {
+    localStorage.setItem("kadi_cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const addToCart = (product: any) => {
     setCartItems((prev) => {

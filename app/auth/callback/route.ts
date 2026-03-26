@@ -37,5 +37,6 @@ export async function GET(request: Request) {
         await supabase.auth.exchangeCodeForSession(code);
     }
 
-    return NextResponse.redirect(new URL('/', requestUrl.origin));
+    const redirectUrl = process.env.NEXT_PUBLIC_URL || requestUrl.origin;
+return NextResponse.redirect(new URL('/', redirectUrl));
 }

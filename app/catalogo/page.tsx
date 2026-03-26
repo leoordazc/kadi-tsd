@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useCart } from "@/context/CartContext";
 
 interface Producto {
     id: string;
@@ -19,6 +20,7 @@ interface Producto {
 }
 
 export default function CatalogoPage() {
+    const { addToCart } = useCart();
     const [selectedMarca, setSelectedMarca] = useState<string | null>(null);
     const [selectedModelo, setSelectedModelo] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
@@ -26,7 +28,6 @@ export default function CatalogoPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
-    // Paginación
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
 
@@ -137,7 +138,6 @@ export default function CatalogoPage() {
 
     return (
         <main className="min-h-screen bg-black text-white">
-            {/* Header */}
             <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/75 border-b border-white/5">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
@@ -160,7 +160,6 @@ export default function CatalogoPage() {
             </header>
 
             <div className="max-w-7xl mx-auto px-6 py-12">
-                {/* Selector de marcas */}
                 {marcas.length > 0 && (
                     <div className="mb-12">
                         <div className="flex flex-wrap gap-3">
@@ -198,7 +197,6 @@ export default function CatalogoPage() {
                     </div>
                 )}
 
-                {/* Modelos */}
                 {selectedMarca && modelos.length > 0 && (
                     <div className="mb-12">
                         <div className="flex flex-wrap gap-2">
@@ -225,13 +223,11 @@ export default function CatalogoPage() {
                     </div>
                 )}
 
-                {/* Grid de productos con enlaces a detalle */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {paginatedProductos.map((producto) => (
-                        <Link
+                        <div
                             key={producto.id}
-                            href={`/catalogo/${producto.codigo_caja}`}
-                            className="block bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 p-6 hover:border-[#ef4444]/30 transition-all group"
+                            className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 p-6 hover:border-[#ef4444]/30 transition-all group"
                         >
                             <div className="flex justify-between items-start mb-4">
                                 <div>
@@ -248,14 +244,13 @@ export default function CatalogoPage() {
                                 </span>
                             </div>
 
-                            {/* Descripción corta (si existe) */}
                             {producto.descripcion && (
                                 <p className="text-white/40 text-sm mb-4 line-clamp-2">
                                     {producto.descripcion}
                                 </p>
                             )}
 
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between mb-4">
                                 <div>
                                     <p className="text-xs text-white/30">Precio</p>
                                     <p className="text-2xl font-light text-white/90">${producto.precio.toLocaleString()}</p>
@@ -268,16 +263,19 @@ export default function CatalogoPage() {
                                 </div>
                             </div>
 
-                            <div className="mt-4 text-right">
-                                <span className="text-xs text-[#ef4444] opacity-0 group-hover:opacity-100 transition-opacity">
-                                    Ver detalles →
-                                </span>
-                            </div>
-                        </Link>
+                            <button
+                                onClick={() => {
+                                    console.log("🟢 Agregando:", producto.nombre);
+                                    addToCart(producto);
+                                }}
+                                className="w-full bg-[#ef4444] text-white py-2 rounded-lg hover:bg-[#ef4444]/90 transition-colors"
+                            >
+                                Comprar
+                            </button>
+                        </div>
                     ))}
                 </div>
 
-                {/* Paginación */}
                 {totalPages > 1 && (
                     <div className="flex justify-center gap-2 mt-12">
                         <button

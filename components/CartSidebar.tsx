@@ -3,15 +3,24 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BankInfoModal from "./BankInfoModal";
-import { useCart } from "@/context/CartContext";
 
 interface CartSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  cartItems: any[];
+  updateQuantity: (id: string, quantity: number) => void;
+  removeFromCart: (id: string) => void;
+  totalPrice: number;
 }
 
-export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
-  const { cartItems, updateQuantity, removeFromCart, totalPrice } = useCart();
+export default function CartSidebar({
+  isOpen,
+  onClose,
+  cartItems,
+  updateQuantity,
+  removeFromCart,
+  totalPrice,
+}: CartSidebarProps) {
   const [paymentMethod, setPaymentMethod] = useState("transferencia");
   const [showBankModal, setShowBankModal] = useState(false);
 
@@ -79,8 +88,8 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   </button>
                 </div>
               ) : (
-                cartItems.map((item) => (
-                  <div key={item.id} className="border-b border-white/10 pb-3">
+                cartItems.map((item, index) => (
+                  <div key={`cart-${item.id}-${index}`} className="border-b border-white/10 pb-3">
                     <div className="flex justify-between">
                       <div>
                         <h4 className="text-white/90 text-sm font-medium">{item.nombre}</h4>
@@ -127,7 +136,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="w-full bg-black/60 border border-white/10 rounded-lg p-2 text-white/80 text-sm"
                   >
-                    <option value="transferencia">Transferencia BBVA</option>
+                    <option value="transferencia">Pago en BBVA (transferencia / depósito)</option>
                     <option value="tarjeta">Tarjeta de crédito/débito</option>
                     <option value="whatsapp">Coordinar por WhatsApp</option>
                   </select>

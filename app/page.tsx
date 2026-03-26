@@ -14,7 +14,8 @@ import LoginModal from "@/components/LoginModal";
 import CartSidebar from "@/components/CartSidebar";
 import LegalSidebar from "@/components/LegalSidebar";
 import { supabase } from "@/lib/supabase";
-
+import ConsultaStockModal from "@/components/ConsultaStockModal";
+import Link from "next/link";
 
 // Tipos para los mensajes
 interface Message {
@@ -85,13 +86,21 @@ useEffect(() => {
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState("");
   const [isLegalOpen, setIsLegalOpen] = useState(false);
-  
+  const [isStockModalOpen, setIsStockModalOpen] = useState(false);
 
   // Función para manejar catálogo
   const handleCatalogClick = () => {
     window.location.href = "/catalogo";
   };
-
+// Función para consulta NIA para boton stock 
+  const handleStockConsulta = (consulta: any) => {
+  // Enviar el mensaje al chat de NIA
+  setInput(consulta.textoConsulta);
+  // Opcional: abrir el chat o enfocar el input
+  setTimeout(() => {
+    sendMessage();
+  }, 100);
+};
   // Función para rastrear paquete
   const handleTrackPackage = () => {
     if (trackingNumber) {
@@ -259,36 +268,36 @@ const updateQuantity = (id: string, quantity: number) => {
       {/* ===== LADO DERECHO - 4 BOTONES (compactos) ===== */}
       <div className="flex items-center gap-2 sm:gap-3">
         
-        {/* Account */}
-        {user ? (
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-white/40 hidden md:block truncate max-w-[80px]">
-              {user.email?.split('@')[0]}
-            </span>
-            <button
-              onClick={async () => {
-                await supabase.auth.signOut();
-                setUser(null);
-              }}
-              className="text-white/70 hover:text-[#D4AF37] transition-colors"
-              title="Cerrar sesión"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-            </button>
-          </div>
-        ) : (
-          <button 
-            onClick={() => setIsLoginOpen(true)}
-            className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
-            title="Ingresar"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-            </svg>
-          </button>
-        )}
+       {/* Account */}
+{user ? (
+  <Link
+    href="/perfil"
+    className="flex items-center gap-1 group"
+    title="Mi perfil"
+  >
+    <span className="text-xs text-white/40 hidden md:block truncate max-w-[80px] group-hover:text-white/70 transition">
+      {user.email?.split('@')[0]}
+    </span>
+    <svg 
+      className="w-5 h-5 text-white/70 group-hover:text-[#D4AF37] transition-colors" 
+      fill="none" 
+      stroke="currentColor" 
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+    </svg>
+  </Link>
+) : (
+  <button 
+    onClick={() => setIsLoginOpen(true)}
+    className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
+    title="Ingresar"
+  >
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+    </svg>
+  </button>
+)}
 
         {/* Catálogo */}
         <button 
@@ -303,14 +312,14 @@ const updateQuantity = (id: string, quantity: number) => {
 
         {/* Seguimiento */}
         <button 
-          onClick={() => setIsTrackingOpen(true)}
-          className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
-          title="Seguimiento"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-        </button>
+  onClick={() => window.location.href = "/seguimiento"}
+  className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
+  title="Seguimiento"
+>
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+  </svg>
+</button>
 
         {/* Carrito */}
         <button 
@@ -367,19 +376,18 @@ const updateQuantity = (id: string, quantity: number) => {
         </p>
 
         {/* Botón CTA con efecto glow */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="relative group px-8 py-4 bg-[#ef4444] text-white font-bold rounded-lg overflow-hidden shadow-lg shadow-[#ef4444]/20"
-        >
-          <span className="relative z-10">📞 CONSULTAR STOCK TÉCNICO</span>
-          <motion.div
-            className="absolute inset-0 bg-white"
-            initial={{ x: "-100%", opacity: 0 }}
-            whileHover={{ x: 0, opacity: 0.2 }}
-            transition={{ duration: 0.3 }}
-          />
-        </motion.button>
+        <button
+  onClick={() => setIsStockModalOpen(true)}
+  className="relative group px-8 py-4 bg-[#ef4444] text-white font-bold rounded-lg overflow-hidden shadow-lg shadow-[#ef4444]/20"
+>
+  <span className="relative z-10">📞 CONSULTAR STOCK TÉCNICO</span>
+  <motion.div
+    className="absolute inset-0 bg-white"
+    initial={{ x: "-100%", opacity: 0 }}
+    whileHover={{ x: 0, opacity: 0.2 }}
+    transition={{ duration: 0.3 }}
+  />
+</button>
 
         {/* BARRA DE CONFIANZA */}
         <div className="pt-8 flex flex-wrap gap-6">
@@ -785,10 +793,24 @@ const updateQuantity = (id: string, quantity: number) => {
         // Actualizar el usuario después de login exitoso
         supabase.auth.getUser().then(({ data }) => setUser(data.user));
     }}
+    
 />
      <CartSidebar
   isOpen={isCartOpen}
   onClose={() => setIsCartOpen(false)}
+  cartItems={cartItems}
+  updateQuantity={updateQuantity}
+  removeFromCart={removeFromCart}
+  totalPrice={cartItems.reduce((acc, item) => acc + item.precio * item.quantity, 0)}
+/>
+
+<LegalSidebar isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />
+
+
+  <ConsultaStockModal
+  isOpen={isStockModalOpen}
+  onClose={() => setIsStockModalOpen(false)}
+  onSendToNIA={handleStockConsulta}
 />
 
 
