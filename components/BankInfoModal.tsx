@@ -64,4 +64,3 @@ export default function BankInfoModal({ isOpen, onClose, total }: BankInfoModalP
     </div>
   );
 }
-Fix BankInfoModal completo
