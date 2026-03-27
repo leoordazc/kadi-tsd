@@ -49,7 +49,7 @@ export default function CartSidebar({
       const message = encodeURIComponent(
         `Hola, quiero pagar mi pedido de KADI. Total: $${totalPrice.toLocaleString()}`
       );
-      window.open(`https://wa.me/5215512345678?text=${message}`, "_blank");
+      window.open(`https://wa.me/5573382923?text=${message}`, "_blank");
     }
   };
 

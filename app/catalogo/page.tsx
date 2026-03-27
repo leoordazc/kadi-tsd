@@ -231,9 +231,12 @@ export default function CatalogoPage() {
                         >
                             <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <h3 className="text-lg font-medium text-white/90 group-hover:text-[#ef4444] transition">
-                                        {producto.nombre}
-                                    </h3>
+                                    {/* Título con enlace a detalles */}
+                                    <Link href={`/catalogo/${producto.codigo_caja}`}>
+                                        <h3 className="text-lg font-medium text-white/90 group-hover:text-[#ef4444] transition">
+                                            {producto.nombre}
+                                        </h3>
+                                    </Link>
                                     <p className="text-xs text-white/30">Código: {producto.codigo_caja}</p>
                                 </div>
                                 <span className={`text-xs px-2 py-1 rounded-full ${
@@ -263,15 +266,23 @@ export default function CatalogoPage() {
                                 </div>
                             </div>
 
-                            <button
-                                onClick={() => {
-                                    console.log("🟢 Agregando:", producto.nombre);
-                                    addToCart(producto);
-                                }}
-                                className="w-full bg-[#ef4444] text-white py-2 rounded-lg hover:bg-[#ef4444]/90 transition-colors"
-                            >
-                                Comprar
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => {
+                                        console.log("🟢 Agregando:", producto.nombre);
+                                        addToCart(producto);
+                                    }}
+                                    className="flex-1 bg-[#ef4444] text-white py-2 rounded-lg hover:bg-[#ef4444]/90 transition-colors"
+                                >
+                                    Comprar
+                                </button>
+                                <Link
+                                    href={`/catalogo/${producto.codigo_caja}`}
+                                    className="px-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center"
+                                >
+                                    <span className="text-sm">🔍</span>
+                                </Link>
+                            </div>
                         </div>
                     ))}
                 </div>
