@@ -718,32 +718,100 @@ const updateQuantity = (id: string, quantity: number) => {
       </section>
 
       {/* ===== FOOTER ===== */}
-      <footer className="relative z-10 border-t border-white/5 bg-black/40">
-        <div className="max-w-6xl mx-auto px-8 py-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h5 className="text-white/90 mb-4">KADI TS&D</h5>
-              <p className="text-sm text-white/30">Transmisiones manuales y diferenciales</p>
-            </div>
-            <div>
-              <h5 className="text-white/90 mb-4">Contacto</h5>
-              <p className="text-sm text-white/30">ventas.kaditsd@gmail.com.mx</p>
-              <p className="text-sm text-white/30">+52 55 7338 2923</p>
-            </div>
-            <div>
-              <h5 className="text-white/90 mb-4">Ubicación</h5>
-              <p className="text-sm text-white/30">CDMX · Edo. de México</p>
-            </div>
-            <div>
-              <h5 className="text-white/90 mb-4">Legal</h5>
-              <p className="text-sm text-white/30">Términos · Privacidad</p>
-            </div>
-          </div>
-          <div className="mt-12 pt-8 border-t border-white/5 text-center text-white/20 text-xs">
-            © 2026 KADI TRANSMISIÓNES MANUALES & DIFERENCIALES. TODOS LOS DERECHOS RESERVADOS.
-          </div>
+<footer className="relative z-10 border-t border-white/5 bg-black/40">
+  <div className="max-w-6xl mx-auto px-8 py-16">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      
+      {/* Columna 1: KADI TS&D */}
+      <div>
+        <h5 className="text-white/90 mb-4">KADI TS&D</h5>
+        <p className="text-sm text-white/30">Transmisiones manuales y diferenciales</p>
+      </div>
+      
+      {/* Columna 2: Contacto (con funcionalidad) */}
+      <div>
+        <h5 className="text-white/90 mb-4">Contacto</h5>
+        {/* Correo - abre Gmail */}
+        <a 
+          href="mailto:ventas.kaditsd@gmail.com.mx?subject=Contacto desde KADI TS&D"
+          className="text-sm text-white/30 hover:text-[#D4AF37] transition-colors duration-300 block mb-2"
+        >
+          📧 ventas.kaditsd@gmail.com.mx
+        </a>
+        {/* Teléfono / WhatsApp - abre WhatsApp con mensaje */}
+        <a 
+          href="https://wa.me/5573382923?text=Hola,%20me%20interesa%20conocer%20más%20sobre%20KADI%20TS&D"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-white/30 hover:text-[#D4AF37] transition-colors duration-300 block"
+        >
+          📱 +52 55 7338 2923
+        </a>
+        
+        {/* Redes Sociales */}
+        <div className="flex gap-4 mt-4">
+          {/* Facebook */}
+          <a
+            href="https://www.facebook.com/tu-pagina"  // 👈 CAMBIA ESTO por tu URL real de Facebook
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white/30 hover:text-[#D4AF37] transition-colors duration-300"
+            aria-label="Facebook"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+            </svg>
+          </a>
+          
+          {/* WhatsApp */}
+          <a
+            href="https://wa.me/5573382923?text=Hola,%20me%20interesa%20KADI%20TS&D"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white/30 hover:text-[#D4AF37] transition-colors duration-300"
+            aria-label="WhatsApp"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.18-2.585-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.17-.252-.145-.588-.33-.847-.524-.971-.73-1.527-1.308-2.017-2.122-.122-.202-.182-.434-.182-.666 0-.233.08-.433.222-.576.113-.113.252-.15.385-.15.074 0 .143.006.208.018.107.019.215.07.307.158.266.256.624.689.847 1.044.091.144.054.306-.016.423-.093.156-.169.267-.264.424-.059.098-.133.177-.2.27-.089.125-.068.2.024.354.273.446.714.948 1.166 1.255.143.098.245.148.393.172.147.024.271-.019.369-.09.151-.111.34-.398.436-.539.096-.142.202-.141.35-.085.475.174.858.382 1.074.551.12.094.193.188.232.286.039.099.023.198-.018.285z" />
+            </svg>
+          </a>
+          
+          {/* Gmail / Correo */}
+          <a
+            href="mailto:ventas.kaditsd@gmail.com.mx?subject=Contacto desde KADI TS&D"
+            className="text-white/30 hover:text-[#D4AF37] transition-colors duration-300"
+            aria-label="Correo"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+            </svg>
+          </a>
         </div>
-      </footer>
+      </div>
+      
+      {/* Columna 3: Ubicación */}
+      <div>
+        <h5 className="text-white/90 mb-4">Ubicación</h5>
+        <p className="text-sm text-white/30">CDMX · Edo. de México</p>
+      </div>
+      
+      {/* Columna 4: Legal (con funcionalidad - abre el mismo panel del header) */}
+      <div>
+        <h5 className="text-white/90 mb-4">Legal</h5>
+        <button 
+          onClick={() => setIsLegalOpen(true)}
+          className="text-sm text-white/30 hover:text-[#D4AF37] transition-colors duration-300 block"
+        >
+          📜 Términos · Privacidad
+        </button>
+      </div>
+    </div>
+    
+    <div className="mt-12 pt-8 border-t border-white/5 text-center text-white/20 text-xs">
+      © 2026 KADI TRANSMISIÓNES MANUALES & DIFERENCIALES. TODOS LOS DERECHOS RESERVADOS.
+    </div>
+  </div>
+</footer>
 
       {/* ===== MODALES (siempre al final) ===== */}
       <AnimatePresence>
