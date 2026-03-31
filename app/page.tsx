@@ -16,6 +16,7 @@ import LegalSidebar from "@/components/LegalSidebar";
 import { supabase } from "@/lib/supabase";
 import ConsultaStockModal from "@/components/ConsultaStockModal";
 import Link from "next/link";
+import LocationWidget from "@/components/LocationWidget";
 
 // Tipos para los mensajes
 interface Message {
@@ -243,15 +244,9 @@ const updateQuantity = (id: string, quantity: number) => {
           </svg>
         </button>
         
-        {/* Ubicación minimalista */}
-        <div className="hidden lg:flex items-center gap-1 text-white/50 text-xs">
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span>Ojo de Agua</span>
-        </div>
-      </div>
+        {/* Ubicación con animación */}
+        <LocationWidget />
+      </div>  {/* ← Cierre del LADO IZQUIERDO */}
 
       {/* ===== LOGO CENTRADO ===== */}
       <div className="absolute left-1/2 transform -translate-x-1/2">
@@ -268,36 +263,36 @@ const updateQuantity = (id: string, quantity: number) => {
       {/* ===== LADO DERECHO - 4 BOTONES (compactos) ===== */}
       <div className="flex items-center gap-2 sm:gap-3">
         
-       {/* Account */}
-{user ? (
-  <Link
-    href="/perfil"
-    className="flex items-center gap-1 group"
-    title="Mi perfil"
-  >
-    <span className="text-xs text-white/40 hidden md:block truncate max-w-[80px] group-hover:text-white/70 transition">
-      {user.email?.split('@')[0]}
-    </span>
-    <svg 
-      className="w-5 h-5 text-white/70 group-hover:text-[#D4AF37] transition-colors" 
-      fill="none" 
-      stroke="currentColor" 
-      viewBox="0 0 24 24"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-    </svg>
-  </Link>
-) : (
-  <button 
-    onClick={() => setIsLoginOpen(true)}
-    className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
-    title="Ingresar"
-  >
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-    </svg>
-  </button>
-)}
+        {/* Account */}
+        {user ? (
+          <Link
+            href="/perfil"
+            className="flex items-center gap-1 group"
+            title="Mi perfil"
+          >
+            <span className="text-xs text-white/40 hidden md:block truncate max-w-[80px] group-hover:text-white/70 transition">
+              {user.email?.split('@')[0]}
+            </span>
+            <svg 
+              className="w-5 h-5 text-white/70 group-hover:text-[#D4AF37] transition-colors" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+          </Link>
+        ) : (
+          <button 
+            onClick={() => setIsLoginOpen(true)}
+            className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
+            title="Ingresar"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+          </button>
+        )}
 
         {/* Catálogo */}
         <button 
@@ -312,14 +307,14 @@ const updateQuantity = (id: string, quantity: number) => {
 
         {/* Seguimiento */}
         <button 
-  onClick={() => window.location.href = "/seguimiento"}
-  className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
-  title="Seguimiento"
->
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-  </svg>
-</button>
+          onClick={() => window.location.href = "/seguimiento"}
+          className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
+          title="Seguimiento"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </button>
 
         {/* Carrito */}
         <button 
@@ -331,13 +326,13 @@ const updateQuantity = (id: string, quantity: number) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
           </svg>
           <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#ef4444] rounded-full text-[8px] text-white flex items-center justify-center shadow-[0_0_8px_rgba(239,68,68,0.5)]">
-  {cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0)}
-</span>
+            {cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0)}
+          </span>
         </button>
-      </div>
-    </div>
-  </div>
-</header>
+      </div>  {/* ← Cierre del LADO DERECHO */}
+    </div>  {/* ← Cierre del div flex */}
+  </div>  {/* ← Cierre del div container */}
+</header>  {/* ← Cierre del header */}
 
       {/* ===== BUSCADOR NIA ===== */}
       <NIASearchBar onSearch={(query) => console.log("Buscando:", query)} />
@@ -363,13 +358,13 @@ const updateQuantity = (id: string, quantity: number) => {
         className="space-y-6"
       >
         <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-          <span className="text-white">INGENIERÍA QUE</span>
+          <span className="text-white">ENCUENTRA O DIAGNOSTICA</span>
           <br />
-          <span className="text-[#ef4444]">MUEVE TU INVERSIÓN</span>
+          <span className="text-[#ef4444]">TU TRANSMISION EN MINUTOS</span>
         </h1>
 
         <p className="text-xl text-white/60 max-w-lg">
-          Piezas originales verificadas por técnicos especialistas.
+          Piezas verificadas y asesoría técnica especializada.
           <span className="block text-white/40 text-lg mt-2">
             Transmisiones manuales y diferenciales con trazabilidad total.
           </span>
@@ -380,7 +375,7 @@ const updateQuantity = (id: string, quantity: number) => {
   onClick={() => setIsStockModalOpen(true)}
   className="relative group px-8 py-4 bg-[#ef4444] text-white font-bold rounded-lg overflow-hidden shadow-lg shadow-[#ef4444]/20"
 >
-  <span className="relative z-10">📞 CONSULTAR STOCK TÉCNICO</span>
+  <span className="relative z-10">🛠️ CONSULTAR MI TRANSMISION</span>
   <motion.div
     className="absolute inset-0 bg-white"
     initial={{ x: "-100%", opacity: 0 }}
@@ -393,7 +388,7 @@ const updateQuantity = (id: string, quantity: number) => {
         <div className="pt-8 flex flex-wrap gap-6">
           {[
             { icon: "🛡️", title: "Garantía KADI", desc: "Piezas verificadas" },
-            { icon: "📦", title: "Envío Seguro", desc: "Trazabilidad Ojo de Agua" },
+            { icon: "📦", title: "Envío Seguro", desc: "Trazabilidad 24/7" },
             { icon: "⚙️", title: "Soporte Experto", desc: "Asesoría pre-compra" }
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-3">
@@ -570,7 +565,7 @@ const updateQuantity = (id: string, quantity: number) => {
             {[
               { step: "01", title: "Consulta", desc: "Habla con NIA sobre tu vehículo" },
               { step: "02", title: "Recomendación", desc: "IA analiza compatibilidad y stock" },
-              { step: "03", title: "Entrega", desc: "Recibe tu transmisión en 24h" }
+              { step: "03", title: "Entrega", desc: "Recibe tu transmisión en tiempo record" }
             ].map((step, i) => (
               <motion.div
                 key={i}
@@ -603,7 +598,7 @@ const updateQuantity = (id: string, quantity: number) => {
             <h2 className="text-4xl font-light text-white/90 mb-3">
               Red de <span className="text-[#ef4444]">Distribución</span>
             </h2>
-            <p className="text-white/40 text-sm tracking-widest">COBERTURA NACIONAL · ENTREGA 24H</p>
+            <p className="text-white/40 text-sm tracking-widest">COBERTURA NACIONAL · ENTREGA 2-3 dias habiles</p>
             <div className="w-12 h-px bg-gradient-to-r from-transparent via-[#ef4444] to-transparent mx-auto mt-6" />
           </motion.div>
 
@@ -636,7 +631,7 @@ const updateQuantity = (id: string, quantity: number) => {
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <div className="text-3xl font-light text-white/90">24h</div>
-                    <div className="text-xs text-white/30 tracking-wider">ENTREGA PROMEDIO</div>
+                    <div className="text-xs text-white/30 tracking-wider">ENTREGA PROMEDIO EN FLETERA</div>
                   </div>
                   <div>
                     <div className="text-3xl font-light text-white/90">100%</div>
@@ -728,16 +723,16 @@ const updateQuantity = (id: string, quantity: number) => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h5 className="text-white/90 mb-4">KADI TS&D</h5>
-              <p className="text-sm text-white/30">Transmisiones y diferenciales con inteligencia artificial</p>
+              <p className="text-sm text-white/30">Transmisiones manuales y diferenciales</p>
             </div>
             <div>
               <h5 className="text-white/90 mb-4">Contacto</h5>
-              <p className="text-sm text-white/30">hola@kadi.mx</p>
-              <p className="text-sm text-white/30">+52 55 1234 5678</p>
+              <p className="text-sm text-white/30">ventas.kaditsd@gmail.com.mx</p>
+              <p className="text-sm text-white/30">+52 55 7338 2923</p>
             </div>
             <div>
               <h5 className="text-white/90 mb-4">Ubicación</h5>
-              <p className="text-sm text-white/30">CDMX · Monterrey · Guadalajara</p>
+              <p className="text-sm text-white/30">CDMX · Edo. de México</p>
             </div>
             <div>
               <h5 className="text-white/90 mb-4">Legal</h5>
@@ -745,7 +740,7 @@ const updateQuantity = (id: string, quantity: number) => {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-white/5 text-center text-white/20 text-xs">
-            © 2026 KADI TRANSMISSION SYSTEMS. TODOS LOS DERECHOS RESERVADOS.
+            © 2026 KADI TRANSMISIÓNES MANUALES & DIFERENCIALES. TODOS LOS DERECHOS RESERVADOS.
           </div>
         </div>
       </footer>

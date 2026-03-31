@@ -148,7 +148,7 @@ export default function CartSidebar({
                     Cuenta: 1234 5678 9012<br />
                     CLABE: 0123 4567 8901 2345 67<br />
                     Referencia: <strong>KADI-{Date.now()}</strong><br />
-                    Envía tu comprobante a hola@kadi.mx para confirmar tu pedido.
+                    Envía tu comprobante a ventas.kaditsd@gmail.com.mx para confirmar tu pedido.
                   </div>
                 )}
 

@@ -52,7 +52,7 @@ export default function BankInfoModal({ isOpen, onClose, total }: BankInfoModalP
           </div>
         </div>
         <p className="text-xs text-white/30 mt-4">
-          Realiza la transferencia y envía el comprobante a <strong>hola@kadi.mx</strong> para confirmar tu pedido.
+          Realiza la transferencia y envía el comprobante a <strong>ventas.kaditsd@gmail.com.mx</strong> para confirmar tu pedido.
         </p>
         <button
           onClick={onClose}

@@ -25,10 +25,10 @@ export default function ServiceCard({ icon, title, description, cta, color, dela
                 router.push("/catalogo");
             } else if (title === "REPARACIÓN ESPECIALIZADA") {
                 const message = encodeURIComponent("Hola, quiero cotizar una reparación.");
-                window.open(`https://wa.me/5215512345678?text=${message}`, "_blank");
+                window.open(`https://wa.me/525573382923?text=${message}`, "_blank");
             } else if (title === "MANTENIMIENTO PREVENTIVO") {
                 const message = encodeURIComponent("Hola, quiero agendar una cita para mantenimiento.");
-                window.open(`https://wa.me/5215512345678?text=${message}`, "_blank");
+                window.open(`https://wa.me/525573382923?text=${message}`, "_blank");
             }
         }
     };

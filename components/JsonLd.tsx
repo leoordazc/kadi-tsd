@@ -17,7 +17,7 @@ export default function JsonLd() {
     },
     "contactPoint": {
       "@type": "ContactPoint",
-      "telephone": "+52-55-1234-5678",
+      "telephone": "+52-55-7338-2923",
       "contactType": "customer service",
       "availableLanguage": ["Spanish"]
     },
