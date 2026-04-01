@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/context/CartContext";
 
@@ -16,6 +17,7 @@ interface Producto {
     stock: number;
     descripcion?: string;
     imagen_url?: string;
+    imagenes_extra?: string[];
     marca_vehiculo?: string[];
     modelo_vehiculo?: string[];
     año_inicio?: number;
@@ -31,6 +33,13 @@ export default function ProductoDetallePage() {
     const [producto, setProducto] = useState<Producto | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [selectedImage, setSelectedImage] = useState<string>("");
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    const allImages = producto ? [
+        producto.imagen_url,
+        ...(producto.imagenes_extra || [])
+    ].filter((img): img is string => Boolean(img) && typeof img === 'string') : [];
 
     useEffect(() => {
         const fetchProducto = async () => {
@@ -43,19 +52,17 @@ export default function ProductoDetallePage() {
                     .eq('codigo_caja', params.slug)
                     .single();
 
-                console.log("📦 Resultado:", data);
-                console.log("⚠️ Error:", error);
-
                 if (error) throw error;
                 if (!data) {
                     setError("Producto no encontrado");
                     return;
                 }
                 setProducto(data);
+                if (data?.imagen_url) {
+                    setSelectedImage(data.imagen_url);
+                }
             } catch (err: any) {
-                console.error("❌ Error completo:", err);
-                console.error("Mensaje:", err.message);
-                console.error("Código:", err.code);
+                console.error("❌ Error:", err);
                 setError(`Error: ${err.message || "Producto no encontrado"}`);
             } finally {
                 setLoading(false);
@@ -66,6 +73,20 @@ export default function ProductoDetallePage() {
             fetchProducto();
         }
     }, [params.slug]);
+
+    const nextImage = () => {
+        if (allImages.length === 0) return;
+        const nextIndex = (currentImageIndex + 1) % allImages.length;
+        setCurrentImageIndex(nextIndex);
+        setSelectedImage(allImages[nextIndex] || "");
+    };
+
+    const prevImage = () => {
+        if (allImages.length === 0) return;
+        const prevIndex = (currentImageIndex - 1 + allImages.length) % allImages.length;
+        setCurrentImageIndex(prevIndex);
+        setSelectedImage(allImages[prevIndex] || "");
+    };
 
     if (loading) {
         return (
@@ -112,22 +133,78 @@ export default function ProductoDetallePage() {
             {/* Contenido */}
             <div className="max-w-6xl mx-auto px-6 py-12">
                 <div className="grid md:grid-cols-2 gap-12">
-                    {/* Imagen */}
-                    <div className="rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
-                        {producto.imagen_url ? (
-                            <img
-                                src={producto.imagen_url}
-                                alt={producto.nombre}
-                                className="w-full h-auto object-cover"
-                            />
-                        ) : (
-                            <div className="aspect-square flex items-center justify-center">
-                                <span className="text-6xl">🔧</span>
+                    
+                    {/* COLUMNA IZQUIERDA: IMAGEN CON CARRUSEL */}
+                    <div className="space-y-4">
+                        {/* Imagen principal */}
+                        <div className="relative aspect-square rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
+                            {selectedImage ? (
+                                <>
+                                    <Image
+                                        src={selectedImage}
+                                        alt={producto.nombre}
+                                        fill
+                                        className="object-contain p-4"
+                                        sizes="(max-width: 768px) 100vw, 50vw"
+                                        priority
+                                    />
+                                    
+                                    {allImages.length > 1 && (
+                                        <>
+                                            <button
+                                                onClick={prevImage}
+                                                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white/80 hover:text-white rounded-full w-8 h-8 flex items-center justify-center transition-all backdrop-blur-sm"
+                                            >
+                                                ◀
+                                            </button>
+                                            <button
+                                                onClick={nextImage}
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white/80 hover:text-white rounded-full w-8 h-8 flex items-center justify-center transition-all backdrop-blur-sm"
+                                            >
+                                                ▶
+                                            </button>
+                                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white/80 text-xs px-2 py-1 rounded-full">
+                                                {currentImageIndex + 1} / {allImages.length}
+                                            </div>
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-6xl">🔧</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Miniaturas */}
+                        {allImages.length > 1 && (
+                            <div className="flex gap-3 justify-center overflow-x-auto pb-2">
+                                {allImages.map((img, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => {
+                                            setSelectedImage(img);
+                                            setCurrentImageIndex(idx);
+                                        }}
+                                        className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+                                            selectedImage === img 
+                                                ? 'border-[#ef4444] shadow-lg shadow-[#ef4444]/20' 
+                                                : 'border-white/20 hover:border-white/50'
+                                        }`}
+                                    >
+                                        <Image
+                                            src={img}
+                                            alt={`Vista ${idx + 1}`}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </button>
+                                ))}
                             </div>
                         )}
                     </div>
 
-                    {/* Información */}
+                    {/* COLUMNA DERECHA: INFORMACIÓN */}
                     <div>
                         <h1 className="text-3xl font-light mb-2">{producto.nombre}</h1>
                         <p className="text-white/40 text-sm mb-4">Código: {producto.codigo_caja}</p>
@@ -145,14 +222,12 @@ export default function ProductoDetallePage() {
                             </span>
                         </div>
 
-                        {/* Descripción */}
                         {producto.descripcion && (
                             <p className="text-white/60 leading-relaxed mb-6">
                                 {producto.descripcion}
                             </p>
                         )}
 
-                        {/* Compatibilidad */}
                         {(producto.marca_vehiculo && producto.marca_vehiculo.length > 0) || 
                          (producto.modelo_vehiculo && producto.modelo_vehiculo.length > 0) ? (
                             <div className="border-t border-white/10 pt-4 mb-4">
@@ -169,7 +244,6 @@ export default function ProductoDetallePage() {
                             </div>
                         ) : null}
 
-                        {/* Especificaciones técnicas */}
                         {producto.especificaciones && Object.keys(producto.especificaciones).length > 0 && (
                             <div className="border-t border-white/10 pt-4 mb-4">
                                 <h3 className="text-sm font-medium text-white/70 mb-2">⚙️ Especificaciones técnicas</h3>
@@ -183,7 +257,6 @@ export default function ProductoDetallePage() {
                             </div>
                         )}
 
-                        {/* Notas de instalación */}
                         {producto.notas_instalacion && (
                             <div className="border-t border-white/10 pt-4 mb-6">
                                 <h3 className="text-sm font-medium text-white/70 mb-2">🔧 Notas de instalación</h3>
@@ -191,7 +264,6 @@ export default function ProductoDetallePage() {
                             </div>
                         )}
 
-                        {/* Precio y compra */}
                         <div className="border-t border-white/10 pt-6">
                             <div className="flex justify-between items-end mb-6">
                                 <div>
@@ -208,7 +280,6 @@ export default function ProductoDetallePage() {
                             </div>
                         </div>
 
-                        {/* Botón de WhatsApp */}
                         <div className="mt-4">
                             <button
                                 onClick={() => {

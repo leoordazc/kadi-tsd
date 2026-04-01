@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/context/CartContext";
 
@@ -229,9 +230,27 @@ export default function CatalogoPage() {
                             key={producto.id}
                             className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 p-6 hover:border-[#ef4444]/30 transition-all group"
                         >
+                            {/* ===== IMAGEN DEL PRODUCTO ===== */}
+                            <div className="relative w-full h-48 mb-4 rounded-xl overflow-hidden bg-black/40">
+                                {producto.imagen_url ? (
+                                    <Image
+                                        src={producto.imagen_url}
+                                        alt={producto.nombre}
+                                        fill
+                                        className="object-contain group-hover:scale-105 transition-transform duration-500"
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-white/30">
+                                        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                )}
+                            </div>
+
                             <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    {/* Título con enlace a detalles */}
                                     <Link href={`/catalogo/${producto.codigo_caja}`}>
                                         <h3 className="text-lg font-medium text-white/90 group-hover:text-[#ef4444] transition">
                                             {producto.nombre}
@@ -268,10 +287,7 @@ export default function CatalogoPage() {
 
                             <div className="flex gap-2">
                                 <button
-                                    onClick={() => {
-                                        console.log("🟢 Agregando:", producto.nombre);
-                                        addToCart(producto);
-                                    }}
+                                    onClick={() => addToCart(producto)}
                                     className="flex-1 bg-[#ef4444] text-white py-2 rounded-lg hover:bg-[#ef4444]/90 transition-colors"
                                 >
                                     Comprar
