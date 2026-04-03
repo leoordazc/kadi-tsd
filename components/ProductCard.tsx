@@ -7,7 +7,7 @@ interface ProductCardProps {
     product: any;
     isRecommended?: boolean;
     onSelect: (product: any) => void;
-    onAddToCart: (product: any) => void;  // 👈 NUEVA PROP
+    onAddToCart?: (product: any) => void;  // 👈 NUEVA PROP
 }
 
 export default function ProductCard({ product, isRecommended, onSelect, onAddToCart }: ProductCardProps) {
@@ -95,21 +95,21 @@ export default function ProductCard({ product, isRecommended, onSelect, onAddToC
                     
                     <div className="flex gap-2">
                         {/* Botón COMPRAR */}
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                isRecommended 
-                                    ? 'bg-[#4ade80] text-black hover:bg-[#4ade80]/90'
-                                    : 'bg-[#ef4444] text-white hover:bg-[#ef4444]/90'
-                            }`}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onAddToCart(product);
-                            }}
-                        >
-                            🛒 COMPRAR
-                        </motion.button>
+<motion.button
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+        isRecommended 
+            ? 'bg-[#4ade80] text-black hover:bg-[#4ade80]/90'
+            : 'bg-[#ef4444] text-white hover:bg-[#ef4444]/90'
+    }`}
+    onClick={(e) => {
+        e.stopPropagation();
+        onAddToCart?.(product);  // 👈 Usar optional chaining
+    }}
+>
+    🛒 COMPRAR
+</motion.button>
                         
                         {/* Botón VER detalles */}
                         <motion.button

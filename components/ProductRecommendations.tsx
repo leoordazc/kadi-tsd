@@ -7,14 +7,18 @@ import ProductCard from "./ProductCard";
 interface ProductRecommendationsProps {
     products: any[];
     onProductSelect: (product: any) => void;
+    onAddToCart?: (product: any) => void;  // ✅ Opcional
 }
 
-export default function ProductRecommendations({ products, onProductSelect }: ProductRecommendationsProps) {
+export default function ProductRecommendations({ 
+    products, 
+    onProductSelect, 
+    onAddToCart  // ✅ Puede ser undefined
+}: ProductRecommendationsProps) {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     
     if (!products || products.length === 0) return null;
     
-    // Calcular mejor opción (por margen + stock)
     const productsWithScore = products.map(p => ({
         ...p,
         score: ((p.precio - p.costo_interno) * 0.7) + (p.stock * 10)
@@ -22,11 +26,10 @@ export default function ProductRecommendations({ products, onProductSelect }: Pr
     
     const sortedProducts = productsWithScore.sort((a, b) => b.score - a.score);
     const bestProduct = sortedProducts[0];
-    const otherProducts = sortedProducts.slice(1, 4); // Máximo 4 productos totales
+    const otherProducts = sortedProducts.slice(1, 4);
     
     return (
         <div className="space-y-6">
-            {/* Mejor opción destacada */}
             {bestProduct && (
                 <div className="space-y-3">
                     <div className="flex items-center space-x-2">
@@ -37,11 +40,11 @@ export default function ProductRecommendations({ products, onProductSelect }: Pr
                         product={bestProduct}
                         isRecommended={true}
                         onSelect={onProductSelect}
+                        onAddToCart={onAddToCart}  // ✅ Puede ser undefined
                     />
                 </div>
             )}
             
-            {/* Otras opciones */}
             {otherProducts.length > 0 && (
                 <div className="space-y-3">
                     <div className="flex items-center space-x-2">
@@ -54,13 +57,13 @@ export default function ProductRecommendations({ products, onProductSelect }: Pr
                                 key={product.id}
                                 product={product}
                                 onSelect={onProductSelect}
+                                onAddToCart={onAddToCart}  // ✅ Puede ser undefined
                             />
                         ))}
                     </div>
                 </div>
             )}
             
-            {/* Mensaje de confianza */}
             <div className="mt-4 text-xs text-white/20 text-center">
                 <span className="text-[#4ade80]">●</span> Todos los productos incluyen garantía · Envío a todo México
             </div>
