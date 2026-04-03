@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/context/CartContext";
+import Toast from "@//components/Toast"; // 👈 Importar
 
 interface Producto {
     id: string;
@@ -28,7 +29,7 @@ export default function CatalogoPage() {
     const [productos, setProductos] = useState<Producto[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
+    const [toast, setToast] = useState<{ message: string; type?: "success" | "error" | "info" } | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
 
@@ -286,12 +287,19 @@ export default function CatalogoPage() {
                             </div>
 
                             <div className="flex gap-2">
-                                <button
-                                    onClick={() => addToCart(producto)}
-                                    className="flex-1 bg-[#ef4444] text-white py-2 rounded-lg hover:bg-[#ef4444]/90 transition-colors"
-                                >
-                                    Comprar
-                                </button>
+                              <button
+    onClick={() => {
+        addToCart(producto);
+        setToast({ message: `${producto.nombre} agregado al carrito`, type: "success" });
+        setTimeout(() => setToast(null), 2500);
+    }}
+    className="flex-1 bg-gradient-to-r from-[#ef4444] to-[#f97316] text-white py-2.5 rounded-lg font-medium hover:from-[#ef4444]/90 hover:to-[#f97316]/90 transition-all active:scale-95 shadow-lg shadow-[#ef4444]/20 relative overflow-hidden group"
+>
+    <span className="relative z-10 flex items-center justify-center gap-2">
+        🛒 Agregar
+    </span>
+    <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-active:translate-x-0 transition-transform duration-300 ease-out" />
+</button>
                                 <Link
                                     href={`/catalogo/${producto.codigo_caja}`}
                                     className="px-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center"
@@ -330,6 +338,13 @@ export default function CatalogoPage() {
                         <p className="text-white/40">No hay productos con estos filtros</p>
                     </div>
                 )}
+                {toast && (
+    <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast(null)}
+    />
+)}
             </div>
         </main>
     );

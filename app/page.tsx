@@ -17,6 +17,7 @@ import { supabase } from "@/lib/supabase";
 import ConsultaStockModal from "@/components/ConsultaStockModal";
 import Link from "next/link";
 import LocationWidget from "@/components/LocationWidget";
+import { useCart } from "@/context/CartContext"; // 👈 IMPORTAR EL CONTEXTO
 
 // Tipos para los mensajes
 interface Message {
@@ -47,6 +48,9 @@ const puntosLuz = [...Array(30)].map(() => ({
 }));
 
 export default function Home() {
+  // 👈 USAR EL CONTEXTO DEL CARRITO
+  const { cartItems, addToCart, removeFromCart, updateQuantity, totalPrice } = useCart();
+
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -126,34 +130,6 @@ useEffect(() => {
     opacity: 0.3 + Math.random() * 0.4,
     color: Math.random() > 0.5 ? 'rgba(239, 68, 68, 0.8)' : 'rgba(249, 115, 22, 0.6)',
   }));
-  // Carrito
-const [cartItems, setCartItems] = useState<any[]>([]);
-
-const addToCart = (product: any) => {
-  setCartItems((prev) => {
-    const exists = prev.find((item) => item.id === product.id);
-    if (exists) {
-      return prev.map((item) =>
-        item.id === product.id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      );
-    }
-    return [...prev, { ...product, quantity: 1 }];
-  });
-};
-
-const removeFromCart = (id: string) => {
-  setCartItems((prev) => prev.filter((item) => item.id !== id));
-};
-
-const updateQuantity = (id: string, quantity: number) => {
-  setCartItems((prev) =>
-    prev.map((item) =>
-      item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
-    )
-  );
-};
 
   // Mouse move effect
   const mouseX = useMotionValue(0);
@@ -840,7 +816,7 @@ const updateQuantity = (id: string, quantity: number) => {
   cartItems={cartItems}
   updateQuantity={updateQuantity}
   removeFromCart={removeFromCart}
-  totalPrice={cartItems.reduce((acc, item) => acc + item.precio * item.quantity, 0)}
+  totalPrice={totalPrice}
 />
 
 <LegalSidebar isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />

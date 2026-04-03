@@ -7,9 +7,10 @@ interface ProductCardProps {
     product: any;
     isRecommended?: boolean;
     onSelect: (product: any) => void;
+    onAddToCart: (product: any) => void;  // 👈 NUEVA PROP
 }
 
-export default function ProductCard({ product, isRecommended, onSelect }: ProductCardProps) {
+export default function ProductCard({ product, isRecommended, onSelect, onAddToCart }: ProductCardProps) {
     const [isHovered, setIsHovered] = useState(false);
     
     const margen = product.precio - product.costo_interno;
@@ -83,7 +84,7 @@ export default function ProductCard({ product, isRecommended, onSelect }: Produc
                     </p>
                 )}
                 
-                {/* Precio y acción */}
+                {/* Precio y acciones */}
                 <div className="flex items-center justify-between mt-4">
                     <div>
                         <p className="text-xs text-white/30">Precio</p>
@@ -92,21 +93,37 @@ export default function ProductCard({ product, isRecommended, onSelect }: Produc
                         </p>
                     </div>
                     
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                            isRecommended 
-                                ? 'bg-[#4ade80] text-black hover:bg-[#4ade80]/90'
-                                : 'bg-white/10 text-white/70 hover:bg-white/20'
-                        }`}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onSelect(product);
-                        }}
-                    >
-                        {isRecommended ? 'COMPRAR' : 'VER'}
-                    </motion.button>
+                    <div className="flex gap-2">
+                        {/* Botón COMPRAR */}
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                isRecommended 
+                                    ? 'bg-[#4ade80] text-black hover:bg-[#4ade80]/90'
+                                    : 'bg-[#ef4444] text-white hover:bg-[#ef4444]/90'
+                            }`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onAddToCart(product);
+                            }}
+                        >
+                            🛒 COMPRAR
+                        </motion.button>
+                        
+                        {/* Botón VER detalles */}
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 text-white/70 hover:bg-white/20"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onSelect(product);
+                            }}
+                        >
+                            🔍 VER
+                        </motion.button>
+                    </div>
                 </div>
                 
                 {/* Barra de margen (sutil) */}

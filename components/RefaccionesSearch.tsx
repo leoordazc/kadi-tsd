@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
+import Toast from "@/components/Toast"; // 👈 Importar
 
 interface RefaccionesSearchProps {
   onSearch?: (query: string) => void;
@@ -15,6 +16,8 @@ export default function RefaccionesSearch({ onSearch, onAddToCart }: Refacciones
     const [buscando, setBuscando] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [showTips, setShowTips] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type?: "success" | "error" | "info" } | null>(null);
+
 
     const suggestions = [
         "bronces para NP300",
@@ -215,13 +218,13 @@ export default function RefaccionesSearch({ onSearch, onAddToCart }: Refacciones
                                         </div>
                                     </div>
                                     <button
-  onClick={() => {
-    console.log("Agregar al carrito", producto.nombre);
-    onAddToCart?.(producto);
-  }}
-  className="mt-4 w-full bg-[#ef4444] text-white py-2 rounded-lg text-sm hover:bg-[#ef4444]/80 transition"
+    onClick={() => onAddToCart?.(producto)}
+    className="mt-4 w-full bg-gradient-to-r from-[#ef4444] to-[#f97316] text-white py-2 rounded-lg text-sm font-medium hover:from-[#ef4444]/90 hover:to-[#f97316]/90 transition-all active:scale-95 shadow-lg shadow-[#ef4444]/20 relative overflow-hidden group"
 >
-  Comprar
+    <span className="relative z-10 flex items-center justify-center gap-2">
+        🛒 Comprar
+    </span>
+    <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-active:translate-x-0 transition-transform duration-300 ease-out" />
 </button>
 
                                 </div>
@@ -235,6 +238,13 @@ export default function RefaccionesSearch({ onSearch, onAddToCart }: Refacciones
                         No encontramos refacciones para "{query}". Prueba con otro nombre o código.
                     </div>
                 )}
+                {toast && (
+    <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast(null)}
+    />
+)}
             </div>
         </motion.section>
     );

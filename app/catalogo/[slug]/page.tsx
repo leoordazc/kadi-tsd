@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/context/CartContext";
 
+import Toast from "@/components/Toast"; // 👈 Importar
+
 interface Producto {
     id: string;
     nombre: string;
@@ -35,6 +37,7 @@ export default function ProductoDetallePage() {
     const [error, setError] = useState("");
     const [selectedImage, setSelectedImage] = useState<string>("");
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [toast, setToast] = useState<{ message: string; type?: "success" | "error" | "info" } | null>(null);
 
     const allImages = producto ? [
         producto.imagen_url,
@@ -272,11 +275,18 @@ export default function ProductoDetallePage() {
                                     <p className="text-white/20 text-xs mt-1">IVA incluido · Envío gratis</p>
                                 </div>
                                 <button
-                                    onClick={() => addToCart(producto)}
-                                    className="bg-[#ef4444] text-white px-8 py-3 rounded-lg hover:bg-[#ef4444]/90 transition"
-                                >
-                                    Agregar al carrito
-                                </button>
+    onClick={() => {
+        addToCart(producto);
+        setToast({ message: `${producto.nombre} agregado al carrito`, type: "success" });
+        setTimeout(() => setToast(null), 2500);
+    }}
+    className="flex-1 bg-gradient-to-r from-[#ef4444] to-[#f97316] text-white py-2.5 rounded-lg font-medium hover:from-[#ef4444]/90 hover:to-[#f97316]/90 transition-all active:scale-95 shadow-lg shadow-[#ef4444]/20 relative overflow-hidden group"
+>
+    <span className="relative z-10 flex items-center justify-center gap-2">
+        🛒 Agregar
+    </span>
+    <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-active:translate-x-0 transition-transform duration-300 ease-out" />
+</button>
                             </div>
                         </div>
 
@@ -295,6 +305,13 @@ export default function ProductoDetallePage() {
                         </div>
                     </div>
                 </div>
+                {toast && (
+    <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast(null)}
+    />
+)}
             </div>
         </main>
     );
