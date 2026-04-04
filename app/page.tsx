@@ -18,6 +18,8 @@ import ConsultaStockModal from "@/components/ConsultaStockModal";
 import Link from "next/link";
 import LocationWidget from "@/components/LocationWidget";
 import { useCart } from "@/context/CartContext"; // 👈 IMPORTAR EL CONTEXTO
+import NIAChat from "@/components/NIA/NIAChat";
+
 
 // Tipos para los mensajes
 interface Message {

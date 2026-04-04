@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { usePathname } from "next/navigation";
+// import { usePathname } from "next/navigation"; // 👈 ELIMINA o comenta esta línea
 
 interface Message {
   id: string;
@@ -27,13 +27,11 @@ export default function NIAChat() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const pathname = usePathname();
+  
 
   // ===== NO MOSTRAR NADA EN LA PÁGINA PRINCIPAL =====
   // La página principal ya tiene su propio chat integrado
-  if (pathname === "/") {
-    return null;
-  }
+  
 
   // Auto-scroll a los mensajes nuevos
   const scrollToBottom = () => {
