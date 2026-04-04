@@ -96,6 +96,8 @@ const hasAppointmentData = (lowerMsg.includes('nombre:') || lowerMsg.includes('t
                             (lowerMsg.includes('cita') || lowerMsg.includes('agendar'));
 
 if (hasAppointmentData) {
+    console.log('📝 Procesando datos de cita...');
+    
     // Extraer datos del mensaje
     const nombreMatch = message.match(/nombre[\s]*:[\s]*([a-zA-Záéíóúñ\s]+)/i);
     const telefonoMatch = message.match(/teléfono[\s]*:[\s]*([0-9]+)/i) || message.match(/telefono[\s]*:[\s]*([0-9]+)/i) || message.match(/whatsapp[\s]*:[\s]*([0-9]+)/i);
@@ -109,24 +111,30 @@ if (hasAppointmentData) {
     const vehiculo = vehiculoMatch ? vehiculoMatch[1].trim() : '';
     const servicio = servicioMatch ? servicioMatch[1].trim().toLowerCase() : 'diagnóstico';
     
+    console.log('📋 Datos extraídos:', { nombre, telefono, sucursal, vehiculo, servicio });
+    
     if (nombre && telefono) {
-        // Guardar cita en Supabase
         try {
+            const citaData = {
+                cliente_nombre: nombre,
+                cliente_telefono: telefono,
+                tipo_servicio: servicio,
+                sucursal: sucursal || 'CDMX',
+                vehiculo_marca: vehiculo,
+                notas: `Vehículo: ${vehiculo} | Servicio: ${servicio}`,
+                userId: userId
+            };
+            
+            console.log('📤 Enviando a /api/citas:', citaData);
+            
             const citaResponse = await fetch('/api/citas', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-                    cliente_nombre: nombre,
-                    cliente_telefono: telefono,
-                    sucursal: sucursal || 'CDMX',
-                    vehiculo_marca: vehiculo,
-                    tipo_servicio: servicio,
-                    notas: `Vehículo: ${vehiculo} | Servicio: ${servicio}`,
-                    userId
-                })
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(citaData)
             });
             
             const citaResult = await citaResponse.json();
+            console.log('📥 Respuesta:', citaResult);
             
             if (citaResult.success) {
                 const reply = `✅ **¡Cita agendada con éxito!**
@@ -141,19 +149,19 @@ ${vehiculo ? `- Vehículo: ${vehiculo}` : ''}
 📞 En las próximas horas, un asesor de KADI se comunicará contigo para confirmar la fecha y hora exacta.
 
 📍 **Direcciones:**
-• CDMX: [dirección específica - cámbiala por la real]
-• Ojo de Agua, Edo. Méx: [dirección específica - cámbiala por la real]
+• CDMX: Av. Principal #123, Col. Centro (entre calles X y Y)
+• Ojo de Agua, Edo. Méx: Calle Principal #456, Col. Centro
 
 ¿Necesitas algo más?`;
                 
                 niaSession.addMessage(userId, 'assistant', reply);
                 return NextResponse.json({ reply });
             } else {
-                throw new Error(citaResult.error);
+                throw new Error(citaResult.error || 'Error desconocido');
             }
         } catch (error) {
-            console.error('Error al guardar cita:', error);
-            const reply = `❌ **Lo siento, tuve un problema al agendar tu cita.**
+            console.error('❌ Error al guardar cita:', error);
+            const reply = `❌ **Lo siento, tuve un problema técnico al agendar tu cita.**
 
 Por favor, contáctanos directamente por WhatsApp al **5573382923** o por correo a **ventas.kaditsd@gmail.com.mx** para agendar tu cita.
 
@@ -163,7 +171,6 @@ Disculpa las molestias.`;
             return NextResponse.json({ reply });
         }
     } else {
-        // Faltan datos
         let missingData = [];
         if (!nombre) missingData.push("nombre");
         if (!telefono) missingData.push("teléfono");
@@ -171,9 +178,9 @@ Disculpa las molestias.`;
         const reply = `📅 Para agendar tu cita, necesito que me proporciones: ${missingData.join(" y ")}.
 
 Por favor, escríbelo así:
-"Nombre: [tu nombre]
-Teléfono: [tu número]
-Sucursal: CDMX u Ojo de Agua
+"Nombre: Juan Pérez
+Teléfono: 5573382923
+Sucursal: CDMX
 Servicio: diagnóstico"`;
         
         niaSession.addMessage(userId, 'assistant', reply);
