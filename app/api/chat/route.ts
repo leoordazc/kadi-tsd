@@ -63,11 +63,21 @@ export async function POST(req: Request) {
         // Guardar mensaje del usuario
         niaSession.addMessage(userId, 'user', message);
 
-        // Detectar intención de agendar cita
+        // ============================================
+// AGENDAR CITAS - VERSIÓN CORREGIDA
+// ============================================
+
+// Detectar intención de agendar cita (cuando el usuario QUIERE agendar)
 const agendaKeywords = ['agendar cita', 'quiero una cita', 'necesito cita', 'agendar diagnóstico', 'programar cita', 'cita para revisión', 'agendar'];
 const wantsAppointment = agendaKeywords.some(keyword => lowerMsg.includes(keyword));
 
-if (wantsAppointment) {
+// Detectar si el usuario está proporcionando datos para cita (formato libre)
+const hasPhoneNumber = /\d{10}/.test(message);
+const hasVehicleInfo = /(chevrolet|nissan|toyota|ford|vw|volkswagen|honda|mazda|spark|np300|hilux|d21|ranger)/i.test(message);
+const hasSucursalInfo = /cdmx|ojo de agua|edo\.? méxico|estado de méxico/i.test(message);
+
+// Si el usuario ya tiene intención de agendar Y aún no ha dado datos
+if (wantsAppointment && !hasPhoneNumber) {
     let reply = `📅 **Agendar cita en KADI**
 
 Para agendarte una cita, necesito los siguientes datos:
@@ -86,46 +96,70 @@ Teléfono: 5573382923
 Sucursal: CDMX
 Vehículo: NP300 2015
 Servicio: diagnóstico"`;
-
+    
     niaSession.addMessage(userId, 'assistant', reply);
     return NextResponse.json({ reply });
 }
 
-// Detectar si el usuario está proporcionando datos para cita
-const hasAppointmentData = (lowerMsg.includes('nombre:') || lowerMsg.includes('teléfono:') || lowerMsg.includes('telefono:')) && 
-                            (lowerMsg.includes('cita') || lowerMsg.includes('agendar'));
-
-if (hasAppointmentData) {
-    console.log('📝 Procesando datos de cita...');
+// Si el usuario dio un número de teléfono + información de vehículo, probablemente quiere agendar
+if (hasPhoneNumber && (hasVehicleInfo || hasSucursalInfo)) {
+    console.log('📝 Detectando datos de cita en formato libre...');
     
-    // Extraer datos del mensaje
-    const nombreMatch = message.match(/nombre[\s]*:[\s]*([a-zA-Záéíóúñ\s]+)/i);
-    const telefonoMatch = message.match(/teléfono[\s]*:[\s]*([0-9]+)/i) || message.match(/telefono[\s]*:[\s]*([0-9]+)/i) || message.match(/whatsapp[\s]*:[\s]*([0-9]+)/i);
-    const sucursalMatch = message.match(/cdmx|ojo de agua|edo\.? méxico|estado de méxico/i);
-    const vehiculoMatch = message.match(/vehículo[\s]*:[\s]*([a-zA-Z0-9\s]+)/i) || message.match(/auto[\s]*:[\s]*([a-zA-Z0-9\s]+)/i);
-    const servicioMatch = message.match(/servicio[\s]*:[\s]*([a-zA-Záéíóúñ\s]+)/i);
+    // Extraer teléfono
+    const phoneMatch = message.match(/(\d{10})/);
+    const telefono = phoneMatch ? phoneMatch[1] : '';
     
-    const nombre = nombreMatch ? nombreMatch[1].trim() : '';
-    const telefono = telefonoMatch ? telefonoMatch[1].trim() : '';
-    const sucursal = sucursalMatch ? (sucursalMatch[0].toLowerCase().includes('cdmx') ? 'CDMX' : 'Ojo de Agua') : '';
-    const vehiculo = vehiculoMatch ? vehiculoMatch[1].trim() : '';
-    const servicio = servicioMatch ? servicioMatch[1].trim().toLowerCase() : 'diagnóstico';
+    // Extraer sucursal
+    let sucursal = '';
+    if (message.toLowerCase().includes('cdmx')) sucursal = 'CDMX';
+    else if (message.toLowerCase().includes('ojo de agua')) sucursal = 'Ojo de Agua';
     
-    console.log('📋 Datos extraídos:', { nombre, telefono, sucursal, vehiculo, servicio });
+    // Extraer vehículo (buscar marca + modelo + año)
+    const marcas = ['chevrolet', 'nissan', 'toyota', 'ford', 'vw', 'volkswagen', 'honda', 'mazda'];
+    let vehiculo = '';
+    for (const marca of marcas) {
+        if (message.toLowerCase().includes(marca)) {
+            vehiculo = marca;
+            break;
+        }
+    }
     
-    if (nombre && telefono) {
+    // Extraer año
+    const yearMatch = message.match(/\b(19|20)\d{2}\b/);
+    const año = yearMatch ? yearMatch[0] : '';
+    if (año) vehiculo += ` ${año}`;
+    
+    // Extraer modelo (Spark, NP300, etc.)
+    const modelos = ['spark', 'np300', 'hilux', 'd21', 'ranger', 'vento', 'ibiza'];
+    for (const modelo of modelos) {
+        if (message.toLowerCase().includes(modelo)) {
+            vehiculo += ` ${modelo.toUpperCase()}`;
+            break;
+        }
+    }
+    
+    // Extraer servicio
+    let servicio = 'diagnóstico';
+    if (message.toLowerCase().includes('reparación')) servicio = 'reparación';
+    else if (message.toLowerCase().includes('mantenimiento')) servicio = 'mantenimiento';
+    
+    // Extraer fecha (DD/MM/AAAA o similar)
+    const dateMatch = message.match(/(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+    const fecha = dateMatch ? `${dateMatch[1]}/${dateMatch[2]}/${dateMatch[3]}` : '';
+    
+    if (telefono) {
         try {
             const citaData = {
-                cliente_nombre: nombre,
+                cliente_nombre: 'Pendiente',
                 cliente_telefono: telefono,
                 tipo_servicio: servicio,
                 sucursal: sucursal || 'CDMX',
                 vehiculo_marca: vehiculo,
-                notas: `Vehículo: ${vehiculo} | Servicio: ${servicio}`,
+                notas: `Vehículo: ${vehiculo} | Servicio: ${servicio} | Fecha solicitada: ${fecha} | Mensaje original: ${message.substring(0, 200)}`,
                 userId: userId
             };
             
-            console.log('📤 Enviando a /api/citas:', citaData);
+            console.log('📤 Guardando cita:', citaData);
             
             const citaResponse = await fetch('/api/citas', {
                 method: 'POST',
@@ -140,16 +174,16 @@ if (hasAppointmentData) {
                 const reply = `✅ **¡Cita agendada con éxito!**
 
 📋 **Resumen de tu cita:**
-- Nombre: ${nombre}
 - Teléfono: ${telefono}
 - Sucursal: ${sucursal || 'CDMX'}
+- Vehículo: ${vehiculo || 'No especificado'}
 - Servicio: ${servicio}
-${vehiculo ? `- Vehículo: ${vehiculo}` : ''}
+${fecha ? `- Fecha solicitada: ${fecha}` : ''}
 
-📞 En las próximas horas, un asesor de KADI se comunicará contigo para confirmar la fecha y hora exacta.
+📞 En las próximas horas, un asesor de KADI se comunicará contigo para confirmar la fecha y hora exacta, y para pedirte tu nombre completo.
 
 📍 **Direcciones:**
-• CDMX: Av. Principal #123, Col. Centro (entre calles X y Y)
+• CDMX: Av. Principal #123, Col. Centro
 • Ojo de Agua, Edo. Méx: Calle Principal #456, Col. Centro
 
 ¿Necesitas algo más?`;
@@ -170,21 +204,6 @@ Disculpa las molestias.`;
             niaSession.addMessage(userId, 'assistant', reply);
             return NextResponse.json({ reply });
         }
-    } else {
-        let missingData = [];
-        if (!nombre) missingData.push("nombre");
-        if (!telefono) missingData.push("teléfono");
-        
-        const reply = `📅 Para agendar tu cita, necesito que me proporciones: ${missingData.join(" y ")}.
-
-Por favor, escríbelo así:
-"Nombre: Juan Pérez
-Teléfono: 5573382923
-Sucursal: CDMX
-Servicio: diagnóstico"`;
-        
-        niaSession.addMessage(userId, 'assistant', reply);
-        return NextResponse.json({ reply });
     }
 }
         
