@@ -19,12 +19,71 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     const [loading, setLoading] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [hasInteracted, setHasInteracted] = useState(false);
-    const [userId, setUserId] = useState<string>(""); // ✅ Movido DENTRO del componente
+    const [userId, setUserId] = useState<string>("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const chatContainerRef = useRef<HTMLDivElement>(null);
 
-    // Generar o recuperar ID de usuario para mantener memoria
+    // ============================================
+    // GHOST TYPING (EFECTO MÁQUINA DE ESCRIBIR)
+    // ============================================
+    
+    // Frases que NIA sugerirá (cámbialas según tu negocio)
+    const phrases = [
+        "Mi NP300 truena en tercera...",
+        "¿Tienes transmisión para Hilux 2015?",
+        "Chevrolet Spark 2012 no entra reversa",
+        "¿Cuánto cuesta reparar mi transmisión?",
+        "D21 zumba en quinta velocidad",
+        "¿Tienen sucursal en CDMX o Edomex?"
+    ];
+
+    const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+    const [currentText, setCurrentText] = useState("");
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [typingSpeed, setTypingSpeed] = useState(100);
+
+    // Motor del efecto ghost typing
+    useEffect(() => {
+        // Si el usuario está escribiendo o ya hay texto, detenemos el efecto
+        if (isFocused || inputValue) {
+            setCurrentText("");
+            return;
+        }
+
+        const handleTyping = () => {
+            const currentFullPhrase = phrases[currentPhraseIndex];
+            
+            if (!isDeleting) {
+                // Modo escritura: agrega letras
+                setCurrentText(currentFullPhrase.substring(0, currentText.length + 1));
+                setTypingSpeed(70);
+
+                if (currentText === currentFullPhrase) {
+                    // Pausa al terminar la frase
+                    setTimeout(() => setIsDeleting(true), 2000);
+                }
+            } else {
+                // Modo borrado: quita letras
+                setCurrentText(currentFullPhrase.substring(0, currentText.length - 1));
+                setTypingSpeed(30);
+
+                if (currentText === "") {
+                    setIsDeleting(false);
+                    setCurrentPhraseIndex((prev) => (prev + 1) % phrases.length);
+                }
+            }
+        };
+
+        const timer = setTimeout(handleTyping, typingSpeed);
+        return () => clearTimeout(timer);
+    }, [currentText, isDeleting, currentPhraseIndex, isFocused, inputValue]);
+
+    // ============================================
+    // FIN GHOST TYPING
+    // ============================================
+
+    // Generar o recuperar ID de usuario
     useEffect(() => {
         let id = localStorage.getItem('nia_user_id');
         if (!id) {
@@ -62,7 +121,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 
                     message: inputValue,
-                    userId: userId  // ✅ Correcto: dentro del body
+                    userId: userId
                 }),
             });
 
@@ -134,7 +193,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                 onFocus={() => setIsFocused(true)}
                                 onBlur={() => setIsFocused(false)}
                                 onKeyPress={handleKeyPress}
-                                placeholder={isFocused ? "Escribe tu pregunta a NIA..." : "Pregúntale a NIA sobre transmisiones..."}
+                                placeholder={isFocused ? "Escribe tu pregunta a NIA..." : (currentText || "Pregúntale a NIA...")}
                                 className="w-full bg-transparent text-white/80 text-sm py-3 pl-12 pr-14 focus:outline-none placeholder-white/30 rounded-2xl"
                                 style={{ caretColor: "#ef4444" }}
                             />
@@ -175,7 +234,14 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                     />
                 </div>
 
-                {/* Área de mensajes del chat - SOLO visible después de interactuar */}
+                {/* Mensaje de bienvenida debajo de la barra */}
+                <div className="text-center mt-2">
+                    <p className="text-[10px] text-white/30">
+                        🔧 Diagnóstico gratis · ⚡ Respuesta en segundos · 📦 Envío a todo México
+                    </p>
+                </div>
+
+                {/* Área de mensajes del chat */}
                 <AnimatePresence>
                     {hasInteracted && (
                         <motion.div
