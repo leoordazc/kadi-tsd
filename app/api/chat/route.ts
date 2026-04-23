@@ -119,54 +119,96 @@ export async function POST(req: Request) {
             return NextResponse.json({ reply: businessReply });
         }
         
-        // ============================================
-        // MOSTRAR PRODUCTOS CON TARJETAS
-        // ============================================
-        
-        const productKeywords = ['muéstrame', 'ver producto', 'enséñame', 'quiero ver', 'cual es el', 'dime del', 'información del', 'producto', 'qué transmisiones tienes', 'muestra', 'enséname', 'qué productos', 'catálogo', 'qué vendes'];
-        const wantsProduct = productKeywords.some(keyword => lowerMsg.includes(keyword));
-        
-        if (wantsProduct) {
-            console.log('📦 Buscando productos para mostrar...');
-            
-            // Intentar extraer modelo del mensaje
-            let searchTerm = '';
-            const modelos = ['np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 'ibiza', 'frontier', 'tacoma', '4runner'];
-            for (const modelo of modelos) {
-                if (lowerMsg.includes(modelo)) {
-                    searchTerm = modelo;
-                    break;
-                }
-            }
-            
-            let query = supabase.from('productos').select('*').eq('activo', true);
-            
-            if (searchTerm) {
-                query = query.contains('modelo_vehiculo', [searchTerm]);
-            }
-            
-            const { data: productos, error } = await query.limit(6);
-            
-            if (error) {
-                console.error('Error buscando productos:', error);
-            }
-            
-            if (productos && productos.length > 0) {
-                const reply = searchTerm 
-                    ? `🔧 **Productos compatibles con ${searchTerm.toUpperCase()}:**`
-                    : `🔧 **Nuestros productos disponibles:**`;
-                
-                return NextResponse.json({
-                    type: 'product_recommendations',
-                    message: reply,
-                    products: productos
-                });
-            } else {
-                const reply = `No encontré productos específicos para "${searchTerm || 'tu búsqueda'}". ¿Quieres que revise disponibilidad general o prefieres que te ayude con otra cosa?`;
-                niaSession.addMessage(userId, 'assistant', reply);
-                return NextResponse.json({ reply });
-            }
+      // ============================================
+// MOSTRAR PRODUCTOS CON TARJETAS (MEJORADO)
+// ============================================
+
+// Palabras clave para detectar intención de ver productos
+const productKeywords = [
+    'muéstrame', 'ver producto', 'enséñame', 'quiero ver', 'cual es el', 
+    'dime del', 'información del', 'producto', 'qué transmisiones tienes', 
+    'muestra', 'enséname', 'qué productos', 'catálogo', 'qué vendes',
+    'necesito una transmisión', 'busco una transmisión', 'requiero una transmisión',
+    'transmisión para', 'compatible con'
+];
+const wantsProduct = productKeywords.some(keyword => lowerMsg.includes(keyword));
+
+// Detectar modelo específico en el mensaje
+let searchTerm = '';
+const modelos = ['np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 'ibiza', 'frontier', 'tacoma', '4runner', 'l200', 's10'];
+for (const modelo of modelos) {
+    if (lowerMsg.includes(modelo)) {
+        searchTerm = modelo;
+        break;
+    }
+}
+
+// Detectar año
+const yearMatch = message.match(/\b(19|20)\d{2}\b/);
+const searchYear = yearMatch ? parseInt(yearMatch[0]) : null;
+
+// Detectar combustible
+let searchFuel = '';
+if (lowerMsg.includes('diesel')) searchFuel = 'diesel';
+else if (lowerMsg.includes('gasolina')) searchFuel = 'gasolina';
+
+console.log('🔍 Búsqueda:', { searchTerm, searchYear, searchFuel });
+
+// Si el usuario está pidiendo un producto (por palabras clave O por mención de modelo)
+if (wantsProduct || searchTerm) {
+    console.log('📦 Buscando productos con filtros...');
+    
+    let query = supabase.from('productos').select('*').eq('activo', true);
+    
+    // FILTRO POR MODELO
+    if (searchTerm) {
+        query = query.contains('modelo_vehiculo', [searchTerm]);
+        console.log(`🔍 Filtrando por modelo: ${searchTerm}`);
+    }
+    
+    // FILTRO POR AÑO
+    if (searchYear) {
+        query = query.lte('año_inicio', searchYear).gte('año_fin', searchYear);
+        console.log(`🔍 Filtrando por año: ${searchYear}`);
+    }
+    
+    // FILTRO POR COMBUSTIBLE (para NP300)
+    if (searchFuel && searchTerm === 'np300') {
+        query = query.ilike('descripcion', `%${searchFuel}%`);
+        console.log(`🔍 Filtrando por combustible: ${searchFuel}`);
+    }
+    
+    const { data: productos, error } = await query.limit(6);
+    
+    if (error) {
+        console.error('Error buscando productos:', error);
+    }
+    
+    if (productos && productos.length > 0) {
+        let reply = '';
+        if (searchTerm && searchYear) {
+            reply = `🔧 **Productos compatibles con ${searchTerm.toUpperCase()} ${searchYear}**${searchFuel ? ` (${searchFuel})` : ''}:`;
+        } else if (searchTerm) {
+            reply = `🔧 **Productos compatibles con ${searchTerm.toUpperCase()}:**`;
+        } else {
+            reply = `🔧 **Nuestros productos disponibles:**`;
         }
+        
+        // IMPORTANTE: No enviar también texto de OpenAI
+        return NextResponse.json({
+            type: 'product_recommendations',
+            message: reply,
+            products: productos
+        });
+    } else {
+        // No hay productos compatibles
+        let reply = `No encontré productos compatibles con ${searchTerm ? searchTerm.toUpperCase() : 'tu búsqueda'}.`;
+        if (searchYear) reply += ` ¿Quieres que revise para otro año o modelo?`;
+        
+        niaSession.addMessage(userId, 'assistant', reply);
+        return NextResponse.json({ reply });
+    }
+}
         
         // ============================================
         // AGENDAR CITAS
