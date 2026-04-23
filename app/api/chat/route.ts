@@ -38,6 +38,27 @@ const SYSTEM_PROMPT = `Eres "NIA", la asesora virtual oficial de KADI TS&D, una 
 - CDMX (zona de taller)
 - Ojo de Agua, Estado de México
 
+⚠️ **FORMATO ESPECIAL PARA PRODUCTOS (MUY IMPORTANTE):**
+Cuando el usuario pregunte por productos (ej: "qué transmisiones tienes", "muéstrame productos", "necesito una transmisión para NP300"), DEBES responder con un JSON EXACTO como este:
+
+{
+    "type": "product_recommendations",
+    "message": "🔧 Productos compatibles con tu búsqueda:",
+    "products": [
+        {
+            "id": "id_del_producto",
+            "nombre": "nombre del producto",
+            "codigo_caja": "código",
+            "tipo": "tipo",
+            "precio": 12345,
+            "imagen_url": "url_de_imagen",
+            "stock": 5
+        }
+    ]
+}
+
+Para obtener los productos, usa los datos de la sección **PRODUCTOS EN CATÁLOGO** que se te proporciona abajo.
+
 RESPONDES EN ESPAÑOL, técnica pero amable, y SIEMPRE promueves los servicios de KADI como primera opción.`;
 
 // ============================================
@@ -119,96 +140,95 @@ export async function POST(req: Request) {
             return NextResponse.json({ reply: businessReply });
         }
         
-      // ============================================
-// MOSTRAR PRODUCTOS CON TARJETAS (MEJORADO)
-// ============================================
+        // ============================================
+        // MOSTRAR PRODUCTOS CON TARJETAS (MEJORADO)
+        // ============================================
 
-// Palabras clave para detectar intención de ver productos
-const productKeywords = [
-    'muéstrame', 'ver producto', 'enséñame', 'quiero ver', 'cual es el', 
-    'dime del', 'información del', 'producto', 'qué transmisiones tienes', 
-    'muestra', 'enséname', 'qué productos', 'catálogo', 'qué vendes',
-    'necesito una transmisión', 'busco una transmisión', 'requiero una transmisión',
-    'transmisión para', 'compatible con'
-];
-const wantsProduct = productKeywords.some(keyword => lowerMsg.includes(keyword));
+        // Palabras clave para detectar intención de ver productos
+        const productKeywords = [
+            'muéstrame', 'ver producto', 'enséñame', 'quiero ver', 'cual es el', 
+            'dime del', 'información del', 'producto', 'qué transmisiones tienes', 
+            'muestra', 'enséname', 'qué productos', 'catálogo', 'qué vendes',
+            'necesito una transmisión', 'busco una transmisión', 'requiero una transmisión',
+            'transmisión para', 'compatible con', 'cotizar', 'me interesa'
+        ];
+        const wantsProduct = productKeywords.some(keyword => lowerMsg.includes(keyword));
 
-// Detectar modelo específico en el mensaje
-let searchTerm = '';
-const modelos = ['np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 'ibiza', 'frontier', 'tacoma', '4runner', 'l200', 's10'];
-for (const modelo of modelos) {
-    if (lowerMsg.includes(modelo)) {
-        searchTerm = modelo;
-        break;
-    }
-}
-
-// Detectar año
-const yearMatch = message.match(/\b(19|20)\d{2}\b/);
-const searchYear = yearMatch ? parseInt(yearMatch[0]) : null;
-
-// Detectar combustible
-let searchFuel = '';
-if (lowerMsg.includes('diesel')) searchFuel = 'diesel';
-else if (lowerMsg.includes('gasolina')) searchFuel = 'gasolina';
-
-console.log('🔍 Búsqueda:', { searchTerm, searchYear, searchFuel });
-
-// Si el usuario está pidiendo un producto (por palabras clave O por mención de modelo)
-if (wantsProduct || searchTerm) {
-    console.log('📦 Buscando productos con filtros...');
-    
-    let query = supabase.from('productos').select('*').eq('activo', true);
-    
-    // FILTRO POR MODELO
-    if (searchTerm) {
-        query = query.contains('modelo_vehiculo', [searchTerm]);
-        console.log(`🔍 Filtrando por modelo: ${searchTerm}`);
-    }
-    
-    // FILTRO POR AÑO
-    if (searchYear) {
-        query = query.lte('año_inicio', searchYear).gte('año_fin', searchYear);
-        console.log(`🔍 Filtrando por año: ${searchYear}`);
-    }
-    
-    // FILTRO POR COMBUSTIBLE (para NP300)
-    if (searchFuel && searchTerm === 'np300') {
-        query = query.ilike('descripcion', `%${searchFuel}%`);
-        console.log(`🔍 Filtrando por combustible: ${searchFuel}`);
-    }
-    
-    const { data: productos, error } = await query.limit(6);
-    
-    if (error) {
-        console.error('Error buscando productos:', error);
-    }
-    
-    if (productos && productos.length > 0) {
-        let reply = '';
-        if (searchTerm && searchYear) {
-            reply = `🔧 **Productos compatibles con ${searchTerm.toUpperCase()} ${searchYear}**${searchFuel ? ` (${searchFuel})` : ''}:`;
-        } else if (searchTerm) {
-            reply = `🔧 **Productos compatibles con ${searchTerm.toUpperCase()}:**`;
-        } else {
-            reply = `🔧 **Nuestros productos disponibles:**`;
+        // Detectar modelo específico en el mensaje (case insensitive)
+        let searchTerm = '';
+        const modelos = ['np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 'ibiza', 'frontier', 'tacoma', '4runner', 'l200', 's10'];
+        for (const modelo of modelos) {
+            if (lowerMsg.includes(modelo)) {
+                searchTerm = modelo;
+                break;
+            }
         }
-        
-        // IMPORTANTE: No enviar también texto de OpenAI
-        return NextResponse.json({
-            type: 'product_recommendations',
-            message: reply,
-            products: productos
-        });
-    } else {
-        // No hay productos compatibles
-        let reply = `No encontré productos compatibles con ${searchTerm ? searchTerm.toUpperCase() : 'tu búsqueda'}.`;
-        if (searchYear) reply += ` ¿Quieres que revise para otro año o modelo?`;
-        
-        niaSession.addMessage(userId, 'assistant', reply);
-        return NextResponse.json({ reply });
-    }
-}
+
+        // Detectar año
+        const yearMatch = message.match(/\b(19|20)\d{2}\b/);
+        const searchYear = yearMatch ? parseInt(yearMatch[0]) : null;
+
+        // Detectar combustible
+        let searchFuel = '';
+        if (lowerMsg.includes('diesel') || lowerMsg.includes('diésel')) searchFuel = 'diesel';
+        else if (lowerMsg.includes('gasolina')) searchFuel = 'gasolina';
+
+        console.log('🔍 Búsqueda:', { searchTerm, searchYear, searchFuel, wantsProduct });
+
+        // Si el usuario está pidiendo un producto (por palabras clave O por mención de modelo)
+        if (wantsProduct || searchTerm) {
+            console.log('📦 Buscando productos con filtros...');
+            
+            let query = supabase.from('productos').select('*').eq('activo', true);
+            
+            // FILTRO POR MODELO - usando ilike para búsqueda flexible
+            if (searchTerm) {
+                query = query.or(`modelo_vehiculo.cs.{${searchTerm}},nombre.ilike.%${searchTerm}%`);
+                console.log(`🔍 Filtrando por modelo: ${searchTerm}`);
+            }
+            
+            // FILTRO POR AÑO
+            if (searchYear) {
+                query = query.lte('año_inicio', searchYear).gte('año_fin', searchYear);
+                console.log(`🔍 Filtrando por año: ${searchYear}`);
+            }
+            
+            // FILTRO POR COMBUSTIBLE
+            if (searchFuel) {
+                query = query.or(`descripcion.ilike.%${searchFuel}%,nombre.ilike.%${searchFuel}%`);
+                console.log(`🔍 Filtrando por combustible: ${searchFuel}`);
+            }
+            
+            const { data: productos, error } = await query.limit(6);
+            
+            if (error) {
+                console.error('Error buscando productos:', error);
+            }
+            
+            if (productos && productos.length > 0) {
+                let reply = '';
+                if (searchTerm && searchYear) {
+                    reply = `🔧 **Productos compatibles con ${searchTerm.toUpperCase()} ${searchYear}**${searchFuel ? ` (${searchFuel})` : ''}:`;
+                } else if (searchTerm) {
+                    reply = `🔧 **Productos compatibles con ${searchTerm.toUpperCase()}:**`;
+                } else {
+                    reply = `🔧 **Nuestros productos disponibles:**`;
+                }
+                
+                console.log(`✅ Encontrados ${productos.length} productos`);
+                
+                // Devolver tarjetas de productos
+                return NextResponse.json({
+                    type: 'product_recommendations',
+                    message: reply,
+                    products: productos
+                });
+            } else {
+                // No hay productos compatibles - dejar que OpenAI responda
+                console.log('❌ No se encontraron productos, pasando a OpenAI...');
+                // No retornamos aquí, continuamos con OpenAI
+            }
+        }
         
         // ============================================
         // AGENDAR CITAS
@@ -327,7 +347,7 @@ Gracias ${nombre}, tu solicitud de cita ha sido recibida.
 **DATOS DEL CLIENTE:**
 ${vehicleContext || 'Aún no ha especificado vehículo'}
 
-**PRODUCTOS EN CATÁLOGO:**
+**PRODUCTOS EN CATÁLOGO (USA ESTOS DATOS PARA RESPONDER CON TARJETAS):**
 ${contextoProductos}
 
 **CONVERSACIÓN RECIENTE:**
@@ -348,6 +368,18 @@ Responde al cliente de forma técnica pero SIEMPRE ofreciendo los servicios de K
         });
         
         const reply = completion.choices[0]?.message?.content || 'Lo siento, no pude procesar tu consulta. ¿Podrías darme más detalles?';
+        
+        // VERIFICAR SI OPENAI DEVOLVIÓ UN JSON CON PRODUCTOS
+        try {
+            const parsedReply = JSON.parse(reply);
+            if (parsedReply.type === 'product_recommendations') {
+                console.log('📦 OpenAI devolvió tarjetas de productos');
+                return NextResponse.json(parsedReply);
+            }
+        } catch (e) {
+            // No es JSON, es texto normal
+            console.log('Respuesta normal de OpenAI');
+        }
         
         niaSession.addMessage(userId, 'assistant', reply);
         return NextResponse.json({ reply });
