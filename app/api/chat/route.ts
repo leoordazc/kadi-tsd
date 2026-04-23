@@ -326,23 +326,23 @@ Gracias ${nombre}, tu solicitud de cita ha sido recibida.
         }
         
         // ============================================
-        // OPENAI PARA RESPUESTAS INTELIGENTES
-        // ============================================
-        
-        const history = niaSession.getHistory(userId, 10);
-        const vehicleContext = niaSession.getContextForOpenAI(userId);
-        
-        const { data: productos } = await supabase
-            .from('productos')
-            .select('*')
-            .eq('activo', true)
-            .limit(15);
-        
-        const contextoProductos = productos && productos.length > 0 
-            ? productos.map(p => `- ${p.nombre} (${p.tipo}) | Código: ${p.codigo_caja} | Precio: $${p.precio?.toLocaleString()} | Compatible: ${p.marca_vehiculo?.[0] || '?'} ${p.modelo_vehiculo?.[0] || ''}`).join('\n')
-            : 'No hay productos disponibles.';
-        
-        const fullPrompt = `${SYSTEM_PROMPT}
+// OPENAI PARA RESPUESTAS INTELIGENTES
+// ============================================
+
+const history = niaSession.getHistory(userId, 10);
+const vehicleContext = niaSession.getContextForOpenAI(userId);
+
+const { data: productos } = await supabase
+    .from('productos')
+    .select('*')
+    .eq('activo', true)
+    .limit(15);
+
+const contextoProductos = productos && productos.length > 0 
+    ? productos.map(p => `- ${p.nombre} (${p.tipo}) | Código: ${p.codigo_caja} | Precio: $${p.precio?.toLocaleString()} | Compatible: ${p.marca_vehiculo?.[0] || '?'} ${p.modelo_vehiculo?.[0] || ''}`).join('\n')
+    : 'No hay productos disponibles.';
+
+const fullPrompt = `${SYSTEM_PROMPT}
 
 **DATOS DEL CLIENTE:**
 ${vehicleContext || 'Aún no ha especificado vehículo'}
@@ -353,34 +353,60 @@ ${contextoProductos}
 **CONVERSACIÓN RECIENTE:**
 ${history.map(m => `${m.role === 'user' ? '👤 Cliente' : '🤖 NIA'}: ${m.content}`).join('\n')}
 
-**INSTRUCCIÓN FINAL:**
-Responde al cliente de forma técnica pero SIEMPRE ofreciendo los servicios de KADI como primera opción.`;
+**INSTRUCCIÓN MUY IMPORTANTE:**
+- Si el usuario quiere ver productos, RESPONDE SOLO CON EL JSON, sin texto adicional antes o después.
+- NO escribas "Claro, tenemos disponible..." antes del JSON.
+- NO expliques lo que estás haciendo.
+- SOLO devuelve el JSON puro.
 
-        const openai = (await import('@/lib/openai')).default;
-        const completion = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [
-                { role: 'system', content: fullPrompt },
-                { role: 'user', content: message }
-            ],
-            temperature: 0.7,
-            max_tokens: 600,
-        });
-        
-        const reply = completion.choices[0]?.message?.content || 'Lo siento, no pude procesar tu consulta. ¿Podrías darme más detalles?';
-        
-        // VERIFICAR SI OPENAI DEVOLVIÓ UN JSON CON PRODUCTOS
+Ejemplo de respuesta correcta (SOLO ESTO, nada más):
+{"type":"product_recommendations","message":"🔧 Productos compatibles:","products":[{"id":"1","nombre":"Transmisión NP300","codigo_caja":"FS6R01A","tipo":"nueva","precio":23200,"imagen_url":"","stock":5}]}`;
+
+const openai = (await import('@/lib/openai')).default;
+const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+        { role: 'system', content: fullPrompt },
+        { role: 'user', content: message }
+    ],
+    temperature: 0.3, // Más bajo para respuestas más precisas
+    max_tokens: 800,
+});
+
+const reply = completion.choices[0]?.message?.content || 'Lo siento, no pude procesar tu consulta.';
+
+// ============================================
+// VERIFICAR Y LIMPIAR JSON
+// ============================================
+
+let cleanedReply = reply.trim();
+
+// Eliminar bloques de código markdown si existen
+if (cleanedReply.startsWith('```json')) {
+    cleanedReply = cleanedReply.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+}
+if (cleanedReply.startsWith('```')) {
+    cleanedReply = cleanedReply.replace(/```\n?/g, '');
+}
+
+// Intentar extraer JSON si hay texto alrededor
+const jsonMatch = cleanedReply.match(/\{[\s\S]*\}/);
+if (jsonMatch) {
+    cleanedReply = jsonMatch[0];
+}
+
+        // Intentar parsear el JSON
         try {
-            const parsedReply = JSON.parse(reply);
-            if (parsedReply.type === 'product_recommendations') {
-                console.log('📦 OpenAI devolvió tarjetas de productos');
+            const parsedReply = JSON.parse(cleanedReply);
+            if (parsedReply.type === 'product_recommendations' && parsedReply.products && parsedReply.products.length > 0) {
+                console.log('📦 OpenAI devolvió tarjetas de productos correctamente');
                 return NextResponse.json(parsedReply);
             }
         } catch (e) {
-            // No es JSON, es texto normal
-            console.log('Respuesta normal de OpenAI');
+            console.log('No es JSON válido, respuesta normal de OpenAI');
         }
-        
+
+        // Si no es JSON, responder como texto normal
         niaSession.addMessage(userId, 'assistant', reply);
         return NextResponse.json({ reply });
         
