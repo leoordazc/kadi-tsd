@@ -28,7 +28,6 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     // GHOST TYPING (EFECTO MÁQUINA DE ESCRIBIR)
     // ============================================
     
-    // Frases que NIA sugerirá (cámbialas según tu negocio)
     const phrases = [
         "Mi NP300 truena en tercera...",
         "¿Tienes transmisión para Hilux 2015?",
@@ -43,9 +42,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [typingSpeed, setTypingSpeed] = useState(100);
 
-    // Motor del efecto ghost typing
     useEffect(() => {
-        // Si el usuario está escribiendo o ya hay texto, detenemos el efecto
         if (isFocused || inputValue) {
             setCurrentText("");
             return;
@@ -55,19 +52,14 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
             const currentFullPhrase = phrases[currentPhraseIndex];
             
             if (!isDeleting) {
-                // Modo escritura: agrega letras
                 setCurrentText(currentFullPhrase.substring(0, currentText.length + 1));
                 setTypingSpeed(70);
-
                 if (currentText === currentFullPhrase) {
-                    // Pausa al terminar la frase
                     setTimeout(() => setIsDeleting(true), 2000);
                 }
             } else {
-                // Modo borrado: quita letras
                 setCurrentText(currentFullPhrase.substring(0, currentText.length - 1));
                 setTypingSpeed(30);
-
                 if (currentText === "") {
                     setIsDeleting(false);
                     setCurrentPhraseIndex((prev) => (prev + 1) % phrases.length);
@@ -83,7 +75,6 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     // FIN GHOST TYPING
     // ============================================
 
-    // Generar o recuperar ID de usuario
     useEffect(() => {
         let id = localStorage.getItem('nia_user_id');
         if (!id) {
@@ -93,7 +84,6 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
         setUserId(id);
     }, []);
 
-    // Auto-scroll dentro del contenedor del chat
     useEffect(() => {
         if (chatContainerRef.current && hasInteracted) {
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -164,75 +154,91 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     return (
         <div className="sticky top-[70px] z-30 bg-black/40 backdrop-blur-sm py-4">
             <div className="w-full max-w-3xl mx-auto px-4">
-                {/* Barra de búsqueda/chat */}
-                <div className={`relative backdrop-blur-md rounded-2xl border transition-all duration-300 ${
-                    isFocused 
-                        ? 'bg-black/80 border-white/30' 
-                        : 'bg-black/60 border-white/15'
-                }`}>
-                    <form onSubmit={handleSubmit}>
-                        <div className="flex items-center">
-                            <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
-                                <svg 
-                                    className={`w-4 h-4 transition-colors ${
-                                        isFocused ? 'text-white/60' : 'text-white/30'
-                                    }`}
-                                    fill="none" 
-                                    stroke="currentColor" 
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </div>
+                {/* Barra de búsqueda/chat con GLOW AZUL */}
+                <motion.div
+                    animate={loading ? {
+                         boxShadow: [
+            "0px 0px 0px rgba(15, 43, 92, 0)",
+            "0px 0px 25px rgba(30, 74, 140, 0.6)",
+            "0px 0px 0px rgba(15, 43, 92, 0)"
+        ],
+                        borderColor: ["rgba(255,255,255,0.1)", "rgba(30, 74, 140, 0.8)", "rgba(255,255,255,0.1)"]
+    } : {
+                        boxShadow: "0px 0px 0px rgba(15, 43, 92, 0)",
+        borderColor: isFocused ? "rgba(30, 74, 140, 0.5)" : "rgba(255,255,255,0.1)"
+    }}
+                   transition={{
+        duration: 1.5,
+        repeat: loading ? Infinity : 0,
+        ease: "easeInOut"
+    }}
+                     className={`relative backdrop-blur-md rounded-2xl border transition-all duration-300 ${
+        isFocused ? 'bg-black/80' : 'bg-black/60'
+    }`}
+                >
+    <form onSubmit={handleSubmit}>
+        <div className="flex items-center">
+            <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
+                <svg 
+                    className={`w-4 h-4 transition-colors ${
+                        isFocused ? 'text-[#c49a2b]' : 'text-white/30'
+                    }`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
                             
                             <input
-                                ref={inputRef}
-                                type="text"
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                onFocus={() => setIsFocused(true)}
-                                onBlur={() => setIsFocused(false)}
-                                onKeyPress={handleKeyPress}
-                                placeholder={isFocused ? "Escribe tu pregunta a NIA..." : (currentText || "Pregúntale a NIA...")}
-                                className="w-full bg-transparent text-white/80 text-sm py-3 pl-12 pr-14 focus:outline-none placeholder-white/30 rounded-2xl"
-                                style={{ caretColor: "#ef4444" }}
-                            />
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                onKeyPress={handleKeyPress}
+                placeholder={isFocused ? "Escribe tu pregunta a NIA..." : (currentText || "Pregúntale a NIA...")}
+                className="w-full bg-transparent text-white/80 text-sm py-3 pl-12 pr-14 focus:outline-none placeholder-white/30 rounded-2xl"
+                style={{ caretColor: "#c49a2b" }}
+            />
                             
                             {inputValue && (
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full bg-gradient-to-r from-[#ef4444] to-[#f97316] hover:from-[#ef4444]/90 hover:to-[#f97316]/90 transition-colors flex items-center justify-center disabled:opacity-50"
-                                >
-                                    {loading ? (
-                                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                    ) : (
-                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    )}
-                                </button>
-                            )}
-                        </div>
-                    </form>
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full bg-gradient-to-r from-[#0f2b5c] to-[#1e4a8c] hover:from-[#1a3d7a] hover:to-[#2a5ca8] transition-colors flex items-center justify-center disabled:opacity-50 shadow-lg shadow-[#0f2b5c]/30"
+                >
+                                     {loading ? (
+                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                       ) : (
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                    )}
+                </button>
+            )}
+        </div>
+    </form>
                     
-                    {/* Luz animada inferior */}
+                    {/* Luz animada inferior - AZUL */}
                     <motion.div
-                        className="absolute -bottom-px left-0 right-0 h-px"
-                        animate={{
-                            x: isFocused ? ["-100%", "100%"] : "0%",
-                            opacity: isFocused ? [0, 0.5, 0] : 0
-                        }}
-                        transition={{
-                            duration: 1.5,
-                            repeat: isFocused ? Infinity : 0,
-                            ease: "easeInOut"
-                        }}
-                        style={{
-                            background: "linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.5), transparent)"
-                        }}
-                    />
-                </div>
+        className="absolute -bottom-px left-0 right-0 h-px"
+        animate={{
+            x: isFocused ? ["-100%", "100%"] : "0%",
+            opacity: isFocused ? [0, 0.5, 0] : 0
+        }}
+        transition={{
+            duration: 1.5,
+            repeat: isFocused ? Infinity : 0,
+            ease: "easeInOut"
+        }}
+        style={{
+            background: "linear-gradient(90deg, transparent, rgba(30, 74, 140, 0.5), transparent)"
+        }}
+    />
+</motion.div>
 
                 {/* Mensaje de bienvenida debajo de la barra */}
                 <div className="text-center mt-2">
@@ -264,12 +270,12 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                                     >
                                         <div
-                                            className={`max-w-[80%] p-3 rounded-2xl ${
-                                                msg.role === "user"
-                                                    ? "bg-gradient-to-r from-[#ef4444] to-[#f97316] text-white rounded-br-sm"
-                                                    : "bg-white/10 text-white/80 rounded-bl-sm"
-                                            }`}
-                                        >
+    className={`max-w-[80%] p-3 rounded-2xl ${
+        msg.role === "user"
+            ? "bg-gradient-to-r from-[#0f2b5c] to-[#1a3d7a] text-white rounded-br-sm shadow-lg shadow-[#0f2b5c]/30"
+            : "bg-white/10 text-white/80 rounded-bl-sm border border-white/5"
+    }`}
+>
                                             <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                                         </div>
                                     </motion.div>
