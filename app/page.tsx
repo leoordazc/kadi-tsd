@@ -338,13 +338,13 @@ useEffect(() => {
         <h1 className="text-5xl md:text-6xl font-bold leading-tight">
           <span className="text-white">ENCUENTRA O DIAGNOSTICA</span>
           <br />
-          <span className="text-[#ef4444]">TU TRANSMISION EN MINUTOS</span>
+          <span className="text-[#ef4444]">TU TRANSMISION ESTANDAR EN MINUTOS</span>
         </h1>
 
         <p className="text-xl text-white/60 max-w-lg">
           Piezas verificadas y asesoría técnica especializada.
           <span className="block text-white/40 text-lg mt-2">
-            Transmisiones manuales y diferenciales con trazabilidad total.
+            Transmisiones manuales y diferenciales con calidad y compromiso.
           </span>
         </p>
 
@@ -428,7 +428,7 @@ useEffect(() => {
             <ServiceCard 
               icon="🔧"
               title="VENTA DE UNIDADES"
-              description="Transmisiones y diferenciales listos para instalar. Verificadas en banco de pruebas con garantía de 12 meses."
+              description="Transmisiones y diferenciales listos para instalar. Verificadas en banco de pruebas con garantía de hasta 4 meses."
               cta="VER CATÁLOGO"
               color="#ef4444"
               delay={0.1}
@@ -436,7 +436,7 @@ useEffect(() => {
             <ServiceCard 
               icon="⚙️"
               title="REPARACIÓN ESPECIALIZADA"
-              description="Reconstrucción mayor con limpieza por ultrasonido, ajuste de tolerancias y reemplazo de componentes críticos."
+              description="Reconstrucción mayor con limpieza quimica total, ajuste de tolerancias y reemplazo de componentes críticos."
               cta="COTIZAR REPARACIÓN"
               color="#4ade80"
               delay={0.2}
@@ -444,7 +444,7 @@ useEffect(() => {
             <ServiceCard 
               icon="🛡️"
               title="MANTENIMIENTO PREVENTIVO"
-              description="Cambio de aceite sintético, inspección de retenes, soportes y juego en flechas. Alarga la vida de tu inversión."
+              description="Cambio de aceite, inspección de retenes, soportes y juego en flechas. Alarga la vida de tu inversión."
               cta="AGENDAR CITA"
               color="#60a5fa"
               delay={0.3}
@@ -487,7 +487,7 @@ useEffect(() => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
             {[
-              { value: 15000, suffix: "+", label: "TRANSMISIONES VENDIDAS", desc: "En los últimos 4 años" },
+              { value: 3000, suffix: "+", label: "TRANSMISIONES VENDIDAS", desc: "En los últimos 4 años" },
               { value: 98, suffix: "%", label: "CLIENTES SATISFECHOS", desc: "Encuestas post-venta" },
               { value: 24, suffix: "/7", label: "SOPORTE CON NIA", desc: "Respuesta en menos de 2 minutos" }
             ].map((item, i) => (

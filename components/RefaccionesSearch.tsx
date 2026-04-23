@@ -84,11 +84,11 @@ export default function RefaccionesSearch({ onSearch, onAddToCart }: Refacciones
                     </motion.div>
                     
                     <h3 className="text-3xl font-light text-white/90 mb-2">
-                        ¿Solo necesitas las <span className="text-[#ef4444]">"tripas"</span>?
+                        ¿Solo necesitas el <span className="text-[#ef4444]">"engranaje"</span>?
                     </h3>
                     
                     <p className="text-white/40 text-sm max-w-xl mx-auto">
-                        ¿Ya tienes el housing y requieres bronces, baleros, satélites o planetarios?
+                        ¿Ya tienes el housing y requieres bronces, baleros, sincronizadores o satélites?
                         Busca la pieza exacta por nombre o síntoma.
                     </p>
                 </div>

@@ -109,11 +109,11 @@ export default function CatalogoPage() {
 
     function getMarcaIcono(marca: string): string {
         const iconos: Record<string, string> = {
-            nissan: "🚗", toyota: "🚙", ford: "🛻", chevrolet: "🚛",
-            volkswagen: "🚘", renault: "🚙", mitsubishi: "🚗",
-            seat: "🚗", honda: "🚗", mazda: "🚗"
+            nissan: "", toyota: "", ford: "", chevrolet: "",
+            volkswagen: "", renault: "", mitsubishi: "",
+            seat: "", honda: "", mazda: ""
         };
-        return iconos[marca.toLowerCase()] || "🔧";
+        return iconos[marca.toLowerCase()] || "";
     }
 
     if (loading) {
