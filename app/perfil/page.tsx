@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Perfil {
   id: string;
@@ -16,6 +16,7 @@ interface Perfil {
 
 interface Pedido {
   id: string;
+  folio: string;
   fecha: string;
   total: number;
   estado: 'pendiente' | 'pagado' | 'enviado' | 'entregado' | 'cancelado';
@@ -31,6 +32,7 @@ export default function PerfilPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [editando, setEditando] = useState(false);
+  const [expandidoId, setExpandidoId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     nombre: "",
     telefono: "",
@@ -41,7 +43,7 @@ export default function PerfilPage() {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        router.push("/login");
+        router.push("/");
         return;
       }
       setUser(user);
@@ -67,7 +69,6 @@ export default function PerfilPage() {
         direccion: data.direccion || ""
       });
     } else {
-      // Crear perfil si no existe
       const { data: newPerfil } = await supabase
         .from('perfiles')
         .insert({ user_id: userId, email: user.email })
@@ -82,7 +83,7 @@ export default function PerfilPage() {
       .from('pedidos')
       .select('*')
       .eq('user_id', userId)
-      .order('fecha', { ascending: false });
+      .order('created_at', { ascending: false });
     
     setPedidos(data || []);
   };
@@ -117,23 +118,32 @@ export default function PerfilPage() {
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
-      case 'pendiente': return 'text-yellow-400 bg-yellow-400/10';
-      case 'pagado': return 'text-blue-400 bg-blue-400/10';
-      case 'enviado': return 'text-purple-400 bg-purple-400/10';
-      case 'entregado': return 'text-green-400 bg-green-400/10';
-      case 'cancelado': return 'text-red-400 bg-red-400/10';
-      default: return 'text-white/40 bg-white/5';
+      case 'pendiente': return 'bg-yellow-500/20 text-yellow-400';
+      case 'pagado': return 'bg-blue-500/20 text-blue-400';
+      case 'enviado': return 'bg-purple-500/20 text-purple-400';
+      case 'entregado': return 'bg-green-500/20 text-green-400';
+      case 'cancelado': return 'bg-red-500/20 text-red-400';
+      default: return 'bg-white/5 text-white/40';
     }
   };
 
   const getEstadoTexto = (estado: string) => {
     switch (estado) {
-      case 'pendiente': return 'Pendiente de pago';
-      case 'pagado': return 'Pago confirmado';
-      case 'enviado': return 'Enviado';
-      case 'entregado': return 'Entregado';
-      case 'cancelado': return 'Cancelado';
+      case 'pendiente': return '⏳ Pendiente de pago';
+      case 'pagado': return '✅ Pago confirmado';
+      case 'enviado': return '📦 Enviado';
+      case 'entregado': return '🏠 Entregado';
+      case 'cancelado': return '❌ Cancelado';
       default: return estado;
+    }
+  };
+
+  const getMetodoPagoTexto = (metodo: string) => {
+    switch (metodo) {
+      case 'transferencia': return '🏦 Transferencia BBVA';
+      case 'tarjeta': return '💳 Tarjeta (Mercado Pago)';
+      case 'whatsapp': return '📱 Coordinar por WhatsApp';
+      default: return metodo;
     }
   };
 
@@ -277,7 +287,7 @@ export default function PerfilPage() {
           transition={{ delay: 0.1 }}
           className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 p-6"
         >
-          <h2 className="text-xl font-light text-white/90 mb-6">Historial de pedidos</h2>
+          <h2 className="text-xl font-light text-white/90 mb-6">📦 Historial de pedidos</h2>
           
           {pedidos.length === 0 ? (
             <div className="text-center py-12">
@@ -294,34 +304,111 @@ export default function PerfilPage() {
               {pedidos.map((pedido) => (
                 <div
                   key={pedido.id}
-                  className="border border-white/10 rounded-lg p-4 hover:border-[#ef4444]/30 transition"
+                  className="border border-white/10 rounded-lg overflow-hidden hover:border-[#ef4444]/30 transition"
                 >
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <p className="text-white/90 font-medium">
-                        Pedido #{pedido.id.slice(0, 8)}
-                      </p>
-                      <p className="text-white/30 text-xs">
-                        {new Date(pedido.fecha).toLocaleDateString('es-MX')}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className={`text-xs px-3 py-1 rounded-full ${getEstadoColor(pedido.estado)}`}>
-                        {getEstadoTexto(pedido.estado)}
-                      </span>
-                      <p className="text-white/90 font-light mt-1">${pedido.total.toLocaleString()}</p>
+                  {/* Cabecera del pedido */}
+                  <div className="p-4 cursor-pointer" onClick={() => setExpandidoId(expandidoId === pedido.id ? null : pedido.id)}>
+                    <div className="flex flex-wrap justify-between items-start gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className="text-white/90 font-medium">
+                            📄 {pedido.folio || pedido.id.slice(0, 8)}
+                          </span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${getEstadoColor(pedido.estado)}`}>
+                            {getEstadoTexto(pedido.estado)}
+                          </span>
+                        </div>
+                        <p className="text-white/30 text-xs mt-1">
+                          {new Date(pedido.fecha).toLocaleDateString('es-MX')}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white/90 font-light text-xl">
+                          ${pedido.total.toLocaleString()}
+                        </p>
+                        <p className="text-white/30 text-xs">
+                          {getMetodoPagoTexto(pedido.metodo_pago)}
+                        </p>
+                      </div>
+                      <motion.button
+                        animate={{ rotate: expandidoId === pedido.id ? 180 : 0 }}
+                        className="text-white/40 hover:text-white transition"
+                      >
+                        ▼
+                      </motion.button>
                     </div>
                   </div>
-                  
-                  {pedido.numero_guia && (
-                    <div className="mt-2 text-xs text-white/30">
-                      📦 Guía: {pedido.numero_guia}
-                    </div>
-                  )}
-                  
-                  <button className="mt-3 text-[#ef4444] text-xs hover:text-white transition">
-                    Ver detalles
-                  </button>
+
+                  {/* Detalles expandidos */}
+                  <AnimatePresence>
+                    {expandidoId === pedido.id && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="border-t border-white/10 bg-black/40"
+                      >
+                        <div className="p-4 space-y-4">
+                          {/* Productos */}
+                          <div>
+                            <h4 className="text-white/50 text-xs uppercase tracking-wider mb-2">
+                              Productos
+                            </h4>
+                            <div className="space-y-2">
+                              {pedido.items?.map((item, idx) => (
+                                <div key={idx} className="flex justify-between text-sm">
+                                  <span className="text-white/70">
+                                    {item.cantidad}x {item.nombre}
+                                  </span>
+                                  <span className="text-white/50">
+                                    ${(item.precio * item.cantidad).toLocaleString()}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Número de guía */}
+                          {pedido.numero_guia && (
+                            <div className="border-t border-white/10 pt-3">
+                              <span className="text-white/30 text-xs">Número de guía:</span>
+                              <p className="text-white/70 text-sm font-mono">{pedido.numero_guia}</p>
+                            </div>
+                          )}
+
+                          {/* Botones de acción según estado */}
+                          <div className="flex gap-3 pt-2">
+                            {pedido.estado === 'pendiente' && (
+                              <button
+                                onClick={() => window.location.href = `/pago/${pedido.id}`}
+                                className="text-sm bg-[#ef4444] text-white px-4 py-1.5 rounded-lg hover:bg-[#ef4444]/80 transition"
+                              >
+                                Completar pago
+                              </button>
+                            )}
+                            
+                            {pedido.estado === 'entregado' && (
+                              <button
+                                onClick={() => window.open(`/garantia/${pedido.id}`, '_blank')}
+                                className="text-sm bg-white/10 border border-white/10 px-4 py-1.5 rounded-lg hover:bg-white/20 transition"
+                              >
+                                Registrar garantía
+                              </button>
+                            )}
+
+                            {pedido.numero_guia && (
+                              <button
+                                onClick={() => window.open(`https://www.omnibus.com.mx/rastreo/${pedido.numero_guia}`, '_blank')}
+                                className="text-sm bg-white/10 border border-white/10 px-4 py-1.5 rounded-lg hover:bg-white/20 transition"
+                              >
+                                📦 Rastrear envío
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               ))}
             </div>

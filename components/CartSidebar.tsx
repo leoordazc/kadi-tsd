@@ -30,20 +30,63 @@ export default function CartSidebar({
   const [guardando, setGuardando] = useState(false);
 
   const handleCardPayment = async () => {
-    const res = await fetch("/api/create-preference", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        items: cartItems.map((item) => ({
-          nombre: item.nombre,
-          quantity: item.quantity,
-          precio: item.precio,
-        })),
-      }),
-    });
-    const data = await res.json();
-    window.location.href = data.init_point;
+  setGuardando(true);
+  
+  // 1. Generar folio
+  const res = await fetch('/api/folio?tipo=transferencia');
+  const data = await res.json();
+  
+  if (!data.success) {
+    alert('Error al generar el folio');
+    setGuardando(false);
+    return;
+  }
+  
+  // 2. Guardar pedido en Supabase
+  const pedido = {
+    user_id: user?.id || null,
+    user_email: user?.email || 'anonimo',
+    total: totalPrice,
+    items: cartItems.map(item => ({
+      id: item.id,
+      nombre: item.nombre,
+      codigo_caja: item.codigo_caja,
+      cantidad: item.quantity,
+      precio: item.precio,
+      tipo: item.tipo
+    })),
+    folio: data.folio_completo,
+    metodo_pago: 'tarjeta',
+    status: 'pendiente_pago',
+    created_at: new Date().toISOString()
   };
+
+  const { error } = await supabase.from('pedidos').insert(pedido);
+  
+  if (error) {
+    console.error('Error guardando pedido:', error);
+    alert('Error al guardar el pedido');
+    setGuardando(false);
+    return;
+  }
+  
+  // 3. Redirigir a Mercado Pago
+  const preferenceRes = await fetch("/api/create-preference", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      items: cartItems.map((item) => ({
+        nombre: item.nombre,
+        quantity: item.quantity,
+        precio: item.precio,
+      })),
+      external_reference: data.folio_completo, // 👈 Enviar folio a Mercado Pago
+    }),
+  });
+  
+  const preferenceData = await preferenceRes.json();
+  window.location.href = preferenceData.init_point;
+};
 
   // Función para guardar el pedido en Supabase
   const guardarPedido = async (folioGenerado: string) => {
