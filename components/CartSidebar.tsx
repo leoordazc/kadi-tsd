@@ -88,36 +88,56 @@ export default function CartSidebar({
   window.location.href = preferenceData.init_point;
 };
 
-  // Función para guardar el pedido en Supabase
-  const guardarPedido = async (folioGenerado: string) => {
+ // Función para guardar el pedido en Supabase
+const guardarPedido = async (folioGenerado: string) => {
+    // Validar que el carrito no esté vacío
+    if (cartItems.length === 0) {
+        alert('No hay productos en el carrito');
+        return false;
+    }
+
     const pedido = {
-      user_id: user?.id || null,
-      user_email: user?.email || 'anonimo',
-      total: totalPrice,
-      items: cartItems.map(item => ({
-        id: item.id,
-        nombre: item.nombre,
-        codigo_caja: item.codigo_caja,
-        cantidad: item.quantity,
-        precio: item.precio,
-        tipo: item.tipo
-      })),
-      folio: folioGenerado,
-      metodo_pago: paymentMethod,
-      status: 'pendiente_pago',
-      created_at: new Date().toISOString()
+        user_id: user?.id || null,
+        user_email: user?.email || 'anonimo',
+        total: Number(totalPrice), // Asegurar que es número
+        items: cartItems.map(item => ({
+            id: item.id,
+            nombre: item.nombre,
+            codigo_caja: item.codigo_caja || '',
+            cantidad: Number(item.quantity),
+            precio: Number(item.precio),
+            tipo: item.tipo || 'N/A'
+        })),
+        folio: folioGenerado,
+        metodo_pago: paymentMethod,
+        status: 'pendiente_pago'
+        // No incluyas created_at, Supabase lo manejará automáticamente (DEFAULT NOW())
     };
 
-    const { error } = await supabase
-      .from('pedidos')
-      .insert(pedido);
+    console.log('📤 Pedido a guardar:', JSON.stringify(pedido, null, 2));
 
-    if (error) {
-      console.error('Error guardando pedido:', error);
-      return false;
+    try {
+        const { data, error } = await supabase
+            .from('pedidos')
+            .insert(pedido)
+            .select();
+
+        if (error) {
+            console.error('❌ Error detallado:', error);
+            console.error('❌ Código:', error.code);
+            console.error('❌ Mensaje:', error.message);
+            alert(`Error al guardar: ${error.message}`);
+            return false;
+        }
+
+        console.log('✅ Pedido guardado:', data);
+        return true;
+    } catch (err) {
+        console.error('❌ Excepción:', err);
+        alert('Error inesperado al guardar el pedido');
+        return false;
     }
-    return true;
-  };
+};
 
   const handleCheckout = async () => {
     if (paymentMethod === "transferencia") {
