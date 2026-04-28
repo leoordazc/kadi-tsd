@@ -14,10 +14,11 @@ interface Perfil {
   direccion?: string;
 }
 
+// Actualiza la interfaz Pedido - cambia 'fecha' por 'created_at'
 interface Pedido {
   id: string;
   folio: string;
-  fecha: string;
+  created_at: string;  // 👈 Cambiado de 'fecha' a 'created_at'
   total: number;
   estado: 'pendiente' | 'pagado' | 'enviado' | 'entregado' | 'cancelado';
   metodo_pago: string;
@@ -79,14 +80,21 @@ export default function PerfilPage() {
   };
 
   const cargarPedidos = async (userId: string) => {
-    const { data } = await supabase
-      .from('pedidos')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-    
-    setPedidos(data || []);
-  };
+  const { data } = await supabase
+    .from('pedidos')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  
+  if (data) {
+    // Mapear los datos para asegurar que 'created_at' existe
+    const pedidosMapeados = data.map(pedido => ({
+      ...pedido,
+      created_at: pedido.created_at || pedido.fecha || new Date().toISOString()
+    }));
+    setPedidos(pedidosMapeados);
+  }
+};
 
   const actualizarPerfil = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -319,13 +327,13 @@ export default function PerfilPage() {
                           </span>
                         </div>
                         <p className="text-white/30 text-xs mt-1">
-                          {new Date(pedido.fecha).toLocaleDateString('es-MX')}
-                        </p>
+  {pedido.created_at ? new Date(pedido.created_at).toLocaleDateString('es-MX') : 'Fecha no disponible'}
+</p>
                       </div>
                       <div className="text-right">
                         <p className="text-white/90 font-light text-xl">
-                          ${pedido.total.toLocaleString()}
-                        </p>
+  ${(pedido.total || 0).toLocaleString()}
+</p>
                         <p className="text-white/30 text-xs">
                           {getMetodoPagoTexto(pedido.metodo_pago)}
                         </p>
