@@ -7,6 +7,7 @@ interface BankInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
   total: number;
+  folio?: string;
 }
 
 export default function BankInfoModal({ isOpen, onClose, total }: BankInfoModalProps) {

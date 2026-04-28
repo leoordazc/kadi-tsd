@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BankInfoModal from "./BankInfoModal";
+import { supabase } from "@/lib/supabase";
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface CartSidebarProps {
   updateQuantity: (id: string, quantity: number) => void;
   removeFromCart: (id: string) => void;
   totalPrice: number;
+  user?: any; // Agregar usuario para asociar el pedido
 }
 
 export default function CartSidebar({
@@ -20,9 +22,12 @@ export default function CartSidebar({
   updateQuantity,
   removeFromCart,
   totalPrice,
+  user,
 }: CartSidebarProps) {
   const [paymentMethod, setPaymentMethod] = useState("transferencia");
   const [showBankModal, setShowBankModal] = useState(false);
+  const [folio, setFolio] = useState<string | null>(null);
+  const [guardando, setGuardando] = useState(false);
 
   const handleCardPayment = async () => {
     const res = await fetch("/api/create-preference", {
@@ -40,9 +45,62 @@ export default function CartSidebar({
     window.location.href = data.init_point;
   };
 
-  const handleCheckout = () => {
+  // Función para guardar el pedido en Supabase
+  const guardarPedido = async (folioGenerado: string) => {
+    const pedido = {
+      user_id: user?.id || null,
+      user_email: user?.email || 'anonimo',
+      total: totalPrice,
+      items: cartItems.map(item => ({
+        id: item.id,
+        nombre: item.nombre,
+        codigo_caja: item.codigo_caja,
+        cantidad: item.quantity,
+        precio: item.precio,
+        tipo: item.tipo
+      })),
+      folio: folioGenerado,
+      metodo_pago: paymentMethod,
+      status: 'pendiente_pago',
+      created_at: new Date().toISOString()
+    };
+
+    const { error } = await supabase
+      .from('pedidos')
+      .insert(pedido);
+
+    if (error) {
+      console.error('Error guardando pedido:', error);
+      return false;
+    }
+    return true;
+  };
+
+  const handleCheckout = async () => {
     if (paymentMethod === "transferencia") {
-      setShowBankModal(true);
+      setGuardando(true);
+      
+      // 1. Generar folio
+      const res = await fetch('/api/folio?tipo=transferencia');
+      const data = await res.json();
+      
+      if (data.success) {
+        setFolio(data.folio_completo);
+        
+        // 2. Guardar pedido en Supabase
+        const guardado = await guardarPedido(data.folio_completo);
+        
+        if (guardado) {
+          // 3. Mostrar modal con el folio
+          setShowBankModal(true);
+        } else {
+          alert('Error al guardar el pedido. Por favor intenta de nuevo.');
+        }
+      } else {
+        alert('Error al generar el folio. Por favor intenta de nuevo.');
+      }
+      
+      setGuardando(false);
     } else if (paymentMethod === "tarjeta") {
       handleCardPayment();
     } else if (paymentMethod === "whatsapp") {
@@ -142,35 +200,12 @@ export default function CartSidebar({
                   </select>
                 </div>
 
-                {paymentMethod === "transferencia" && (
-                  <div className="mt-2 p-3 bg-black/40 border border-white/10 rounded-lg text-xs text-white/60">
-                    🏦 <strong>BBVA</strong><br />
-                    Cuenta: 1234 5678 9012<br />
-                    CLABE: 0123 4567 8901 2345 67<br />
-                    Referencia: <strong>KADI-{Date.now()}</strong><br />
-                    Envía tu comprobante a ventas.kaditsd@gmail.com.mx para confirmar tu pedido.
-                  </div>
-                )}
-
-                {paymentMethod === "tarjeta" && (
-                  <div className="mt-2 p-3 bg-black/40 border border-white/10 rounded-lg text-xs text-white/60">
-                    💳 <strong>Pago con tarjeta</strong><br />
-                    Serás redirigido a Mercado Pago para completar el pago de forma segura.
-                  </div>
-                )}
-
-                {paymentMethod === "whatsapp" && (
-                  <div className="mt-2 p-3 bg-black/40 border border-white/10 rounded-lg text-xs text-white/60">
-                    📱 <strong>Coordinar por WhatsApp</strong><br />
-                    Te contactaremos para acordar el método de pago y envío.
-                  </div>
-                )}
-
                 <button
                   onClick={handleCheckout}
-                  className="w-full bg-[#ef4444] text-white py-3 rounded-lg hover:bg-[#ef4444]/90 transition mt-4"
+                  disabled={guardando}
+                  className="w-full bg-[#ef4444] text-white py-3 rounded-lg hover:bg-[#ef4444]/90 transition disabled:opacity-50 disabled:cursor-not-allowed mt-4"
                 >
-                  Proceder al pago
+                  {guardando ? "Procesando..." : "Proceder al pago"}
                 </button>
               </div>
             )}
@@ -181,6 +216,7 @@ export default function CartSidebar({
         isOpen={showBankModal}
         onClose={() => setShowBankModal(false)}
         total={totalPrice}
+        folio={folio || undefined}
       />
     </AnimatePresence>
   );

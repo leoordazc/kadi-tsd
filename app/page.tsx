@@ -819,6 +819,7 @@ useEffect(() => {
   updateQuantity={updateQuantity}
   removeFromCart={removeFromCart}
   totalPrice={totalPrice}
+  user={user}
 />
 
 <LegalSidebar isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />
