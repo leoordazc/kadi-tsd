@@ -5,42 +5,69 @@ export async function GET(request: Request) {
     try {
         const tipo = 'transferencia';
         
-        // Obtener el registro actual y actualizar en una sola operación
-        const { data, error } = await supabase
-            .rpc('incrementar_folio', { p_tipo: tipo });
+        console.log('🔍 Generando folio para tipo:', tipo);
         
-        if (error) {
-            // Si la función RPC no existe, usar método alternativo
-            console.log('RPC no disponible, usando método alternativo');
+        // Método 1: Intentar actualizar directamente
+        let { data: updated, error: updateError } = await supabase
+            .from('secuencia_folios')
+            .update({ 
+                ultimo_folio: supabase.rpc('increment', { row_id: 1 })
+            })
+            .eq('tipo', tipo)
+            .select('ultimo_folio')
+            .single();
+        
+        // Si falla, usar método de lectura + actualización
+        if (updateError) {
+            console.log('⚠️ Usando método alternativo...');
             
-            // Obtener y bloquear para actualizar
-            const { data: current, error: selectError } = await supabase
+            // Leer valor actual
+            let { data: current, error: selectError } = await supabase
                 .from('secuencia_folios')
                 .select('ultimo_folio')
                 .eq('tipo', tipo)
                 .single();
             
+            // Si no existe el registro, crearlo
             if (selectError && selectError.code === 'PGRST116') {
-                // Crear registro inicial
-                await supabase
+                console.log('📝 Creando registro inicial...');
+                const { data: newRecord, error: insertError } = await supabase
                     .from('secuencia_folios')
-                    .insert({ tipo, ultimo_folio: 1, prefijo: 'KADI' });
+                    .insert({ tipo, ultimo_folio: 1, prefijo: 'KADI' })
+                    .select('ultimo_folio')
+                    .single();
                 
+                if (insertError) {
+                    console.error('❌ Error al crear:', insertError);
+                    throw insertError;
+                }
+                
+                const nuevoFolio = newRecord?.ultimo_folio || 1;
                 return NextResponse.json({ 
                     success: true, 
-                    folio: 1,
-                    folio_completo: 'KADI-00001'
+                    folio: nuevoFolio,
+                    folio_completo: `KADI-${nuevoFolio.toString().padStart(5, '0')}`
                 });
             }
             
-            const nuevoFolio = (current?.ultimo_folio || 0) + 1;
+            if (selectError) {
+                console.error('❌ Error al leer:', selectError);
+                throw selectError;
+            }
             
-            const { error: updateError } = await supabase
+            const nuevoFolio = (current?.ultimo_folio || 0) + 1;
+            console.log(`📝 Nuevo folio calculado: ${nuevoFolio}`);
+            
+            // Actualizar con el nuevo valor
+            const { error: finalUpdateError } = await supabase
                 .from('secuencia_folios')
-                .update({ ultimo_folio: nuevoFolio })
+                .update({ ultimo_folio: nuevoFolio, updated_at: new Date().toISOString() })
                 .eq('tipo', tipo);
             
-            if (updateError) throw updateError;
+            if (finalUpdateError) {
+                console.error('❌ Error al actualizar:', finalUpdateError);
+                throw finalUpdateError;
+            }
             
             return NextResponse.json({ 
                 success: true, 
@@ -49,14 +76,17 @@ export async function GET(request: Request) {
             });
         }
         
+        const nuevoFolio = updated?.ultimo_folio;
+        console.log(`✅ Folio generado: ${nuevoFolio}`);
+        
         return NextResponse.json({ 
             success: true, 
-            folio: data,
-            folio_completo: `KADI-${data.toString().padStart(5, '0')}`
+            folio: nuevoFolio,
+            folio_completo: `KADI-${nuevoFolio.toString().padStart(5, '0')}`
         });
         
     } catch (error) {
-        console.error('Error:', error);
+        console.error('❌ Error general:', error);
         return NextResponse.json({ 
             success: false, 
             error: 'Error al generar folio' 
