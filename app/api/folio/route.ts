@@ -5,84 +5,53 @@ export async function GET(request: Request) {
     try {
         const tipo = 'transferencia';
         
-        console.log('🔍 Generando folio para tipo:', tipo);
+        console.log('🔍 Solicitando folio para tipo:', tipo);
         
-        // Método 1: Intentar actualizar directamente
-        let { data: updated, error: updateError } = await supabase
-            .from('secuencia_folios')
-            .update({ 
-                ultimo_folio: supabase.rpc('increment', { row_id: 1 })
-            })
-            .eq('tipo', tipo)
-            .select('ultimo_folio')
-            .single();
+        // Intentar usar la función RPC (recomendado)
+        const { data, error } = await supabase
+            .rpc('obtener_siguiente_folio', { p_tipo: tipo });
         
-        // Si falla, usar método de lectura + actualización
-        if (updateError) {
-            console.log('⚠️ Usando método alternativo...');
+        if (error) {
+            console.log('⚠️ RPC no disponible, usando método alternativo...');
             
-            // Leer valor actual
-            let { data: current, error: selectError } = await supabase
+            // Método alternativo seguro
+            const { data: current, error: selectError } = await supabase
                 .from('secuencia_folios')
                 .select('ultimo_folio')
                 .eq('tipo', tipo)
                 .single();
             
-            // Si no existe el registro, crearlo
+            let nuevoFolio = 1;
+            
             if (selectError && selectError.code === 'PGRST116') {
-                console.log('📝 Creando registro inicial...');
-                const { data: newRecord, error: insertError } = await supabase
+                // No existe, crearlo
+                await supabase
                     .from('secuencia_folios')
-                    .insert({ tipo, ultimo_folio: 1, prefijo: 'KADI' })
-                    .select('ultimo_folio')
-                    .single();
-                
-                if (insertError) {
-                    console.error('❌ Error al crear:', insertError);
-                    throw insertError;
-                }
-                
-                const nuevoFolio = newRecord?.ultimo_folio || 1;
-                return NextResponse.json({ 
-                    success: true, 
-                    folio: nuevoFolio,
-                    folio_completo: `KADI-${nuevoFolio.toString().padStart(5, '0')}`
-                });
+                    .insert({ tipo, ultimo_folio: 1, prefijo: 'KADI' });
+                nuevoFolio = 1;
+            } else if (current) {
+                nuevoFolio = current.ultimo_folio + 1;
+                await supabase
+                    .from('secuencia_folios')
+                    .update({ ultimo_folio: nuevoFolio })
+                    .eq('tipo', tipo);
             }
             
-            if (selectError) {
-                console.error('❌ Error al leer:', selectError);
-                throw selectError;
-            }
+            console.log('✅ Folio generado (fallback):', nuevoFolio);
             
-            const nuevoFolio = (current?.ultimo_folio || 0) + 1;
-            console.log(`📝 Nuevo folio calculado: ${nuevoFolio}`);
-            
-            // Actualizar con el nuevo valor
-            const { error: finalUpdateError } = await supabase
-                .from('secuencia_folios')
-                .update({ ultimo_folio: nuevoFolio, updated_at: new Date().toISOString() })
-                .eq('tipo', tipo);
-            
-            if (finalUpdateError) {
-                console.error('❌ Error al actualizar:', finalUpdateError);
-                throw finalUpdateError;
-            }
-            
-            return NextResponse.json({ 
-                success: true, 
+            return NextResponse.json({
+                success: true,
                 folio: nuevoFolio,
                 folio_completo: `KADI-${nuevoFolio.toString().padStart(5, '0')}`
             });
         }
         
-        const nuevoFolio = updated?.ultimo_folio;
-        console.log(`✅ Folio generado: ${nuevoFolio}`);
+        console.log('✅ Folio generado (RPC):', data);
         
-        return NextResponse.json({ 
-            success: true, 
-            folio: nuevoFolio,
-            folio_completo: `KADI-${nuevoFolio.toString().padStart(5, '0')}`
+        return NextResponse.json({
+            success: true,
+            folio: data,
+            folio_completo: `KADI-${data.toString().padStart(5, '0')}`
         });
         
     } catch (error) {
