@@ -7,37 +7,32 @@ export async function GET(request: Request) {
         
         console.log('🔍 Generando folio...');
         
-        // 1. Obtener el valor actual
+        // Leer el valor actual
         let { data: current, error: selectError } = await supabase
             .from('secuencia_folios')
             .select('ultimo_folio')
             .eq('tipo', tipo)
             .single();
         
-        // 2. Si no existe el registro, crearlo
+        // Si no existe, crearlo
         if (selectError && selectError.code === 'PGRST116') {
             console.log('📝 Creando registro inicial...');
             await supabase
                 .from('secuencia_folios')
-                .insert({ tipo, ultimo_folio: 1, prefijo: 'KADI' });
-            
-            return NextResponse.json({
-                success: true,
-                folio: 1,
-                folio_completo: 'KADI-00001'
-            });
-        }
-        
-        if (selectError) {
+                .insert({ tipo, ultimo_folio: 0, prefijo: 'KADI' });
+            current = { ultimo_folio: 0 };
+        } else if (selectError) {
             console.error('❌ Error al leer:', selectError);
             throw selectError;
         }
         
-        // 3. Calcular el nuevo folio (incrementar)
-        const nuevoFolio = (current?.ultimo_folio || 0) + 1;
-        console.log(`📝 Nuevo folio calculado: ${nuevoFolio}`);
+        // Asegurar que current tiene un valor
+        const valorActual = current?.ultimo_folio ?? 0;
+        const nuevoFolio = valorActual + 1;
         
-        // 4. ACTUALIZAR la base de datos con el nuevo valor
+        console.log(`📝 Valor actual: ${valorActual}, Nuevo folio: ${nuevoFolio}`);
+        
+        // Actualizar con el nuevo valor
         const { error: updateError } = await supabase
             .from('secuencia_folios')
             .update({ ultimo_folio: nuevoFolio, updated_at: new Date().toISOString() })
@@ -48,7 +43,7 @@ export async function GET(request: Request) {
             throw updateError;
         }
         
-        console.log(`✅ Folio generado y guardado: ${nuevoFolio}`);
+        console.log(`✅ Folio generado: ${nuevoFolio}`);
         
         return NextResponse.json({
             success: true,
