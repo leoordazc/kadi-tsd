@@ -44,22 +44,22 @@ export default function CartSidebar({
   
   // 2. Guardar pedido en Supabase
   const pedido = {
-    user_id: user?.id || null,
-    user_email: user?.email || 'anonimo',
-    total: totalPrice,
-    items: cartItems.map(item => ({
-      id: item.id,
-      nombre: item.nombre,
-      codigo_caja: item.codigo_caja,
-      cantidad: item.quantity,
-      precio: item.precio,
-      tipo: item.tipo
-    })),
-    folio: data.folio_completo,
-    metodo_pago: 'tarjeta',
-    status: 'pendiente_pago',
-    created_at: new Date().toISOString()
-  };
+  user_id: user?.id || null,
+  user_email: user?.email || 'anonimo',
+  total: totalPrice,
+  items: cartItems.map(item => ({
+    id: item.id,
+    nombre: item.nombre,
+    codigo_caja: item.codigo_caja,
+    cantidad: item.quantity,
+    precio: item.precio,
+    tipo: item.tipo
+  })),
+  folio: folioGenerado,
+  metodo_pago: paymentMethod,
+  status: 'pendiente_pago',
+  created_at: new Date().toISOString()  // 👈 Fecha exacta del pedido
+};
 
   const { error } = await supabase.from('pedidos').insert(pedido);
   
