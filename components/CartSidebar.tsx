@@ -12,7 +12,7 @@ interface CartSidebarProps {
   updateQuantity: (id: string, quantity: number) => void;
   removeFromCart: (id: string) => void;
   totalPrice: number;
-  user?: any; // Agregar usuario para asociar el pedido
+  user?: any;
 }
 
 export default function CartSidebar({
@@ -29,155 +29,175 @@ export default function CartSidebar({
   const [folio, setFolio] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
-  const handleCardPayment = async () => {
-  setGuardando(true);
-  
-  // 1. Generar folio
-  const res = await fetch('/api/folio?tipo=transferencia');
-  const data = await res.json();
-  
-  if (!data.success) {
-    alert('Error al generar el folio');
-    setGuardando(false);
-    return;
-  }
-  
-  // Función para guardar el pedido en Supabase - RECIBE folioGenerado
-const guardarPedido = async (folioGenerado: string) => {
-    const pedido = {
-        user_id: user?.id || null,
-        user_email: user?.email || 'anonimo',
-        total: totalPrice,
-        items: cartItems.map(item => ({
-            id: item.id,
-            nombre: item.nombre,
-            codigo_caja: item.codigo_caja,
-            cantidad: item.quantity,
-            precio: item.precio,
-            tipo: item.tipo
-        })),
-        folio: folioGenerado,  // ✅ Ahora sí existe
-        metodo_pago: paymentMethod,
-        status: 'pendiente_pago',
-        created_at: new Date().toISOString()
-    };
-
-    const { error } = await supabase
-        .from('pedidos')
-        .insert(pedido);
-
-    if (error) {
-        console.error('Error guardando pedido:', error);
-        return false;
-    }
-    return true;
-};
-  
-  // 3. Redirigir a Mercado Pago
-  const preferenceRes = await fetch("/api/create-preference", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      items: cartItems.map((item) => ({
-        nombre: item.nombre,
-        quantity: item.quantity,
-        precio: item.precio,
-      })),
-      external_reference: data.folio_completo, // 👈 Enviar folio a Mercado Pago
-    }),
-  });
-  
-  const preferenceData = await preferenceRes.json();
-  window.location.href = preferenceData.init_point;
-};
-
- // Función para guardar el pedido en Supabase
-const guardarPedido = async (folioGenerado: string) => {
-    // Validar que el carrito no esté vacío
+  // ============================================
+  // FUNCIÓN ÚNICA PARA GUARDAR PEDIDO
+  // ============================================
+  const guardarPedido = async (metodo: string, folioGenerado: string) => {
     if (cartItems.length === 0) {
-        alert('No hay productos en el carrito');
-        return false;
+      alert('No hay productos en el carrito');
+      return false;
     }
 
     const pedido = {
-        user_id: user?.id || null,
-        user_email: user?.email || 'anonimo',
-        total: Number(totalPrice), // Asegurar que es número
-        items: cartItems.map(item => ({
-            id: item.id,
-            nombre: item.nombre,
-            codigo_caja: item.codigo_caja || '',
-            cantidad: Number(item.quantity),
-            precio: Number(item.precio),
-            tipo: item.tipo || 'N/A'
-        })),
-        folio: folioGenerado,
-        metodo_pago: paymentMethod,
-        status: 'pendiente_pago'
-        // No incluyas created_at, Supabase lo manejará automáticamente (DEFAULT NOW())
+      user_id: user?.id || null,
+      user_email: user?.email || 'anonimo',
+      total: Number(totalPrice),
+      items: cartItems.map(item => ({
+        id: item.id,
+        nombre: item.nombre,
+        codigo_caja: item.codigo_caja || '',
+        cantidad: Number(item.quantity),
+        precio: Number(item.precio),
+        tipo: item.tipo || 'N/A'
+      })),
+      folio: folioGenerado,
+      metodo_pago: metodo,
+      status: 'pendiente_pago',
+      created_at: new Date().toISOString()
     };
 
     console.log('📤 Pedido a guardar:', JSON.stringify(pedido, null, 2));
 
     try {
-        const { data, error } = await supabase
-            .from('pedidos')
-            .insert(pedido)
-            .select();
+      const { error } = await supabase
+        .from('pedidos')
+        .insert(pedido);
 
-        if (error) {
-            console.error('❌ Error detallado:', error);
-            console.error('❌ Código:', error.code);
-            console.error('❌ Mensaje:', error.message);
-            alert(`Error al guardar: ${error.message}`);
-            return false;
-        }
-
-        console.log('✅ Pedido guardado:', data);
-        return true;
-    } catch (err) {
-        console.error('❌ Excepción:', err);
-        alert('Error inesperado al guardar el pedido');
+      if (error) {
+        console.error('❌ Error detallado:', error);
+        alert(`Error al guardar: ${error.message}`);
         return false;
-    }
-};
+      }
 
+      console.log('✅ Pedido guardado con folio:', folioGenerado);
+      return true;
+    } catch (err) {
+      console.error('❌ Excepción:', err);
+      alert('Error inesperado al guardar el pedido');
+      return false;
+    }
+  };
+
+  // ============================================
+  // GENERAR FOLIO Y GUARDAR PEDIDO
+  // ============================================
+  const generarFolioYGuardar = async (metodo: string): Promise<string | null> => {
+    try {
+      const res = await fetch('/api/folio?tipo=transferencia');
+      const data = await res.json();
+
+      if (!data.success) {
+        alert('Error al generar el folio');
+        return null;
+      }
+
+      const folioGenerado = data.folio_completo;
+      const guardado = await guardarPedido(metodo, folioGenerado);
+
+      if (guardado) {
+        setFolio(folioGenerado);
+        return folioGenerado;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al procesar el pago');
+      return null;
+    }
+  };
+
+  // ============================================
+  // MANEJAR PAGO CON TRANSFERENCIA
+  // ============================================
+  const handleTransferencia = async () => {
+    setGuardando(true);
+    const folioGenerado = await generarFolioYGuardar('transferencia');
+    if (folioGenerado) {
+      setShowBankModal(true);
+    }
+    setGuardando(false);
+  };
+
+  // ============================================
+  // MANEJAR PAGO CON TARJETA
+  // ============================================
+  const handleCardPayment = async () => {
+    setGuardando(true);
+
+    const folioGenerado = await generarFolioYGuardar('tarjeta');
+    if (!folioGenerado) {
+      setGuardando(false);
+      return;
+    }
+
+    try {
+      const preferenceRes = await fetch("/api/create-preference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: cartItems.map((item) => ({
+            nombre: item.nombre,
+            quantity: item.quantity,
+            precio: item.precio,
+          })),
+          external_reference: folioGenerado,
+        }),
+      });
+
+      const preferenceData = await preferenceRes.json();
+
+      if (preferenceData.error) {
+        alert('Error al crear la preferencia de pago');
+        setGuardando(false);
+        return;
+      }
+
+      window.location.href = preferenceData.init_point;
+    } catch (error) {
+      console.error('Error en Mercado Pago:', error);
+      alert('Error al procesar el pago con tarjeta');
+      setGuardando(false);
+    }
+  };
+
+  // ============================================
+  // MANEJAR PAGO CON WHATSAPP (con detalles del pedido)
+  // ============================================
+  const handleWhatsApp = async () => {
+    setGuardando(true);
+
+    // Generar resumen de productos para WhatsApp
+    const productosResumen = cartItems.map(item => 
+      `• ${item.cantidad}x ${item.nombre} - $${(item.precio * item.cantidad).toLocaleString()}`
+    ).join('%0A');
+
+    const mensaje = encodeURIComponent(
+      `Hola, quiero realizar un pedido en KADI TS&D.%0A%0A` +
+      `📦 **PRODUCTOS:**%0A${productosResumen}%0A%0A` +
+      `💰 **TOTAL:** $${totalPrice.toLocaleString()}%0A%0A` +
+      `📋 **DATOS DEL CLIENTE:**%0A` +
+      `Nombre: ${user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Cliente'}%0A` +
+      `Email: ${user?.email || 'No especificado'}%0A%0A` +
+      `🔗 Pedido generado desde la web.`
+    );
+
+    window.open(`https://wa.me/5573382923?text=${mensaje}`, "_blank");
+    setGuardando(false);
+    onClose(); // Cerrar carrito después de enviar
+  };
+
+  // ============================================
+  // CHECKOUT PRINCIPAL
+  // ============================================
   const handleCheckout = async () => {
     if (paymentMethod === "transferencia") {
-        setGuardando(true);
-        
-        // 1. Generar folio
-        const res = await fetch('/api/folio?tipo=transferencia');
-        const data = await res.json();
-        
-        if (!data.success) {
-            alert('Error al generar el folio');
-            setGuardando(false);
-            return;
-        }
-        
-        const folio = data.folio_completo;
-        
-        // 2. Guardar pedido con el folio
-        const guardado = await guardarPedido(folio);
-        
-        if (guardado) {
-            setFolio(folio);
-            setShowBankModal(true);
-        } else {
-            alert('Error al guardar el pedido');
-        }
-        
-        setGuardando(false);
+      await handleTransferencia();
     } else if (paymentMethod === "tarjeta") {
-        await handleCardPayment();
+      await handleCardPayment();
     } else if (paymentMethod === "whatsapp") {
-        const message = encodeURIComponent(
-            `Hola, quiero pagar mi pedido de KADI. Total: $${totalPrice.toLocaleString()}`
-        );
-        window.open(`https://wa.me/5573382923?text=${message}`, "_blank");
+      await handleWhatsApp();
     }
-};
+  };
 
   return (
     <AnimatePresence>
@@ -220,6 +240,9 @@ const guardarPedido = async (folioGenerado: string) => {
                       <div>
                         <h4 className="text-white/90 text-sm font-medium">{item.nombre}</h4>
                         <p className="text-white/30 text-xs">${item.precio.toLocaleString()}</p>
+                        {item.codigo_caja && (
+                          <p className="text-white/20 text-[10px]">Código: {item.codigo_caja}</p>
+                        )}
                       </div>
                       <button
                         onClick={() => removeFromCart(item.id)}
@@ -262,16 +285,16 @@ const guardarPedido = async (folioGenerado: string) => {
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="w-full bg-black/60 border border-white/10 rounded-lg p-2 text-white/80 text-sm"
                   >
-                    <option value="transferencia">Pago en BBVA (transferencia / depósito)</option>
-                    <option value="tarjeta">Tarjeta de crédito/débito</option>
-                    <option value="whatsapp">Coordinar por WhatsApp</option>
+                    <option value="transferencia">🏦 Transferencia BBVA</option>
+                    <option value="tarjeta">💳 Tarjeta de crédito/débito</option>
+                    <option value="whatsapp">📱 Coordinar por WhatsApp</option>
                   </select>
                 </div>
 
                 <button
                   onClick={handleCheckout}
                   disabled={guardando}
-                  className="w-full bg-[#ef4444] text-white py-3 rounded-lg hover:bg-[#ef4444]/90 transition disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                  className="w-full bg-gradient-to-r from-[#ef4444] to-[#f97316] text-white py-3 rounded-lg font-medium hover:from-[#ef4444]/90 hover:to-[#f97316]/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {guardando ? "Procesando..." : "Proceder al pago"}
                 </button>
