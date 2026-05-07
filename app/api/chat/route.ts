@@ -38,26 +38,9 @@ const SYSTEM_PROMPT = `Eres "NIA", la asesora virtual oficial de KADI TS&D, una 
 - CDMX (zona de taller)
 - Ojo de Agua, Estado de México
 
-⚠️ **FORMATO ESPECIAL PARA PRODUCTOS (MUY IMPORTANTE):**
-Cuando el usuario pregunte por productos (ej: "qué transmisiones tienes", "muéstrame productos", "necesito una transmisión para NP300"), DEBES responder con un JSON EXACTO como este:
-
-{
-    "type": "product_recommendations",
-    "message": "🔧 Productos compatibles con tu búsqueda:",
-    "products": [
-        {
-            "id": "id_del_producto",
-            "nombre": "nombre del producto",
-            "codigo_caja": "código",
-            "tipo": "tipo",
-            "precio": 12345,
-            "imagen_url": "url_de_imagen",
-            "stock": 5
-        }
-    ]
-}
-
-Para obtener los productos, usa los datos de la sección **PRODUCTOS EN CATÁLOGO** que se te proporciona abajo.
+⚠️ **REGLAS IMPORTANTES:**
+- Si el usuario describe un SÍNTOMA o FALLA (raspa, ruido, patina, no entra, etc.), NO muestres tarjetas de productos. Da un diagnóstico técnico.
+- Si el usuario pregunta EXPLÍCITAMENTE por un PRODUCTO ("muéstrame", "tienes", "vendes", "precio de"), entonces muestra tarjetas.
 
 RESPONDES EN ESPAÑOL, técnica pero amable, y SIEMPRE promueves los servicios de KADI como primera opción.`;
 
@@ -141,20 +124,39 @@ export async function POST(req: Request) {
         }
         
         // ============================================
-        // MOSTRAR PRODUCTOS CON TARJETAS (MEJORADO)
+        // DETECCIÓN DE SÍNTOMAS (NO mostrar tarjetas)
         // ============================================
-
-        // Palabras clave para detectar intención de ver productos
+        
+        const sintomasKeywords = [
+            'raspa', 'ruido', 'patina', 'vibra', 'tiembla', 'truena', 'rechina',
+            'no entra', 'no mete', 'se sale', 'se bota', 'zumba', 'chilla',
+            'falla', 'problema', 'síntoma', 'sintoma', 'fallando', 'golpea',
+            'no funciona', 'se atora', 'no cambia', 'cuesta trabajo'
+        ];
+        
+        const esConsultaDeSintoma = sintomasKeywords.some(keyword => lowerMsg.includes(keyword));
+        
+        if (esConsultaDeSintoma) {
+            console.log('🔧 Consulta de síntoma detectada, pasando a diagnóstico técnico...');
+            // Continuar con OpenAI para diagnóstico (sin tarjetas)
+        }
+        
+        // ============================================
+        // MOSTRAR PRODUCTOS CON TARJETAS (solo si NO es síntoma)
+        // ============================================
+        
         const productKeywords = [
-            'muéstrame', 'ver producto', 'enséñame', 'quiero ver', 'cual es el', 
-            'dime del', 'información del', 'producto', 'qué transmisiones tienes', 
+            'muéstrame', 'ver producto', 'enséñame', 'quiero ver', 'cual es el',
+            'dime del', 'información del', 'producto', 'qué transmisiones tienes',
             'muestra', 'enséname', 'qué productos', 'catálogo', 'qué vendes',
             'necesito una transmisión', 'busco una transmisión', 'requiero una transmisión',
-            'transmisión para', 'compatible con', 'cotizar', 'me interesa'
+            'transmisión para', 'compatible con', 'cotizar', 'me interesa',
+            'tienes', 'vendes', 'precio de', 'costo de', 'cuánto cuesta'
         ];
-        const wantsProduct = productKeywords.some(keyword => lowerMsg.includes(keyword));
-
-        // Detectar modelo específico en el mensaje (case insensitive)
+        
+        const esConsultaDeProducto = productKeywords.some(keyword => lowerMsg.includes(keyword)) && !esConsultaDeSintoma;
+        
+        // Detectar modelo específico
         let searchTerm = '';
         const modelos = ['np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 'ibiza', 'frontier', 'tacoma', '4runner', 'l200', 's10'];
         for (const modelo of modelos) {
@@ -163,40 +165,16 @@ export async function POST(req: Request) {
                 break;
             }
         }
-
-        // Detectar año
-        const yearMatch = message.match(/\b(19|20)\d{2}\b/);
-        const searchYear = yearMatch ? parseInt(yearMatch[0]) : null;
-
-        // Detectar combustible
-        let searchFuel = '';
-        if (lowerMsg.includes('diesel') || lowerMsg.includes('diésel')) searchFuel = 'diesel';
-        else if (lowerMsg.includes('gasolina')) searchFuel = 'gasolina';
-
-        console.log('🔍 Búsqueda:', { searchTerm, searchYear, searchFuel, wantsProduct });
-
-        // Si el usuario está pidiendo un producto (por palabras clave O por mención de modelo)
-        if (wantsProduct || searchTerm) {
-            console.log('📦 Buscando productos con filtros...');
+        
+        // Si es consulta de producto O menciona un modelo
+        if ((esConsultaDeProducto || searchTerm) && !esConsultaDeSintoma) {
+            console.log('📦 Consulta de producto detectada, mostrando tarjetas...');
             
             let query = supabase.from('productos').select('*').eq('activo', true);
             
-            // FILTRO POR MODELO - usando ilike para búsqueda flexible
             if (searchTerm) {
                 query = query.or(`modelo_vehiculo.cs.{${searchTerm}},nombre.ilike.%${searchTerm}%`);
                 console.log(`🔍 Filtrando por modelo: ${searchTerm}`);
-            }
-            
-            // FILTRO POR AÑO
-            if (searchYear) {
-                query = query.lte('año_inicio', searchYear).gte('año_fin', searchYear);
-                console.log(`🔍 Filtrando por año: ${searchYear}`);
-            }
-            
-            // FILTRO POR COMBUSTIBLE
-            if (searchFuel) {
-                query = query.or(`descripcion.ilike.%${searchFuel}%,nombre.ilike.%${searchFuel}%`);
-                console.log(`🔍 Filtrando por combustible: ${searchFuel}`);
             }
             
             const { data: productos, error } = await query.limit(6);
@@ -206,27 +184,19 @@ export async function POST(req: Request) {
             }
             
             if (productos && productos.length > 0) {
-                let reply = '';
-                if (searchTerm && searchYear) {
-                    reply = `🔧 **Productos compatibles con ${searchTerm.toUpperCase()} ${searchYear}**${searchFuel ? ` (${searchFuel})` : ''}:`;
-                } else if (searchTerm) {
-                    reply = `🔧 **Productos compatibles con ${searchTerm.toUpperCase()}:**`;
-                } else {
-                    reply = `🔧 **Nuestros productos disponibles:**`;
-                }
+                let reply = searchTerm 
+                    ? `🔧 **Productos compatibles con ${searchTerm.toUpperCase()}:**`
+                    : `🔧 **Nuestros productos disponibles:**`;
                 
                 console.log(`✅ Encontrados ${productos.length} productos`);
                 
-                // Devolver tarjetas de productos
                 return NextResponse.json({
                     type: 'product_recommendations',
                     message: reply,
                     products: productos
                 });
             } else {
-                // No hay productos compatibles - dejar que OpenAI responda
                 console.log('❌ No se encontraron productos, pasando a OpenAI...');
-                // No retornamos aquí, continuamos con OpenAI
             }
         }
         
@@ -239,7 +209,6 @@ export async function POST(req: Request) {
         const phoneMatch = message.match(/\b(\d{10})\b/);
         const hasPhoneNumber = !!phoneMatch;
         
-        // Servicios NO permitidos
         const rejectedServices = [
             'automática', 'automatica', 'automático', 'automatico',
             'convertidor', 'triptronic', 'dsg', 'cvt',
@@ -286,7 +255,6 @@ export async function POST(req: Request) {
             const yearMatch = message.match(/\b(19|20)\d{2}\b/);
             if (yearMatch && vehiculo) vehiculo += ` ${yearMatch[0]}`;
             
-            // Enviar correo
             const emailHtml = `
                 <h2>📅 NUEVA SOLICITUD DE CITA - KADI</h2>
                 <p><strong>Cliente:</strong> ${nombre}</p>
@@ -326,87 +294,53 @@ Gracias ${nombre}, tu solicitud de cita ha sido recibida.
         }
         
         // ============================================
-// OPENAI PARA RESPUESTAS INTELIGENTES
-// ============================================
-
-const history = niaSession.getHistory(userId, 10);
-const vehicleContext = niaSession.getContextForOpenAI(userId);
-
-const { data: productos } = await supabase
-    .from('productos')
-    .select('*')
-    .eq('activo', true)
-    .limit(15);
-
-const contextoProductos = productos && productos.length > 0 
-    ? productos.map(p => `- ${p.nombre} (${p.tipo}) | Código: ${p.codigo_caja} | Precio: $${p.precio?.toLocaleString()} | Compatible: ${p.marca_vehiculo?.[0] || '?'} ${p.modelo_vehiculo?.[0] || ''}`).join('\n')
-    : 'No hay productos disponibles.';
-
-const fullPrompt = `${SYSTEM_PROMPT}
+        // OPENAI PARA RESPUESTAS INTELIGENTES
+        // ============================================
+        
+        const history = niaSession.getHistory(userId, 10);
+        const vehicleContext = niaSession.getContextForOpenAI(userId);
+        
+        const { data: productos } = await supabase
+            .from('productos')
+            .select('*')
+            .eq('activo', true)
+            .limit(15);
+        
+        const contextoProductos = productos && productos.length > 0 
+            ? productos.map(p => `- ${p.nombre} (${p.tipo}) | Código: ${p.codigo_caja} | Precio: $${p.precio?.toLocaleString()} | Compatible: ${p.marca_vehiculo?.[0] || '?'} ${p.modelo_vehiculo?.[0] || ''}`).join('\n')
+            : 'No hay productos disponibles.';
+        
+        const fullPrompt = `${SYSTEM_PROMPT}
 
 **DATOS DEL CLIENTE:**
 ${vehicleContext || 'Aún no ha especificado vehículo'}
 
-**PRODUCTOS EN CATÁLOGO (USA ESTOS DATOS PARA RESPONDER CON TARJETAS):**
+**PRODUCTOS EN CATÁLOGO (SOLO PARA REFERENCIA, NO MUESTRES TARJETAS A MENOS QUE EL USUARIO LAS PIDA EXPLÍCITAMENTE):**
 ${contextoProductos}
 
 **CONVERSACIÓN RECIENTE:**
 ${history.map(m => `${m.role === 'user' ? '👤 Cliente' : '🤖 NIA'}: ${m.content}`).join('\n')}
 
 **INSTRUCCIÓN MUY IMPORTANTE:**
-- Si el usuario quiere ver productos, RESPONDE SOLO CON EL JSON, sin texto adicional antes o después.
-- NO escribas "Claro, tenemos disponible..." antes del JSON.
-- NO expliques lo que estás haciendo.
-- SOLO devuelve el JSON puro.
+- Si el usuario describe un SÍNTOMA o FALLA, da un diagnóstico técnico detallado. NO muestres tarjetas de productos.
+- Si el usuario pregunta EXPLÍCITAMENTE por un producto ("muéstrame", "tienes", "precio de"), entonces usa el JSON de product_recommendations.
+- SIEMPRE promueve los servicios de KADI como primera opción.
 
-Ejemplo de respuesta correcta (SOLO ESTO, nada más):
-{"type":"product_recommendations","message":"🔧 Productos compatibles:","products":[{"id":"1","nombre":"Transmisión NP300","codigo_caja":"FS6R01A","tipo":"nueva","precio":23200,"imagen_url":"","stock":5}]}`;
+RESPONDES EN ESPAÑOL, de forma técnica pero amable.`;
 
-const openai = (await import('@/lib/openai')).default;
-const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [
-        { role: 'system', content: fullPrompt },
-        { role: 'user', content: message }
-    ],
-    temperature: 0.3, // Más bajo para respuestas más precisas
-    max_tokens: 800,
-});
-
-const reply = completion.choices[0]?.message?.content || 'Lo siento, no pude procesar tu consulta.';
-
-// ============================================
-// VERIFICAR Y LIMPIAR JSON
-// ============================================
-
-let cleanedReply = reply.trim();
-
-// Eliminar bloques de código markdown si existen
-if (cleanedReply.startsWith('```json')) {
-    cleanedReply = cleanedReply.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-}
-if (cleanedReply.startsWith('```')) {
-    cleanedReply = cleanedReply.replace(/```\n?/g, '');
-}
-
-// Intentar extraer JSON si hay texto alrededor
-const jsonMatch = cleanedReply.match(/\{[\s\S]*\}/);
-if (jsonMatch) {
-    cleanedReply = jsonMatch[0];
-}
-
-        // Intentar parsear el JSON
-        try {
-            const parsedReply = JSON.parse(cleanedReply);
-            if (parsedReply.type === 'product_recommendations' && parsedReply.products && parsedReply.products.length > 0) {
-                console.log('📦 OpenAI devolvió tarjetas de productos correctamente');
-                return NextResponse.json(parsedReply);
-            }
-        } catch (e) {
-            console.log('No es JSON válido, respuesta normal de OpenAI');
-        }
-
-        // Si no es JSON, responder como texto normal
+        const openai = (await import('@/lib/openai')).default;
+        const completion = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                { role: 'system', content: fullPrompt },
+                { role: 'user', content: message }
+            ],
+            temperature: 0.7,
+            max_tokens: 600,
+        });
+        
+        const reply = completion.choices[0]?.message?.content || 'Lo siento, no pude procesar tu consulta. ¿Podrías darme más detalles?';
+        
         niaSession.addMessage(userId, 'assistant', reply);
         return NextResponse.json({ reply });
         

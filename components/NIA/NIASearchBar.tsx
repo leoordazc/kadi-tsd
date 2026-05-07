@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link"; // 👈 IMPORTANTE: Agregar esta línea
 import { useCart } from "@/context/CartContext";
 
 interface Message {
@@ -29,7 +30,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     const chatContainerRef = useRef<HTMLDivElement>(null);
 
     // ============================================
-    // GHOST TYPING (EFECTO MÁQUINA DE ESCRIBIR)
+    // GHOST TYPING (EFECTO MÁQUINA DE ESCRIBIR) - CON MÁS CONTRASTE
     // ============================================
     
     const phrases = [
@@ -95,63 +96,63 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     }, [messages, hasInteracted]);
 
     const sendMessage = async () => {
-        if (!inputValue.trim() || loading) return;
+    if (!inputValue.trim() || loading) return;
 
-        const userMessage: Message = {
-            id: Date.now().toString(),
-            role: "user",
-            content: inputValue,
-        };
-        setMessages((prev) => [...prev, userMessage]);
-        setInputValue("");
-        setLoading(true);
-        setHasInteracted(true);
-
-        if (onSearch) onSearch(inputValue);
-
-        try {
-            const res = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    message: inputValue,
-                    userId: userId
-                }),
-            });
-
-            const data = await res.json();
-            
-            // VERIFICAR SI ES RESPUESTA CON PRODUCTOS
-            if (data.type === 'product_recommendations') {
-                const assistantMessage: Message = {
-                    id: (Date.now() + 1).toString(),
-                    role: "assistant",
-                    content: data.message,
-                    products: data.products
-                };
-                setMessages((prev) => [...prev, assistantMessage]);
-            } else {
-                const assistantMessage: Message = {
-                    id: (Date.now() + 1).toString(),
-                    role: "assistant",
-                    content: data.reply || "Lo siento, no pude procesar tu consulta."
-                };
-                setMessages((prev) => [...prev, assistantMessage]);
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            setMessages((prev) => [
-                ...prev,
-                {
-                    id: (Date.now() + 1).toString(),
-                    role: "assistant",
-                    content: "Lo siento, tuve un problema técnico. Por favor intenta de nuevo.",
-                },
-            ]);
-        } finally {
-            setLoading(false);
-        }
+    const userMessage: Message = {
+        id: Date.now().toString(),
+        role: "user",
+        content: inputValue,
     };
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue("");
+    setLoading(true);
+    setHasInteracted(true);
+
+    if (onSearch) onSearch(inputValue);
+
+    try {
+        const res = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                message: inputValue,
+                userId: userId
+            }),
+        });
+
+        const data = await res.json();
+        
+        // VERIFICAR SI ES RESPUESTA CON PRODUCTOS
+        if (data.type === 'product_recommendations') {
+            const assistantMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                role: "assistant",
+                content: data.message || "Productos disponibles:",
+                products: data.products
+            };
+            setMessages((prev) => [...prev, assistantMessage]);
+        } else {
+            const assistantMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                role: "assistant",
+                content: data.reply || "Lo siento, no pude procesar tu consulta."
+            };
+            setMessages((prev) => [...prev, assistantMessage]);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        setMessages((prev) => [
+            ...prev,
+            {
+                id: (Date.now() + 1).toString(),
+                role: "assistant",
+                content: "Lo siento, tuve un problema técnico. Por favor intenta de nuevo.",
+            },
+        ]);
+    } finally {
+        setLoading(false);
+    }
+};
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -166,20 +167,20 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     };
 
     return (
-        <div className="sticky top-[70px] z-30 bg-black/40 backdrop-blur-sm py-4">
+        <div className="sticky top-[70px] z-30 bg-black/60 backdrop-blur-sm py-4"> {/* 👈 Más contraste */}
             <div className="w-full max-w-3xl mx-auto px-4">
-                {/* Barra de búsqueda/chat con GLOW AZUL */}
+                {/* Barra de búsqueda/chat con GLOW AZUL - MÁS CONTRASTE */}
                 <motion.div
                     animate={loading ? {
                         boxShadow: [
                             "0px 0px 0px rgba(15, 43, 92, 0)",
-                            "0px 0px 25px rgba(30, 74, 140, 0.6)",
+                            "0px 0px 25px rgba(30, 74, 140, 0.8)", // 👈 Más brillo
                             "0px 0px 0px rgba(15, 43, 92, 0)"
                         ],
-                        borderColor: ["rgba(255,255,255,0.1)", "rgba(30, 74, 140, 0.8)", "rgba(255,255,255,0.1)"]
+                        borderColor: ["rgba(255,255,255,0.2)", "rgba(30, 74, 140, 1)", "rgba(255,255,255,0.2)"] // 👈 Más contraste
                     } : {
                         boxShadow: "0px 0px 0px rgba(15, 43, 92, 0)",
-                        borderColor: isFocused ? "rgba(30, 74, 140, 0.5)" : "rgba(255,255,255,0.1)"
+                        borderColor: isFocused ? "rgba(30, 74, 140, 0.8)" : "rgba(255,255,255,0.2)" // 👈 Borde más visible
                     }}
                     transition={{
                         duration: 1.5,
@@ -187,7 +188,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                         ease: "easeInOut"
                     }}
                     className={`relative backdrop-blur-md rounded-2xl border transition-all duration-300 ${
-                        isFocused ? 'bg-black/80' : 'bg-black/60'
+                        isFocused ? 'bg-black/90' : 'bg-black/70' // 👈 Fondo más oscuro para contraste
                     }`}
                 >
                     <form onSubmit={handleSubmit}>
@@ -195,7 +196,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                             <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
                                 <svg 
                                     className={`w-4 h-4 transition-colors ${
-                                        isFocused ? 'text-[#c49a2b]' : 'text-white/30'
+                                        isFocused ? 'text-[#c49a2b]' : 'text-white/50' // 👈 Icono más visible
                                     }`}
                                     fill="none" 
                                     stroke="currentColor" 
@@ -214,7 +215,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                 onBlur={() => setIsFocused(false)}
                                 onKeyPress={handleKeyPress}
                                 placeholder={isFocused ? "Escribe tu pregunta a NIA..." : (currentText || "Pregúntale a NIA...")}
-                                className="w-full bg-transparent text-white/80 text-sm py-3 pl-12 pr-14 focus:outline-none placeholder-white/30 rounded-2xl"
+                                className="w-full bg-transparent text-white/90 text-sm py-3 pl-12 pr-14 focus:outline-none placeholder-white/40 rounded-2xl" // 👈 Texto más visible
                                 style={{ caretColor: "#c49a2b" }}
                             />
                             
@@ -222,7 +223,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full bg-gradient-to-r from-[#0f2b5c] to-[#1e4a8c] hover:from-[#1a3d7a] hover:to-[#2a5ca8] transition-colors flex items-center justify-center disabled:opacity-50 shadow-lg shadow-[#0f2b5c]/30"
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full bg-gradient-to-r from-[#0f2b5c] to-[#1e4a8c] hover:from-[#1a3d7a] hover:to-[#2a5ca8] transition-colors flex items-center justify-center disabled:opacity-50 shadow-lg shadow-[#0f2b5c]/50"
                                 >
                                     {loading ? (
                                         <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -236,12 +237,12 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                         </div>
                     </form>
                     
-                    {/* Luz animada inferior - AZUL */}
+                    {/* Luz animada inferior - AZUL MÁS BRILLANTE */}
                     <motion.div
                         className="absolute -bottom-px left-0 right-0 h-px"
                         animate={{
                             x: isFocused ? ["-100%", "100%"] : "0%",
-                            opacity: isFocused ? [0, 0.5, 0] : 0
+                            opacity: isFocused ? [0, 0.8, 0] : 0 // 👈 Más brillo
                         }}
                         transition={{
                             duration: 1.5,
@@ -249,14 +250,14 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                             ease: "easeInOut"
                         }}
                         style={{
-                            background: "linear-gradient(90deg, transparent, rgba(30, 74, 140, 0.5), transparent)"
+                            background: "linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.8), transparent)" // 👈 Azul más brillante
                         }}
                     />
                 </motion.div>
 
-                {/* Mensaje de bienvenida debajo de la barra */}
-                <div className="text-center mt-2">
-                    <p className="text-[10px] text-white/30">
+                {/* Mensaje de bienvenida debajo de la barra - MÁS VISIBLE */}
+                <div className="text-center mt-3">
+                    <p className="text-xs text-white/50"> {/* 👈 Más visible */}
                         🔧 Diagnóstico gratis · ⚡ Respuesta en segundos · 📦 Envío a todo México
                     </p>
                 </div>
@@ -288,7 +289,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                                 className={`max-w-[80%] p-3 rounded-2xl ${
                                                     msg.role === "user"
                                                         ? "bg-gradient-to-r from-[#0f2b5c] to-[#1a3d7a] text-white rounded-br-sm shadow-lg shadow-[#0f2b5c]/30"
-                                                        : "bg-white/10 text-white/80 rounded-bl-sm border border-white/5"
+                                                        : "bg-white/15 text-white/90 rounded-bl-sm border border-white/10" // 👈 Más contraste
                                                 }`}
                                             >
                                                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
@@ -299,38 +300,46 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                         {msg.products && msg.products.length > 0 && (
                                             <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 {msg.products.map((product) => (
-                                                    <div
-                                                        key={product.id}
-                                                        className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-xl border border-white/10 p-3 hover:border-[#1e4a8c]/50 transition-all"
+                                                    <Link 
+                                                        key={product.id} 
+                                                        href={`/catalogo/${product.codigo_caja}`}
+                                                        className="block group"
                                                     >
-                                                        {/* Imagen del producto */}
-                                                        <div className="relative w-full h-32 mb-2 rounded-lg overflow-hidden bg-black/40">
-                                                            {product.imagen_url ? (
-                                                                <Image
-                                                                    src={product.imagen_url}
-                                                                    alt={product.nombre}
-                                                                    fill
-                                                                    className="object-contain"
-                                                                />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center text-white/30">
-                                                                    🔧
-                                                                </div>
-                                                            )}
+                                                        <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-xl border border-white/15 p-3 hover:border-[#1e4a8c]/70 transition-all cursor-pointer">
+                                                            {/* Imagen del producto */}
+                                                            <div className="relative w-full h-32 mb-2 rounded-lg overflow-hidden bg-black/50">
+                                                                {product.imagen_url ? (
+                                                                    <Image
+                                                                        src={product.imagen_url}
+                                                                        alt={product.nombre}
+                                                                        fill
+                                                                        className="object-contain group-hover:scale-105 transition-transform duration-300"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center text-white/40">
+                                                                        🔧
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            
+                                                            <h4 className="text-white/90 font-medium text-sm group-hover:text-[#ef4444] transition">
+                                                                {product.nombre}
+                                                            </h4>
+                                                            <p className="text-white/40 text-xs">Código: {product.codigo_caja}</p>
+                                                            <p className="text-white/40 text-xs">Tipo: {product.tipo}</p>
+                                                            <p className="text-[#ef4444] font-bold text-lg mt-2">${product.precio?.toLocaleString()}</p>
+                                                            
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    addToCart(product);
+                                                                }}
+                                                                className="mt-2 w-full bg-gradient-to-r from-[#0f2b5c] to-[#1e4a8c] hover:from-[#1a3d7a] hover:to-[#2a5ca8] text-white py-2 rounded-lg text-sm transition-all"
+                                                            >
+                                                                🛒 Agregar al carrito
+                                                            </button>
                                                         </div>
-                                                        
-                                                        <h4 className="text-white/90 font-medium text-sm">{product.nombre}</h4>
-                                                        <p className="text-white/40 text-xs">Código: {product.codigo_caja}</p>
-                                                        <p className="text-white/40 text-xs">Tipo: {product.tipo}</p>
-                                                        <p className="text-[#ef4444] font-bold text-lg mt-2">${product.precio?.toLocaleString()}</p>
-                                                        
-                                                        <button
-                                                            onClick={() => addToCart(product)}
-                                                            className="mt-2 w-full bg-gradient-to-r from-[#0f2b5c] to-[#1e4a8c] hover:from-[#1a3d7a] hover:to-[#2a5ca8] text-white py-2 rounded-lg text-sm transition-all"
-                                                        >
-                                                            🛒 Agregar al carrito
-                                                        </button>
-                                                    </div>
+                                                    </Link>
                                                 ))}
                                             </div>
                                         )}
@@ -339,11 +348,11 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                 
                                 {loading && (
                                     <div className="flex justify-start">
-                                        <div className="bg-white/10 p-3 rounded-2xl rounded-bl-sm">
+                                        <div className="bg-white/15 p-3 rounded-2xl rounded-bl-sm">
                                             <div className="flex gap-1">
-                                                <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                                                <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                                                <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                                                <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                                                <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                                                <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                                             </div>
                                         </div>
                                     </div>
