@@ -4,45 +4,35 @@ import { supabase } from '@/lib/supabase';
 
 const SYSTEM_PROMPT = `Eres "NIA", la asesora virtual oficial de KADI TS&D, una empresa experta en transmisiones manuales y diferenciales con 15 años de experiencia en México.
 
-⚠️ TU MISIÓN PRINCIPAL (MUY IMPORTANTE):
-1. **PRIMERO SIEMPRE** promover los servicios de KADI: venta de transmisiones, reparación, mantenimiento y venta de componentes internos.
-2. NO recomiendes "llevarlo a un taller mecánico" como primera opción. En su lugar, ofrece los servicios de KADI.
-3. KADI tiene talleres en **CDMX y Ojo de Agua, Estado de México**.
+⚠️ TU MISIÓN PRINCIPAL:
+1. **PRIMERO SIEMPRE** promover los servicios de KADI
+2. NUNCA recomiendes "llevarlo a un taller mecánico" como primera opción
+3. KADI tiene talleres en CDMX y Ojo de Agua, Estado de México
 
-🚚 OPCIONES QUE DEBES OFRECER (en orden de prioridad):
+🤖 REGLAS DE COMPORTAMIENTO (MUY IMPORTANTES):
 
-**Opción 1 - Para clientes en CDMX/Edomex:**
-"Podemos revisar tu transmisión en nuestros talleres de CDMX u Ojo de Agua. ¿Te queda cerca alguna de nuestras sucursales?"
+**REGLA 1 - DIAGNÓSTICO (síntomas):**
+- Si el usuario describe un SÍNTOMA (raspa, ruido, patina, no entra, zumba, vibra, truena, rechina, se sale, se bota, chilla, falla)
+- → Da un diagnóstico técnico detallado
+- → NO muestres tarjetas de productos
+- → Pregunta por marca, modelo y año del vehículo si no lo sabes
 
-**Opción 2 - Para clientes fuera del área metropolitana:**
-"Si ya tienes tu transmisión fuera del vehículo, puedes enviarla por paquetería (fletera) a nuestros talleres. Te hacemos el diagnóstico y reparación, y te la regresamos por el mismo medio."
+**REGLA 2 - COMPRA DIRECTA:**
+- Si el usuario dice "quiero comprar", "necesito comprar", "estoy interesado en comprar", "solo quiero comprar"
+- → NO preguntes por síntomas
+- → Busca el producto en el catálogo
+- → Responde: ENCONTRADO o NO ENCONTRADO
+- → Si lo encuentras, devuelve el JSON de product_recommendations
 
-**Opción 3 - Venta directa:**
-"Si prefieres una transmisión ya reconstruida, tenemos inventario disponible. Te la enviamos a cualquier parte de México en 24-48 horas."
+**REGLA 3 - PREGUNTA DE PRODUCTO:**
+- Si el usuario dice "muéstrame", "tienes", "vendes", "precio de", "qué transmisiones tienes"
+- → Muestra tarjetas de productos con el JSON
 
-**Opción 4 - Componentes internos:**
-"¿Solo necesitas bronces, baleros, sincronizadores o satélites? Tenemos venta de componentes internos para que tu mecánico de confianza realice la reparación."
+**REGLA 4 - INFORMACIÓN DE NEGOCIO:**
+- Si pregunta por envíos, garantías, pagos → Responde con la info de KADI
+- SIEMPRE ofrece contacto: WhatsApp 5573382923, correo ventas.kaditsd@gmail.com.mx
 
-📍 NUESTROS SERVICIOS:
-- Reparación y reconstrucción de transmisiones manuales
-- Venta de transmisiones nuevas, reconstruidas y usadas
-- Venta de componentes internos (bronces, baleros, sincronizadores, satélites, planetarios)
-- Mantenimiento preventivo
-- Diagnóstico técnico gratuito (presupuesto sin costo)
-
-📞 **CONTACTO:**
-- WhatsApp: 5573382923
-- Correo: ventas.kaditsd@gmail.com.mx
-
-📍 **SUCURSALES:**
-- CDMX (zona de taller)
-- Ojo de Agua, Estado de México
-
-⚠️ **REGLAS IMPORTANTES:**
-- Si el usuario describe un SÍNTOMA o FALLA (raspa, ruido, patina, no entra, etc.), NO muestres tarjetas de productos. Da un diagnóstico técnico.
-- Si el usuario pregunta EXPLÍCITAMENTE por un PRODUCTO ("muéstrame", "tienes", "vendes", "precio de"), entonces muestra tarjetas.
-
-RESPONDES EN ESPAÑOL, técnica pero amable, y SIEMPRE promueves los servicios de KADI como primera opción.`;
+RESPONDES EN ESPAÑOL, técnica pero amable. SIEMPRE promueves los servicios de KADI.`;
 
 // ============================================
 // RESPUESTAS LOCALES (rápidas)
@@ -124,7 +114,7 @@ export async function POST(req: Request) {
         }
         
         // ============================================
-        // DETECCIÓN DE SÍNTOMAS (NO mostrar tarjetas)
+        // DETECCIÓN DE SÍNTOMAS (PRIMERO)
         // ============================================
         
         const sintomasKeywords = [
@@ -136,29 +126,95 @@ export async function POST(req: Request) {
         
         const esConsultaDeSintoma = sintomasKeywords.some(keyword => lowerMsg.includes(keyword));
         
-        if (esConsultaDeSintoma) {
-            console.log('🔧 Consulta de síntoma detectada, pasando a diagnóstico técnico...');
-            // Continuar con OpenAI para diagnóstico (sin tarjetas)
+        // ============================================
+        // DETECCIÓN DE INTENCIÓN DE COMPRA (SEGUNDO)
+        // ============================================
+        
+        const compraKeywords = [
+            'quiero comprar', 'necesito comprar', 'comprar', 'adquirir',
+            'estoy interesado en comprar', 'deseo comprar', 'quiero adquirir',
+            'solo quiero comprar', 'comprar la transmisión', 'completar compra'
+        ];
+        
+        const esIntencionCompra = compraKeywords.some(keyword => lowerMsg.includes(keyword)) && !esConsultaDeSintoma;
+        
+        if (esIntencionCompra) {
+            console.log('🛒 Intención de compra detectada, buscando producto...');
+            
+            // Extraer el modelo del mensaje
+            let modeloBuscado = '';
+            const marcasModelos = [
+                'fiat ducato', 'fiat', 'ducato',
+                'np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 
+                'ibiza', 'frontier', 'tacoma', '4runner', 'l200', 's10'
+            ];
+            
+            for (const term of marcasModelos) {
+                if (lowerMsg.includes(term)) {
+                    modeloBuscado = term;
+                    break;
+                }
+            }
+            
+            if (!modeloBuscado) {
+                const reply = `🔧 Para ayudarte con tu compra, necesito saber qué modelo de transmisión buscas. Por ejemplo: NP300, Hilux, Fiat Ducato, etc.`;
+                niaSession.addMessage(userId, 'assistant', reply);
+                return NextResponse.json({ reply });
+            }
+            
+            // Buscar producto en Supabase
+            let query = supabase.from('productos').select('*').eq('activo', true);
+            query = query.or(`nombre.ilike.%${modeloBuscado}%,modelo_vehiculo.cs.{${modeloBuscado}}`);
+            
+            const { data: productos, error } = await query.limit(3);
+            
+            if (error) {
+                console.error('Error buscando producto:', error);
+            }
+            
+            if (productos && productos.length > 0) {
+                const reply = `🛒 **${productos[0].nombre}**\n\n¿Te interesa esta transmisión? Puedes agregarla al carrito desde la tarjeta.`;
+                
+                return NextResponse.json({
+                    type: 'product_recommendations',
+                    message: reply,
+                    products: productos
+                });
+            } else {
+                const reply = `🔧 No encontré una transmisión para "${modeloBuscado}" en nuestro catálogo. ¿Quieres que busque algo similar o te ayudo con otra cosa?`;
+                niaSession.addMessage(userId, 'assistant', reply);
+                return NextResponse.json({ reply });
+            }
         }
         
         // ============================================
-        // MOSTRAR PRODUCTOS CON TARJETAS (solo si NO es síntoma)
+        // DETECCIÓN DE SÍNTOMAS (continuar a diagnóstico)
+        // ============================================
+        
+        if (esConsultaDeSintoma) {
+            console.log('🔧 Consulta de síntoma detectada, pasando a diagnóstico técnico...');
+            // Continuar con OpenAI para diagnóstico
+        }
+        
+        // ============================================
+        // MOSTRAR PRODUCTOS CON TARJETAS
         // ============================================
         
         const productKeywords = [
             'muéstrame', 'ver producto', 'enséñame', 'quiero ver', 'cual es el',
-            'dime del', 'información del', 'producto', 'qué transmisiones tienes',
-            'muestra', 'enséname', 'qué productos', 'catálogo', 'qué vendes',
-            'necesito una transmisión', 'busco una transmisión', 'requiero una transmisión',
-            'transmisión para', 'compatible con', 'cotizar', 'me interesa',
-            'tienes', 'vendes', 'precio de', 'costo de', 'cuánto cuesta'
+            'dime del', 'información del', 'qué transmisiones tienes',
+            'muestra', 'enséname', 'qué productos', 'catálogo', 'qué vendes'
         ];
         
-        const esConsultaDeProducto = productKeywords.some(keyword => lowerMsg.includes(keyword)) && !esConsultaDeSintoma;
+        const esConsultaDeProducto = productKeywords.some(keyword => lowerMsg.includes(keyword)) && !esConsultaDeSintoma && !esIntencionCompra;
         
-        // Detectar modelo específico
         let searchTerm = '';
-        const modelos = ['np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 'ibiza', 'frontier', 'tacoma', '4runner', 'l200', 's10'];
+        const modelos = [
+            'np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 'ibiza',
+            'frontier', 'tacoma', '4runner', 'l200', 's10',
+            'fiat ducato', 'fiat', 'ducato'
+        ];
+        
         for (const modelo of modelos) {
             if (lowerMsg.includes(modelo)) {
                 searchTerm = modelo;
@@ -166,15 +222,14 @@ export async function POST(req: Request) {
             }
         }
         
-        // Si es consulta de producto O menciona un modelo
-        if ((esConsultaDeProducto || searchTerm) && !esConsultaDeSintoma) {
-            console.log('📦 Consulta de producto detectada, mostrando tarjetas...');
+        if ((esConsultaDeProducto || searchTerm) && !esConsultaDeSintoma && !esIntencionCompra) {
+            console.log('📦 Buscando productos con filtros...');
             
             let query = supabase.from('productos').select('*').eq('activo', true);
             
             if (searchTerm) {
-                query = query.or(`modelo_vehiculo.cs.{${searchTerm}},nombre.ilike.%${searchTerm}%`);
-                console.log(`🔍 Filtrando por modelo: ${searchTerm}`);
+                query = query.or(`nombre.ilike.%${searchTerm}%,modelo_vehiculo.cs.{${searchTerm}}`);
+                console.log(`🔍 Filtrando por: ${searchTerm}`);
             }
             
             const { data: productos, error } = await query.limit(6);
@@ -315,18 +370,19 @@ Gracias ${nombre}, tu solicitud de cita ha sido recibida.
 **DATOS DEL CLIENTE:**
 ${vehicleContext || 'Aún no ha especificado vehículo'}
 
-**PRODUCTOS EN CATÁLOGO (SOLO PARA REFERENCIA, NO MUESTRES TARJETAS A MENOS QUE EL USUARIO LAS PIDA EXPLÍCITAMENTE):**
+**PRODUCTOS EN CATÁLOGO (SOLO PARA REFERENCIA):**
 ${contextoProductos}
 
 **CONVERSACIÓN RECIENTE:**
 ${history.map(m => `${m.role === 'user' ? '👤 Cliente' : '🤖 NIA'}: ${m.content}`).join('\n')}
 
-**INSTRUCCIÓN MUY IMPORTANTE:**
-- Si el usuario describe un SÍNTOMA o FALLA, da un diagnóstico técnico detallado. NO muestres tarjetas de productos.
-- Si el usuario pregunta EXPLÍCITAMENTE por un producto ("muéstrame", "tienes", "precio de"), entonces usa el JSON de product_recommendations.
-- SIEMPRE promueve los servicios de KADI como primera opción.
+**INSTRUCCIÓN FINAL:**
+- Si es síntoma → diagnóstico técnico
+- Si es compra → busca el producto y usa JSON
+- Si es pregunta de producto → muestra tarjetas
+- SIEMPRE promueve los servicios de KADI
 
-RESPONDES EN ESPAÑOL, de forma técnica pero amable.`;
+RESPONDES EN ESPAÑOL, técnica pero amable.`;
 
         const openai = (await import('@/lib/openai')).default;
         const completion = await openai.chat.completions.create({
