@@ -110,10 +110,10 @@ export default function CatalogoPage() {
 
     function getMarcaIcono(marca: string): string {
         const iconos: Record<string, string> = {
-            nissan: "🚗", toyota: "🚙", ford: "🛻", chevrolet: "🚛",
-            volkswagen: "🚘", renault: "🚙", mitsubishi: "🚗",
-            seat: "🚗", honda: "🚗", mazda: "🚗", fiat: "🚙",
-            audi: "🚗", mercedes: "🚙", hyundai: "🚗", suzuki: "🚗"
+            nissan: "", toyota: "", ford: "", chevrolet: "",
+            volkswagen: "", renault: "", mitsubishi: "",
+            seat: "", honda: "", mazda: "", fiat: "",
+            audi: "", mercedes: "", hyundai: "", suzuki: ""
         };
         return iconos[marca.toLowerCase()] || "🔧";
     }
@@ -172,7 +172,7 @@ export default function CatalogoPage() {
                             onClick={() => setShowBrands(!showBrands)}
                             className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white/70 hover:bg-white/10 transition"
                         >
-                            <span>🚗 Filtrar por marca</span>
+                            <span> Filtrar por marca</span>
                             <svg className={`w-4 h-4 transition-transform ${showBrands ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
