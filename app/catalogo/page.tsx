@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/context/CartContext";
-import Toast from "@//components/Toast"; // 👈 Importar
+import Toast from "@/components/Toast";
 
 interface Producto {
     id: string;
@@ -30,6 +30,7 @@ export default function CatalogoPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type?: "success" | "error" | "info" } | null>(null);
+    const [showBrands, setShowBrands] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
 
@@ -109,11 +110,12 @@ export default function CatalogoPage() {
 
     function getMarcaIcono(marca: string): string {
         const iconos: Record<string, string> = {
-            nissan: "", toyota: "", ford: "", chevrolet: "",
-            volkswagen: "", renault: "", mitsubishi: "",
-            seat: "", honda: "", mazda: ""
+            nissan: "🚗", toyota: "🚙", ford: "🛻", chevrolet: "🚛",
+            volkswagen: "🚘", renault: "🚙", mitsubishi: "🚗",
+            seat: "🚗", honda: "🚗", mazda: "🚗", fiat: "🚙",
+            audi: "🚗", mercedes: "🚙", hyundai: "🚗", suzuki: "🚗"
         };
-        return iconos[marca.toLowerCase()] || "";
+        return iconos[marca.toLowerCase()] || "🔧";
     }
 
     if (loading) {
@@ -162,45 +164,81 @@ export default function CatalogoPage() {
             </header>
 
             <div className="max-w-7xl mx-auto px-6 py-12">
+                
+                {/* ===== FILTRO DE MARCAS COMPACTO CON BOTÓN ===== */}
                 {marcas.length > 0 && (
-                    <div className="mb-12">
-                        <div className="flex flex-wrap gap-3">
-                            <button
-                                onClick={() => {
-                                    setSelectedMarca(null);
-                                    setSelectedModelo(null);
-                                    setCurrentPage(1);
-                                }}
-                                className={`px-4 py-2 rounded-full border transition-all ${
-                                    !selectedMarca ? 'bg-[#ef4444] border-[#ef4444] text-white' : 'border-white/10 text-white/50'
-                                }`}
-                            >
-                                Todas
-                            </button>
-                            {marcas.map((marca) => (
-                                <button
-                                    key={marca.id}
-                                    onClick={() => {
-                                        setSelectedMarca(marca.id);
-                                        setSelectedModelo(null);
-                                        setCurrentPage(1);
-                                    }}
-                                    className={`px-4 py-2 rounded-full border transition-all ${
-                                        selectedMarca === marca.id ? 'border-[#ef4444] text-white' : 'border-white/10 text-white/50'
-                                    }`}
-                                >
-                                    <span className="flex items-center gap-2">
-                                        <span>{marca.icono}</span>
-                                        <span>{marca.nombre}</span>
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
+                    <div className="mb-8">
+                        <button
+                            onClick={() => setShowBrands(!showBrands)}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white/70 hover:bg-white/10 transition"
+                        >
+                            <span>🚗 Filtrar por marca</span>
+                            <svg className={`w-4 h-4 transition-transform ${showBrands ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        {showBrands && (
+                            <div className="mt-3 p-4 bg-black/60 backdrop-blur-sm border border-white/10 rounded-xl">
+                                <div className="flex justify-between items-center mb-3">
+                                    <span className="text-white/40 text-xs">Selecciona una marca</span>
+                                    {selectedMarca && (
+                                        <button
+                                            onClick={() => {
+                                                setSelectedMarca(null);
+                                                setSelectedModelo(null);
+                                                setCurrentPage(1);
+                                            }}
+                                            className="text-[#ef4444] text-xs hover:underline"
+                                        >
+                                            Limpiar filtro ✕
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                    <button
+                                        onClick={() => {
+                                            setSelectedMarca(null);
+                                            setSelectedModelo(null);
+                                            setCurrentPage(1);
+                                            setShowBrands(false);
+                                        }}
+                                        className={`px-3 py-2 rounded-lg text-sm transition-all text-left ${
+                                            !selectedMarca 
+                                                ? 'bg-[#ef4444] text-white' 
+                                                : 'bg-white/5 text-white/60 hover:bg-white/10'
+                                        }`}
+                                    >
+                                        Todas
+                                    </button>
+                                    {marcas.map((marca) => (
+                                        <button
+                                            key={marca.id}
+                                            onClick={() => {
+                                                setSelectedMarca(marca.id);
+                                                setSelectedModelo(null);
+                                                setCurrentPage(1);
+                                                setShowBrands(false);
+                                            }}
+                                            className={`px-3 py-2 rounded-lg text-sm transition-all text-left ${
+                                                selectedMarca === marca.id 
+                                                    ? 'bg-[#ef4444] text-white' 
+                                                    : 'bg-white/5 text-white/60 hover:bg-white/10'
+                                            }`}
+                                        >
+                                            <span className="mr-2">{marca.icono}</span>
+                                            {marca.nombre}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
+                {/* Filtro de modelos (solo si hay marca seleccionada) */}
                 {selectedMarca && modelos.length > 0 && (
-                    <div className="mb-12">
+                    <div className="mb-8">
                         <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={() => setSelectedModelo(null)}
@@ -208,7 +246,7 @@ export default function CatalogoPage() {
                                     !selectedModelo ? 'bg-[#ef4444]/20 border-[#ef4444] text-white' : 'border-white/10 text-white/40'
                                 }`}
                             >
-                                Todos
+                                Todos los modelos
                             </button>
                             {modelos.map((modelo) => (
                                 <button
@@ -225,13 +263,14 @@ export default function CatalogoPage() {
                     </div>
                 )}
 
+                {/* Grid de productos */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {paginatedProductos.map((producto) => (
                         <div
                             key={producto.id}
                             className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 p-6 hover:border-[#ef4444]/30 transition-all group"
                         >
-                            {/* ===== IMAGEN DEL PRODUCTO ===== */}
+                            {/* Imagen del producto */}
                             <div className="relative w-full h-48 mb-4 rounded-xl overflow-hidden bg-black/40">
                                 {producto.imagen_url ? (
                                     <Image
@@ -287,19 +326,19 @@ export default function CatalogoPage() {
                             </div>
 
                             <div className="flex gap-2">
-                              <button
-    onClick={() => {
-        addToCart(producto);
-        setToast({ message: `${producto.nombre} agregado al carrito`, type: "success" });
-        setTimeout(() => setToast(null), 2500);
-    }}
-    className="flex-1 bg-gradient-to-r from-[#ef4444] to-[#f97316] text-white py-2.5 rounded-lg font-medium hover:from-[#ef4444]/90 hover:to-[#f97316]/90 transition-all active:scale-95 shadow-lg shadow-[#ef4444]/20 relative overflow-hidden group"
->
-    <span className="relative z-10 flex items-center justify-center gap-2">
-        🛒 Agregar
-    </span>
-    <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-active:translate-x-0 transition-transform duration-300 ease-out" />
-</button>
+                                <button
+                                    onClick={() => {
+                                        addToCart(producto);
+                                        setToast({ message: `${producto.nombre} agregado al carrito`, type: "success" });
+                                        setTimeout(() => setToast(null), 2500);
+                                    }}
+                                    className="flex-1 bg-gradient-to-r from-[#ef4444] to-[#f97316] text-white py-2.5 rounded-lg font-medium hover:from-[#ef4444]/90 hover:to-[#f97316]/90 transition-all active:scale-95 shadow-lg shadow-[#ef4444]/20 relative overflow-hidden group"
+                                >
+                                    <span className="relative z-10 flex items-center justify-center gap-2">
+                                        🛒 Agregar
+                                    </span>
+                                    <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-active:translate-x-0 transition-transform duration-300 ease-out" />
+                                </button>
                                 <Link
                                     href={`/catalogo/${producto.codigo_caja}`}
                                     className="px-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center"
@@ -311,6 +350,7 @@ export default function CatalogoPage() {
                     ))}
                 </div>
 
+                {/* Paginación */}
                 {totalPages > 1 && (
                     <div className="flex justify-center gap-2 mt-12">
                         <button
@@ -338,13 +378,15 @@ export default function CatalogoPage() {
                         <p className="text-white/40">No hay productos con estos filtros</p>
                     </div>
                 )}
+
+                {/* Toast de notificación */}
                 {toast && (
-    <Toast
-        message={toast.message}
-        type={toast.type}
-        onClose={() => setToast(null)}
-    />
-)}
+                    <Toast
+                        message={toast.message}
+                        type={toast.type}
+                        onClose={() => setToast(null)}
+                    />
+                )}
             </div>
         </main>
     );
