@@ -67,6 +67,12 @@ export const metadata: Metadata = {
     google: 'tu-codigo-de-verificacion',
   },
   category: 'automotive',
+  // 👇 ESTO ES LO NUEVO - CONFIGURACIÓN DEL FAVICON
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({
