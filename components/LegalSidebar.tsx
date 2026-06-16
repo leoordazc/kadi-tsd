@@ -39,13 +39,13 @@ El pago de la factura, nota de remisión o cualquier comprobante de pago implica
 De conformidad con la Ley Federal de Protección al Consumidor (LFPC), KADI TS&D otorga las siguientes garantías:
 
 ARTÍCULO 1. PLAZOS DE GARANTÍA
-1.1. Transmisiones Nuevas: 5 meses a partir de la fecha de entrega.
-1.2. Transmisiones Reconstruidas: 4 meses a partir de la fecha de entrega.
-1.3. Transmisiones Usadas: 3 meses a partir de la fecha de entrega.
-1.4. Diferenciales Nuevos: 5 meses.
-1.5. Diferenciales Reconstruidos: 4 meses.
-1.6. Diferenciales Usados: 3 meses.
-1.7. Refacciones (bronces, baleros, engranajes, molotes): 30 días.
+1.1. Transmisiones Nuevas: 3 meses a partir de la fecha de entrega.
+1.2. Transmisiones Reconstruidas: 3 meses a partir de la fecha de entrega.
+1.3. Transmisiones Usadas: 2 meses a partir de la fecha de entrega.
+1.4. Diferenciales Nuevos: 3 meses.
+1.5. Diferenciales Reconstruidos: 3 meses.
+1.6. Diferenciales Usados: 2 meses.
+1.7. Refacciones (bronces, baleros, engranajes, molotes): 15 días.
 
 ARTÍCULO 2. COBERTURA DE GARANTÍA
 La garantía cubre exclusivamente defectos de fabricación y materiales que impidan el correcto funcionamiento del producto, siempre que el producto haya sido instalado por personal técnico calificado.
@@ -300,7 +300,7 @@ La responsabilidad de EL VENDEDOR se limita exclusivamente al valor pagado por e
                                     </div>
                                 </div>
                                 <div className="text-[9px] text-white/20">
-                                    <p>KADI TRANSMISSION SYSTEMS · RFC: KADXXXXXX</p>
+                                    <p>KADI TRANSMISSION SYSTEMS · RFC: OACL980309S56</p>
                                     <p>Ojo de Agua, Estado de México · C.P. 57170</p>
                                     <p className="mt-2">Documento actualizado: Marzo 2026 · Versión 3.0 (Blindada)</p>
                                     <p className="mt-1">© 2026 KADI TS&D · Todos los derechos reservados</p>
