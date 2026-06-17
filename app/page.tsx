@@ -335,12 +335,26 @@ useEffect(() => {
       {/* ===== HERO: INGENIERÍA QUE MUEVE TU INVERSIÓN ===== */}
 <section className="relative z-10 min-h-[80vh] flex items-center overflow-hidden">
   
-  {/* Fondo negro sólido */}
+  {/* ===== FONDO ESTILO SPACEX ===== */}
+  {/* Fondo oscuro base */}
   <div className="absolute inset-0 bg-black" />
   
+  {/* Imagen de fondo tipo SpaceX (cubre toda la pantalla) */}
+  <div 
+    className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
+    style={{ 
+      backgroundImage: "url('/transmision-hero-bg.jpg')",
+      backgroundPosition: "center 30%",
+    }}
+  />
+  
+  {/* Degradados laterales para dar profundidad (como SpaceX) */}
+  <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-black/60 to-transparent" />
+  <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black via-black/80 to-transparent" />
+  
   {/* Luces de acento sutiles (efecto tenue) */}
-  <div className="absolute top-20 left-1/4 w-64 h-64 bg-white/3 rounded-full blur-3xl" />
-  <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-white/3 rounded-full blur-3xl" />
+  <div className="absolute top-20 left-1/4 w-64 h-64 bg-[#ef4444]/5 rounded-full blur-3xl" />
+  <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
 
   <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
     <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -367,17 +381,17 @@ useEffect(() => {
 
         {/* Botón CTA con efecto glow */}
         <button
-  onClick={() => setIsStockModalOpen(true)}
-  className="relative group px-8 py-4 bg-[#ef4444] text-white font-bold rounded-lg overflow-hidden shadow-lg shadow-[#ef4444]/20"
->
-  <span className="relative z-10">🛠️ CONSULTAR MI TRANSMISION</span>
-  <motion.div
-    className="absolute inset-0 bg-white"
-    initial={{ x: "-100%", opacity: 0 }}
-    whileHover={{ x: 0, opacity: 0.2 }}
-    transition={{ duration: 0.3 }}
-  />
-</button>
+          onClick={() => setIsStockModalOpen(true)}
+          className="relative group px-8 py-4 bg-[#ef4444] text-white font-bold rounded-lg overflow-hidden shadow-lg shadow-[#ef4444]/20"
+        >
+          <span className="relative z-10">🛠️ CONSULTAR MI TRANSMISION</span>
+          <motion.div
+            className="absolute inset-0 bg-white"
+            initial={{ x: "-100%", opacity: 0 }}
+            whileHover={{ x: 0, opacity: 0.2 }}
+            transition={{ duration: 0.3 }}
+          />
+        </button>
 
         {/* BARRA DE CONFIANZA */}
         <div className="pt-8 flex flex-wrap gap-6">
