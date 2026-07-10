@@ -159,27 +159,29 @@ ARTÍCULO 4. FACTURACIÓN
 4.3. No se emitirán facturas con fecha retroactiva.`
         },
         {
-            title: "🔄 POLÍTICA DE DEVOLUCIONES Y REEMBOLSOS",
-            content: `ARTÍCULO 1. DERECHO DE DESISTIMIENTO
-De conformidad con la LFPC, EL COMPRADOR tiene derecho a desistir de la compra dentro de los 7 días naturales siguientes a la recepción del producto, siempre que:
-1.1. El producto no haya sido instalado.
-1.2. Los sellos de seguridad se encuentren intactos.
-1.3. No presente daños físicos evidentes.
+            title: "🔄 POLÍTICA DE CAMBIOS Y DEVOLUCIONES",
+            content: `ARTÍCULO 1. NATURALEZA DE LA VENTA Y CERO REEMBOLSOS EN EFECTIVO
+Debido a la naturaleza técnica y especializada de las refacciones automotrices, y dado que EL VENDEDOR (KADI TSyD) realiza un riguroso proceso previo de verificación de compatibilidad, envío de evidencia fotográfica y confirmación con EL COMPRADOR antes de cada embarque, TODA VENTA ES FINAL.
+Bajo ninguna circunstancia se realizarán devoluciones o reembolsos en efectivo, transferencias bancarias o reversiones a tarjetas de crédito/débito por arrepentimiento de compra o errores de diagnóstico por parte del mecánico de EL COMPRADOR.
 
-ARTÍCULO 2. PROCEDIMIENTO DE DEVOLUCIÓN
-2.1. EL COMPRADOR deberá notificar su intención de devolución por escrito.
-2.2. EL VENDEDOR proporcionará instrucciones para el envío.
-2.3. Los costos de envío por devolución serán cubiertos por EL COMPRADOR.
+ARTÍCULO 2. EXCEPCIONES: CAMBIO FÍSICO O SALDO A FAVOR
+EL VENDEDOR podrá autorizar, a su entera discreción y como atención al cliente, el cambio físico de la pieza por otra diferente o la emisión de un "Saldo a Favor" (Store Credit) aplicable a futuras compras, dentro de los 5 días naturales posteriores a la recepción del producto, estrictamente si se cumplen TODAS las siguientes condiciones:
+2.1. El producto NO ha sido montado, instalado, probado ni rellenado con ningún tipo de fluidos.
+2.2. Los sellos físicos de seguridad (pintura o precintos) se encuentran intactos y sin alteraciones.
+2.3. La unidad no presenta daños físicos, golpes, rayones en la carcasa o evidencia de manipulación en tornillería.
 
-ARTÍCULO 3. REEMBOLSOS
-3.1. Una vez recibido y verificado el producto, EL VENDEDOR emitirá el reembolso en un plazo máximo de 10 días hábiles.
-3.2. El reembolso se realizará a través del mismo método de pago utilizado.
-3.3. Se descontarán los costos de envío originales.
-3.4. No procede reembolso en efectivo cuando la compra fue con tarjeta.
+ARTÍCULO 3. PROCEDIMIENTO Y GASTOS PARA CAMBIOS
+En caso de que el producto califique para un cambio físico o saldo a favor conforme al Artículo 2:
+3.1. EL COMPRADOR deberá notificar su intención por escrito.
+3.2. Todos los costos logísticos de envío (fletes de ida y de retorno al CEDIS de KADI TSyD) correrán única, total y exclusivamente a cargo de EL COMPRADOR.
+3.3. El cambio físico o la liberación del saldo a favor se emitirá únicamente hasta que el producto retorne a nuestras instalaciones y nuestro equipo de ingeniería certifique que no sufrió daños durante el traslado ni intentos de apertura.
 
-ARTÍCULO 4. DEVOLUCIONES POR GARANTÍA
-4.1. Aplica el procedimiento establecido en la sección de Garantía.
-4.2. Los costos de envío por garantía serán cubiertos por EL VENDEDOR si la falla es acreditada.`
+ARTÍCULO 4. DEVOLUCIONES POR APLICACIÓN DE GARANTÍA
+Las devoluciones derivadas de una presunta falla mecánica o defecto del componente no se consideran "Cambios por arrepentimiento" y se regirán estricta y exclusivamente por el procedimiento, resoluciones y exclusiones detallados en nuestra Sección de Políticas de Garantía.
+Conforme a dicha política, en caso de falla acreditada, KADI TSyD procederá con la reparación o el reemplazo del componente, sin que esto implique una devolución de dinero.
+
+ARTÍCULO 5. RELACIÓN CON LA POLÍTICA DE GARANTÍA
+Cualquier desperfecto, falla o anomalía reportada una vez que la pieza ha sido instalada o rellenada con aceite, dejará de ser sujeta a esta política de Cambios y pasará a ser evaluada estrictamente bajo los términos y procesos de la Política de Garantía.`
         },
         {
             title: "📋 AVISO DE PRIVACIDAD INTEGRAL",
