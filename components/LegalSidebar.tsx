@@ -55,23 +55,29 @@ No procede la garantía en los siguientes casos:
 
 3.1. INSTALACIÓN INCORRECTA
 Para hacer válida la garantía, EL COMPRADOR deberá presentar cualquiera de los siguientes documentos que acrediten instalación profesional:
-   a) Cédula profesional del mecánico instalador.
-   b) RFC del taller mecánico que realizó la instalación.
-   c) Factura o comprobante fiscal del taller instalador.
-   
+a) Cédula profesional del mecánico instalador.
+b) RFC del taller mecánico que realizó la instalación.
+c) Factura o comprobante fiscal del taller instalador.
+
+
 La ausencia de estos documentos invalidará automáticamente la garantía.
 
 3.2. ROTURA DE SELLOS DE SEGURIDAD
 EL VENDEDOR colocará sellos físicos de seguridad (pintura o precintos) en los tornillos del housing, carcasa o molote. Si el sello aparece roto, alterado o removido por cualquier causa, la garantía queda automáticamente anulada, independientemente de la causa del fallo.
 
+
 3.3. CAUSAS EXCLUYENTES ADICIONALES
-   a) Uso de aceite o lubricantes no especificados por el fabricante.
-   b) Daños derivados de accidentes, modificaciones, uso indebido o negligencia.
-   c) Desgaste natural por uso normal del vehículo.
-   d) Productos instalados en vehículos con modificaciones estructurales o de potencia.
-   e) Piezas dañadas por sobrecalentamiento, falta de lubricación o contaminación.
-   f) Daños por ingreso de agua o sedimentos.
-   g) Instalación en vehículos con kilometraje no verificado o alterado.
+a) Uso de aceite o lubricantes no especificados por el fabricante.
+b) Daños derivados de accidentes, modificaciones, uso indebido o negligencia.
+c) Desgaste natural por uso normal del vehículo.
+d) Productos instalados en vehículos con modificaciones estructurales o de potencia.
+e) Piezas dañadas por sobrecalentamiento, falta de lubricación o contaminación.
+f) Daños por ingreso de agua o sedimentos.
+g) Instalación en vehículos con kilometraje no verificado o alterado.
+h) Falla de la unidad provocada por componentes periféricos defectuosos ajenos a la transmisión, incluyendo de manera enunciativa más no limitativa: kits de embrague (clutch) desgastados, volantes de inercia o bimasas desbalanceados, soportes de motor rotos, flechas homocinéticas torcidas o mala calibración de la mecatrónica/TCM.
+
+3.4. CONDICIÓN DE ENTREGA SIN LUBRICANTE (EN SECO)
+Por estrictas normativas federales de paquetería y seguridad en el transporte, todas las transmisiones y diferenciales se envían COMPLETAMENTE SIN ACEITE. Es responsabilidad única, total y absoluta de EL COMPRADOR y su instalador rellenar la unidad con el nivel exacto y la graduación de fluido sintético especificada por el fabricante ANTES de dar marcha al vehículo. Cualquier evidencia de fricción térmica por encendido en seco, uso de la unidad con bajo nivel de aceite o uso de graduación incorrecta (ej. GL-5 en lugar de GL-4), anulará la garantía de forma inmediata e irrevocable.
 
 ARTÍCULO 4. PROCEDIMIENTO DE GARANTÍA
 Para hacer efectiva la garantía, EL COMPRADOR deberá:
@@ -90,10 +96,20 @@ En caso de falla cubierta por garantía, EL VENDEDOR, a su elección:
 ARTÍCULO 6. CONTINUIDAD DE GARANTÍA
 La garantía no se reinicia con una reparación o reemplazo. El plazo original continúa corriendo desde la fecha de la primera compra.
 
+
 ARTÍCULO 7. GARANTÍA EN CASO DE INTERCAMBIO ("CASCO")
 Si la compra incluye la entrega de un "casco" (transmisión o diferencial viejo a cambio), EL COMPRADOR reconoce que:
 7.1. El reembolso de la garantía solo procederá tras la recepción y verificación del casco por parte de EL VENDEDOR.
-7.2. En caso de no entregar el casco en las condiciones acordadas, la garantía queda sin efecto.`
+7.2. En caso de no entregar el casco en las condiciones acordadas, la garantía queda sin efecto.
+
+
+ARTÍCULO 8. LÍMITES DE RESPONSABILIDAD Y GASTOS ADICIONALES
+La presente garantía se limita estrictamente a la reparación o reemplazo de la pieza vendida por EL VENDEDOR. KADI TSyD queda exento de cualquier responsabilidad y NO absorberá, reembolsará ni participará en el pago de:
+a) Gastos de mano de obra de terceros por montaje o desmontaje.
+b) Servicios de grúa, arrastre o maniobras.
+c) Aceites, fluidos o consumibles perdidos.
+d) Costos de envío (fletes) generados para retornar la unidad a las instalaciones de EL VENDEDOR para su diagnóstico. El pago del flete para evaluación de garantía correrá siempre a cargo de EL COMPRADOR.
+e) Lucro cesante (pérdida de ingresos porque el vehículo del comprador estuvo detenido).`
         },
         {
             title: "🚚 POLÍTICA DE ENVÍOS Y ENTREGAS",
