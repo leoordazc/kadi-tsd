@@ -272,7 +272,7 @@ export default function ProductoDetallePage() {
                                 <div>
                                     <p className="text-white/30 text-sm">Precio</p>
                                     <p className="text-4xl font-light">${producto.precio.toLocaleString()}</p>
-                                    <p className="text-white/20 text-xs mt-1">IVA incluido · Envío gratis</p>
+                                    <p className="text-white/20 text-xs mt-1">IVA NO INCLUIDO · Envío gratis en compras mayores a $15,000</p>
                                 </div>
                                 <button
     onClick={() => {
