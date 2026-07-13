@@ -777,7 +777,7 @@ useEffect(() => {
       {/* Columna 3: Ubicación */}
       <div>
         <h5 className="text-white/90 mb-4">Ubicación</h5>
-        <p className="text-sm text-white/30">CDMX · Edo. de México</p>
+        <p className="text-sm text-white/30">CEDIS en Acolman Edo. de México 55870</p>
       </div>
       
       {/* Columna 4: Legal (con funcionalidad - abre el mismo panel del header) */}

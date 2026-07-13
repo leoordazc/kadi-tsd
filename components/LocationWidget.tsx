@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function LocationWidget() {
     const [isAnimating, setIsAnimating] = useState(false);
-    const [currentLocation, setCurrentLocation] = useState("CDMX");
-    const locations = ["CDMX", "OJO DE AGUA EDO. MÉXICO"];
+    const [currentLocation, setCurrentLocation] = useState("CEDIS ACOLMAN");
+    const locations = ["CEDIS Acolman", "55870 EDO. MÉXICO"];
 
     const handleClick = () => {
         if (isAnimating) return;
