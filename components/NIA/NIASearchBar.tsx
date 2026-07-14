@@ -39,7 +39,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
         "Chevrolet Spark 2012 no entra reversa",
         "¿Cuánto cuesta reparar mi transmisión?",
         "D21 zumba en quinta velocidad",
-        "¿Tienen sucursal en CDMX o Edomex?"
+        "¿Tienen sucursal fisica?"
     ];
 
     const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);

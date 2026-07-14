@@ -7,7 +7,7 @@ const SYSTEM_PROMPT = `Eres "NIA", la asesora virtual oficial de KADI TS&D, una 
 ⚠️ TU MISIÓN PRINCIPAL:
 1. **PRIMERO SIEMPRE** promover los servicios de KADI
 2. NUNCA recomiendes "llevarlo a un taller mecánico" como primera opción
-3. KADI tiene talleres en CDMX y Ojo de Agua, Estado de México
+3. KADI tiene taller en CEDIS a puerta cerrada en Acolman, Estado de México
 
 🤖 REGLAS DE COMPORTAMIENTO (MUY IMPORTANTES):
 
@@ -59,7 +59,7 @@ function getBusinessResponse(message: string): string | null {
     }
     
     if (lowerMsg.includes('garantía') || lowerMsg.includes('garantia')) {
-        return `🛡️ **Garantías KADI:**\n• Transmisiones nuevas: 24 meses\n• Reconstruidas: 12 meses\n• Usadas: 3 meses\n• Diferenciales: 12 meses\n\n¿Qué tipo te interesa?`;
+        return `🛡️ **Garantías KADI:**\n• Transmisiones nuevas: 3 meses\n• Reconstruidas: 3 meses\n• Usadas: 1 mes\n• Diferenciales: 3 meses\n\n¿Qué tipo te interesa?`;
     }
     
     if (lowerMsg.includes('pago') || lowerMsg.includes('pagar') || lowerMsg.includes('tarjeta') || lowerMsg.includes('transferencia')) {
@@ -141,14 +141,26 @@ export async function POST(req: Request) {
         if (esIntencionCompra) {
             console.log('🛒 Intención de compra detectada, buscando producto...');
             
-            // Extraer el modelo del mensaje
-            let modeloBuscado = '';
+            // ============================================
+            // LISTA COMPLETA DE MARCAS Y MODELOS (MEJORADA)
+            // ============================================
             const marcasModelos = [
-                'fiat ducato', 'fiat', 'ducato',
-                'np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 
-                'ibiza', 'frontier', 'tacoma', '4runner', 'l200', 's10'
+                // Marcas
+                'fiat', 'ducato', 'chevrolet', 'nissan', 'toyota', 'ford', 'vw', 'volkswagen',
+                'honda', 'mazda', 'mitsubishi', 'seat', 'renault', 'hyundai', 'kia', 'suzuki',
+                'audi', 'mercedes', 'bmw', 'peugeot', 'citroen', 'dodge', 'ram', 'jeep',
+                // Modelos populares
+                'np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 'ibiza', 'frontier',
+                'tacoma', '4runner', 'l200', 's10', 'hr-v', 'cr-v', 'civic', 'accord',
+                'focus', 'fiesta', 'fusion', 'explorer', 'escape', 'mustang',
+                'corolla', 'camry', 'rav4', 'avanza', 'hiace',
+                'versa', 'sentra', 'tsuru', 'march', 'x-trail', 'pathfinder',
+                'gol', 'jetta', 'amarok', 'saveiro', 'polo',
+                // Términos genéricos
+                'transmision', 'caja de velocidades', 'diferencial', 'caja manual'
             ];
             
+            let modeloBuscado = '';
             for (const term of marcasModelos) {
                 if (lowerMsg.includes(term)) {
                     modeloBuscado = term;
@@ -162,18 +174,51 @@ export async function POST(req: Request) {
                 return NextResponse.json({ reply });
             }
             
-            // Buscar producto en Supabase
+            // ============================================
+            // BÚSQUEDA FLEXIBLE EN SUPABASE
+            // ============================================
             let query = supabase.from('productos').select('*').eq('activo', true);
-            query = query.or(`nombre.ilike.%${modeloBuscado}%,modelo_vehiculo.cs.{${modeloBuscado}}`);
+            query = query.or(
+                `nombre.ilike.%${modeloBuscado}%,` +
+                `descripcion.ilike.%${modeloBuscado}%,` +
+                `modelo_vehiculo.cs.{${modeloBuscado}}`
+            );
             
-            const { data: productos, error } = await query.limit(3);
+            let { data: productos, error } = await query.limit(6);
             
             if (error) {
                 console.error('Error buscando producto:', error);
             }
             
+            // ============================================
+            // BÚSQUEDA PARCIAL (fallback)
+            // ============================================
+            if (!productos || productos.length === 0) {
+                console.log('🔍 Intentando búsqueda parcial...');
+                const palabras = modeloBuscado.split(' ');
+                for (const palabra of palabras) {
+                    if (palabra.length > 2) {
+                        const { data: fallback } = await supabase
+                            .from('productos')
+                            .select('*')
+                            .eq('activo', true)
+                            .or(
+                                `nombre.ilike.%${palabra}%,` +
+                                `descripcion.ilike.%${palabra}%,` +
+                                `modelo_vehiculo.cs.{${palabra}}`
+                            )
+                            .limit(3);
+                        
+                        if (fallback && fallback.length > 0) {
+                            productos = fallback;
+                            break;
+                        }
+                    }
+                }
+            }
+            
             if (productos && productos.length > 0) {
-                const reply = `🛒 **${productos[0].nombre}**\n\n¿Te interesa esta transmisión? Puedes agregarla al carrito desde la tarjeta.`;
+                const reply = `🛒 **Productos compatibles con ${modeloBuscado.toUpperCase()}:**`;
                 
                 return NextResponse.json({
                     type: 'product_recommendations',
@@ -197,7 +242,7 @@ export async function POST(req: Request) {
         }
         
         // ============================================
-        // MOSTRAR PRODUCTOS CON TARJETAS
+        // MOSTRAR PRODUCTOS CON TARJETAS (MEJORADO)
         // ============================================
         
         const productKeywords = [
@@ -208,13 +253,16 @@ export async function POST(req: Request) {
         
         const esConsultaDeProducto = productKeywords.some(keyword => lowerMsg.includes(keyword)) && !esConsultaDeSintoma && !esIntencionCompra;
         
-        let searchTerm = '';
+        // Lista completa de modelos para búsqueda
         const modelos = [
             'np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 'ibiza',
             'frontier', 'tacoma', '4runner', 'l200', 's10',
-            'fiat ducato', 'fiat', 'ducato'
+            'fiat ducato', 'fiat', 'ducato',
+            'chevrolet', 'nissan', 'toyota', 'ford', 'vw', 'volkswagen',
+            'honda', 'mazda', 'mitsubishi', 'seat', 'renault', 'hyundai'
         ];
         
+        let searchTerm = '';
         for (const modelo of modelos) {
             if (lowerMsg.includes(modelo)) {
                 searchTerm = modelo;
@@ -228,7 +276,11 @@ export async function POST(req: Request) {
             let query = supabase.from('productos').select('*').eq('activo', true);
             
             if (searchTerm) {
-                query = query.or(`nombre.ilike.%${searchTerm}%,modelo_vehiculo.cs.{${searchTerm}}`);
+                query = query.or(
+                    `nombre.ilike.%${searchTerm}%,` +
+                    `descripcion.ilike.%${searchTerm}%,` +
+                    `modelo_vehiculo.cs.{${searchTerm}}`
+                );
                 console.log(`🔍 Filtrando por: ${searchTerm}`);
             }
             
