@@ -45,7 +45,7 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
             </div>
 
             {/* Contenido con scroll */}
-            <div className="overflow-y-auto max-h-[calc(90vh-120px)] px-6 py-6 space-y-8">
+            <div className="overflow-y-auto max-h-[calc(90vh-180px)] px-6 py-6 pb-32 space-y-8">
               
               {/* NUESTRA HISTORIA */}
               <section>
