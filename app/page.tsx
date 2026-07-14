@@ -14,11 +14,11 @@ import LoginModal from "@/components/LoginModal";
 import CartSidebar from "@/components/CartSidebar";
 import LegalSidebar from "@/components/LegalSidebar";
 import { supabase } from "@/lib/supabase";
-import ConsultaStockModal from "@/components/ConsultaStockModal";
 import Link from "next/link";
 import LocationWidget from "@/components/LocationWidget";
 import { useCart } from "@/context/CartContext"; // 👈 IMPORTAR EL CONTEXTO
 import NIAChat from "@/components/NIA/NIAChat";
+import AboutModal from "@/components//AboutModal";
 
 
 // Tipos para los mensajes
@@ -93,7 +93,7 @@ useEffect(() => {
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState("");
   const [isLegalOpen, setIsLegalOpen] = useState(false);
-  const [isStockModalOpen, setIsStockModalOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   // Función para manejar catálogo
   const handleCatalogClick = () => {
@@ -380,18 +380,18 @@ useEffect(() => {
         </p>
 
         {/* Botón CTA con efecto glow */}
-        <button
-          onClick={() => setIsStockModalOpen(true)}
-          className="relative group px-8 py-4 bg-[#ef4444] text-white font-bold rounded-lg overflow-hidden shadow-lg shadow-[#ef4444]/20"
-        >
-          <span className="relative z-10">🛠️ CONSULTAR MI TRANSMISION</span>
-          <motion.div
-            className="absolute inset-0 bg-white"
-            initial={{ x: "-100%", opacity: 0 }}
-            whileHover={{ x: 0, opacity: 0.2 }}
-            transition={{ duration: 0.3 }}
-          />
-        </button>
+       <button
+  onClick={() => setIsAboutOpen(true)}
+  className="relative group px-8 py-4 bg-transparent border border-[#ef4444] text-white font-medium rounded-lg overflow-hidden hover:bg-[#ef4444]/10 transition"
+>
+  <span className="relative z-10">📖 CONOCE KADI</span>
+  <motion.div
+    className="absolute inset-0 bg-[#ef4444]/20"
+    initial={{ x: "-100%" }}
+    whileHover={{ x: 0 }}
+    transition={{ duration: 0.4 }}
+  />
+</button>
 
         {/* BARRA DE CONFIANZA */}
         <div className="pt-8 flex flex-wrap gap-6">
@@ -856,10 +856,8 @@ useEffect(() => {
 <LegalSidebar isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />
 
 
-  <ConsultaStockModal
-  isOpen={isStockModalOpen}
-  onClose={() => setIsStockModalOpen(false)}
-  onSendToNIA={handleStockConsulta}
+ <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)}
+  
 />
 
 

@@ -319,8 +319,8 @@ La responsabilidad de EL VENDEDOR se limita exclusivamente al valor pagado por e
                                 </div>
                                 <div className="text-[9px] text-white/20">
                                     <p>KADI TRANSMISSION SYSTEMS · RFC: OACL980309S56</p>
-                                    <p>Ojo de Agua, Estado de México · C.P. 57170</p>
-                                    <p className="mt-2">Documento actualizado: Marzo 2026 · Versión 3.0 (Blindada)</p>
+                                    <p>Acolman, Estado de México · C.P. 55870</p>
+                                    <p className="mt-2">Documento actualizado: Marzo 2026 · Versión 3.0 (B)</p>
                                     <p className="mt-1">© 2026 KADI TS&D · Todos los derechos reservados</p>
                                 </div>
                             </div>
