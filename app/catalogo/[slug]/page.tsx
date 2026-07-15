@@ -178,9 +178,10 @@ export default function ProductoDetallePage() {
         )}
     </div>
 
-    {/* Miniaturas - 🔥 CORREGIDO: scroll horizontal y tamaño fijo */}
-    {allImages.length > 1 && (
-        <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+    {/* Miniaturas - 🔥 CORREGIDO: scroll horizontal FORZADO en móvil */}
+{allImages.length > 1 && (
+    <div className="relative w-full overflow-hidden">
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto overflow-y-hidden pb-3 scrollbar-hide snap-x snap-mandatory">
             {allImages.map((img, idx) => (
                 <button
                     key={idx}
@@ -188,7 +189,7 @@ export default function ProductoDetallePage() {
                         setSelectedImage(img);
                         setCurrentImageIndex(idx);
                     }}
-                    className={`relative w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+                    className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 snap-start ${
                         selectedImage === img 
                             ? 'border-[#ef4444] shadow-lg shadow-[#ef4444]/20' 
                             : 'border-white/20 hover:border-white/50'
@@ -203,7 +204,11 @@ export default function ProductoDetallePage() {
                 </button>
             ))}
         </div>
-    )}
+        {/* Indicadores de scroll (opcional) */}
+        <div className="absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-black to-transparent pointer-events-none sm:hidden" />
+        <div className="absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-black to-transparent pointer-events-none sm:hidden" />
+    </div>
+)}
 </div>
 
                     {/* COLUMNA DERECHA: INFORMACIÓN */}
