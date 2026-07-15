@@ -178,10 +178,10 @@ export default function ProductoDetallePage() {
         )}
     </div>
 
-    {/* Miniaturas - Versión con flex-nowrap forzado */}
+    {/* Miniaturas - Con CSS custom forzado */}
 {allImages.length > 1 && (
-    <div className="w-full overflow-x-auto overflow-y-hidden pb-3 scrollbar-hide">
-        <div className="flex gap-2 sm:gap-3 w-max flex-nowrap">
+    <div className="miniaturas-scroll">
+        <div className="miniaturas-track">
             {allImages.map((img, idx) => (
                 <button
                     key={idx}
@@ -189,7 +189,7 @@ export default function ProductoDetallePage() {
                         setSelectedImage(img);
                         setCurrentImageIndex(idx);
                     }}
-                    className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+                    className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 transition-all ${
                         selectedImage === img 
                             ? 'border-[#ef4444] shadow-lg shadow-[#ef4444]/20' 
                             : 'border-white/20 hover:border-white/50'

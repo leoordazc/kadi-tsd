@@ -31,3 +31,45 @@ body {
     transform: rotate(360deg);
   }
 }
+/* Carrusel de miniaturas - FORZAR SCROLL */
+.miniaturas-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.miniaturas-scroll::-webkit-scrollbar {
+    height: 4px;
+}
+
+.miniaturas-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.miniaturas-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.miniaturas-track {
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+    width: max-content;
+    min-width: 100%;
+}
+
+.miniaturas-track > * {
+    flex-shrink: 0;
+}
+
+/* En móvil, forzar el scroll */
+@media (max-width: 640px) {
+    .miniaturas-scroll {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+}
