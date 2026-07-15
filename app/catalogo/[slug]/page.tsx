@@ -137,74 +137,74 @@ export default function ProductoDetallePage() {
                 <div className="grid md:grid-cols-2 gap-6 sm:gap-12">
                     
                     {/* COLUMNA IZQUIERDA: IMAGEN CON CARRUSEL */}
-                    <div className="space-y-3 sm:space-y-4">
-                        {/* Imagen principal - Tamaño ajustado para móvil */}
-                        <div className="relative w-full aspect-square max-h-[350px] sm:max-h-[500px] md:max-h-none rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
-                            {selectedImage ? (
-                                <>
-                                    <Image
-                                        src={selectedImage}
-                                        alt={producto.nombre}
-                                        fill
-                                        className="object-contain p-2 sm:p-4"
-                                        sizes="(max-width: 768px) 100vw, 50vw"
-                                        priority
-                                    />
-                                    
-                                    {allImages.length > 1 && (
-                                        <>
-                                            <button
-                                                onClick={prevImage}
-                                                className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white/80 hover:text-white rounded-full w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center transition-all backdrop-blur-sm text-xs sm:text-base"
-                                            >
-                                                ◀
-                                            </button>
-                                            <button
-                                                onClick={nextImage}
-                                                className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white/80 hover:text-white rounded-full w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center transition-all backdrop-blur-sm text-xs sm:text-base"
-                                            >
-                                                ▶
-                                            </button>
-                                            <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-full">
-                                                {currentImageIndex + 1} / {allImages.length}
-                                            </div>
-                                        </>
-                                    )}
-                                </>
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                    <span className="text-6xl">🔧</span>
-                                </div>
-                            )}
+<div className="space-y-3 sm:space-y-4">
+    {/* Imagen principal - Tamaño ajustado para móvil */}
+    <div className="relative w-full aspect-square max-h-[350px] sm:max-h-[500px] md:max-h-none rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
+        {selectedImage ? (
+            <>
+                <Image
+                    src={selectedImage}
+                    alt={producto.nombre}
+                    fill
+                    className="object-contain p-2 sm:p-4"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    priority
+                />
+                
+                {allImages.length > 1 && (
+                    <>
+                        <button
+                            onClick={prevImage}
+                            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white/80 hover:text-white rounded-full w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center transition-all backdrop-blur-sm text-xs sm:text-base"
+                        >
+                            ◀
+                        </button>
+                        <button
+                            onClick={nextImage}
+                            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white/80 hover:text-white rounded-full w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center transition-all backdrop-blur-sm text-xs sm:text-base"
+                        >
+                            ▶
+                        </button>
+                        <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-full">
+                            {currentImageIndex + 1} / {allImages.length}
                         </div>
+                    </>
+                )}
+            </>
+        ) : (
+            <div className="w-full h-full flex items-center justify-center">
+                <span className="text-6xl">🔧</span>
+            </div>
+        )}
+    </div>
 
-                        {/* Miniaturas - Tamaño ajustado para móvil */}
-                        {allImages.length > 1 && (
-                            <div className="flex gap-2 sm:gap-3 justify-center overflow-x-auto pb-2">
-                                {allImages.map((img, idx) => (
-                                    <button
-                                        key={idx}
-                                        onClick={() => {
-                                            setSelectedImage(img);
-                                            setCurrentImageIndex(idx);
-                                        }}
-                                        className={`relative w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
-                                            selectedImage === img 
-                                                ? 'border-[#ef4444] shadow-lg shadow-[#ef4444]/20' 
-                                                : 'border-white/20 hover:border-white/50'
-                                        }`}
-                                    >
-                                        <Image
-                                            src={img}
-                                            alt={`Vista ${idx + 1}`}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+    {/* Miniaturas - 🔥 CORREGIDO: scroll horizontal y tamaño fijo */}
+    {allImages.length > 1 && (
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+            {allImages.map((img, idx) => (
+                <button
+                    key={idx}
+                    onClick={() => {
+                        setSelectedImage(img);
+                        setCurrentImageIndex(idx);
+                    }}
+                    className={`relative w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+                        selectedImage === img 
+                            ? 'border-[#ef4444] shadow-lg shadow-[#ef4444]/20' 
+                            : 'border-white/20 hover:border-white/50'
+                    }`}
+                >
+                    <Image
+                        src={img}
+                        alt={`Vista ${idx + 1}`}
+                        fill
+                        className="object-cover"
+                    />
+                </button>
+            ))}
+        </div>
+    )}
+</div>
 
                     {/* COLUMNA DERECHA: INFORMACIÓN */}
                     <div>
