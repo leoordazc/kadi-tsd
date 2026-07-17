@@ -41,10 +41,10 @@ De conformidad con la Ley Federal de Protección al Consumidor (LFPC), KADI TS&D
 ARTÍCULO 1. PLAZOS DE GARANTÍA
 1.1. Transmisiones Nuevas: 3 meses a partir de la fecha de entrega.
 1.2. Transmisiones Reconstruidas: 3 meses a partir de la fecha de entrega.
-1.3. Transmisiones Usadas: 2 meses a partir de la fecha de entrega.
+1.3. Transmisiones Usadas: 1 meses a partir de la fecha de entrega.
 1.4. Diferenciales Nuevos: 3 meses.
 1.5. Diferenciales Reconstruidos: 3 meses.
-1.6. Diferenciales Usados: 2 meses.
+1.6. Diferenciales Usados: 1 meses.
 1.7. Refacciones (bronces, baleros, engranajes, molotes): 15 días.
 
 ARTÍCULO 2. COBERTURA DE GARANTÍA
