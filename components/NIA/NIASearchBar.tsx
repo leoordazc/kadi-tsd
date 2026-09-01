@@ -36,7 +36,8 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     useEffect(() => {
         const handleScroll = () => {
             const scrollY = window.scrollY;
-            setIsScrolled(scrollY > 80);
+            // Cambia el umbral según prefieras
+            setIsScrolled(scrollY > 120); // Aumentado a 120px para que el header desaparezca primero
         };
 
         window.addEventListener("scroll", handleScroll);
@@ -181,22 +182,27 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
 
     return (
         <>
-            {/* Barra de búsqueda con efecto de reducción al hacer scroll */}
+            {/* ===== BARRA DE BÚSQUEDA CON EFECTO STICKY ===== */}
             <motion.div 
-                className={`sticky z-30 bg-black/60 backdrop-blur-sm transition-all duration-300 ${
+                className={`sticky z-30 bg-black/60 backdrop-blur-sm transition-all duration-500 ease-in-out ${
                     isScrolled 
-                        ? 'top-[70px] py-1.5' 
+                        ? 'top-0 py-1.5' 
                         : 'top-[70px] py-4'
                 }`}
                 style={{
-                    borderBottom: isScrolled ? '1px solid rgba(255,255,255,0.05)' : 'none'
+                    borderBottom: isScrolled ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                    boxShadow: isScrolled ? '0 2px 20px rgba(0,0,0,0.3)' : 'none'
+                }}
+                animate={{
+                    opacity: 1,
+                    y: 0
                 }}
             >
-                <div className={`w-full max-w-3xl mx-auto px-4 transition-all duration-300 ${
-                    isScrolled ? 'scale-95' : 'scale-100'
+                <div className={`w-full max-w-3xl mx-auto px-4 transition-all duration-500 ease-in-out ${
+                    isScrolled ? 'scale-[0.98]' : 'scale-100'
                 }`}>
                     
-                    {/* Barra de búsqueda/chat con GLOW AZUL */}
+                    {/* ===== BARRA DE BÚSQUEDA ===== */}
                     <motion.div
                         animate={loading ? {
                             boxShadow: [
@@ -214,12 +220,13 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                             repeat: loading ? Infinity : 0,
                             ease: "easeInOut"
                         }}
-                        className={`relative backdrop-blur-md border transition-all duration-300 ${
+                        className={`relative backdrop-blur-md border transition-all duration-500 ease-in-out ${
                             isFocused ? 'bg-black/90' : 'bg-black/70'
                         } ${isScrolled ? 'rounded-xl' : 'rounded-2xl'}`}
                     >
                         <form onSubmit={handleSubmit}>
                             <div className="flex items-center">
+                                {/* Icono o indicador NIA */}
                                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
                                     {isScrolled ? (
                                         <div className="flex items-center gap-1.5">
@@ -249,6 +256,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                     )}
                                 </div>
                                 
+                                {/* Input */}
                                 <input
                                     ref={inputRef}
                                     type="text"
@@ -258,7 +266,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                     onBlur={() => setIsFocused(false)}
                                     onKeyPress={handleKeyPress}
                                     placeholder={isFocused ? "Escribe tu pregunta a NIA..." : (currentText || "Pregúntale a NIA...")}
-                                    className={`w-full bg-transparent text-white/90 focus:outline-none placeholder-white/40 rounded-2xl transition-all duration-300 ${
+                                    className={`w-full bg-transparent text-white/90 focus:outline-none placeholder-white/40 rounded-2xl transition-all duration-500 ease-in-out ${
                                         isScrolled 
                                             ? 'text-xs py-2 pl-16 pr-12' 
                                             : 'text-sm py-3 pl-12 pr-14'
@@ -266,6 +274,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                     style={{ caretColor: "#c49a2b" }}
                                 />
                                 
+                                {/* Botón enviar */}
                                 {inputValue && (
                                     <button
                                         type="submit"
@@ -288,7 +297,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                             </div>
                         </form>
                         
-                        {/* Luz animada inferior - AZUL MÁS BRILLANTE */}
+                        {/* Luz animada inferior */}
                         <motion.div
                             className="absolute -bottom-px left-0 right-0 h-px"
                             animate={{
@@ -357,7 +366,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                                 </div>
                                             </motion.div>
                                             
-                                            {/* Tarjetas de productos si existen */}
+                                            {/* Tarjetas de productos */}
                                             {msg.products && msg.products.length > 0 && (
                                                 <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                                                     {msg.products.map((product) => (
@@ -367,7 +376,6 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                                             className="block group"
                                                         >
                                                             <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-xl border border-white/15 p-3 hover:border-[#1e4a8c]/70 transition-all cursor-pointer">
-                                                                {/* Imagen del producto */}
                                                                 <div className="relative w-full h-32 mb-2 rounded-lg overflow-hidden bg-black/50">
                                                                     {product.imagen_url ? (
                                                                         <Image
@@ -382,14 +390,12 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                                                         </div>
                                                                     )}
                                                                 </div>
-                                                                
                                                                 <h4 className="text-white/90 font-medium text-sm group-hover:text-[#ef4444] transition">
                                                                     {product.nombre}
                                                                 </h4>
                                                                 <p className="text-white/40 text-xs">Código: {product.codigo_caja}</p>
                                                                 <p className="text-white/40 text-xs">Tipo: {product.tipo}</p>
                                                                 <p className="text-[#ef4444] font-bold text-lg mt-2">${product.precio?.toLocaleString()}</p>
-                                                                
                                                                 <button
                                                                     onClick={(e) => {
                                                                         e.preventDefault();
