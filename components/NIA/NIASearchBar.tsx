@@ -31,13 +31,13 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     const chatContainerRef = useRef<HTMLDivElement>(null);
 
     // ============================================
-    // DETECTAR SCROLL PARA CAMBIAR TAMAÑO
+    // DETECTAR SCROLL
     // ============================================
     useEffect(() => {
         const handleScroll = () => {
             const scrollY = window.scrollY;
-            // Cambia el umbral según prefieras
-            setIsScrolled(scrollY > 120); // Aumentado a 120px para que el header desaparezca primero
+            // Cuando el scroll pasa el header (aprox 70px), se activa el modo compacto
+            setIsScrolled(scrollY > 70);
         };
 
         window.addEventListener("scroll", handleScroll);
@@ -182,20 +182,21 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
 
     return (
         <>
-            {/* ===== BARRA DE BÚSQUEDA CON EFECTO STICKY ===== */}
-            <motion.div 
-                className={`sticky z-30 bg-black/60 backdrop-blur-sm transition-all duration-500 ease-in-out ${
+            {/* ===== BARRA DE BÚSQUEDA FIJA (FIXED) ===== */}
+            <div 
+                className={`fixed z-40 bg-black/60 backdrop-blur-sm transition-all duration-500 ease-in-out ${
                     isScrolled 
                         ? 'top-0 py-1.5' 
                         : 'top-[70px] py-4'
                 }`}
                 style={{
+                    left: 0,
+                    right: 0,
+                    width: '100%',
                     borderBottom: isScrolled ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                    boxShadow: isScrolled ? '0 2px 20px rgba(0,0,0,0.3)' : 'none'
-                }}
-                animate={{
-                    opacity: 1,
-                    y: 0
+                    boxShadow: isScrolled ? '0 4px 30px rgba(0,0,0,0.4)' : 'none',
+                    transform: 'translateZ(0)', // Acelera el rendering
+                    willChange: 'transform, opacity',
                 }}
             >
                 <div className={`w-full max-w-3xl mx-auto px-4 transition-all duration-500 ease-in-out ${
@@ -431,7 +432,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                         )}
                     </AnimatePresence>
                 </div>
-            </motion.div>
+            </div>
         </>
     );
 }
