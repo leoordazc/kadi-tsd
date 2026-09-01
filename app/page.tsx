@@ -333,7 +333,7 @@ useEffect(() => {
       <NIASearchBar onSearch={(query) => console.log("Buscando:", query)} />
 
       {/* ===== HERO: INGENIERÍA QUE MUEVE TU INVERSIÓN ===== */}
-<section className="relative z-10 min-h-[80vh] flex items-center overflow-hidden">
+<section className="relative z-10 min-h-[80vh] flex items-center overflow-hidden pt-[120px] md:pt-[100px]">
   
   {/* ===== FONDO ESTILO SPACEX ===== */}
   {/* Fondo oscuro base */}

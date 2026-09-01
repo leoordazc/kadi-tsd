@@ -184,7 +184,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
         <>
             {/* ===== BARRA DE BÚSQUEDA FIJA (FIXED) ===== */}
             <div 
-                className={`fixed z-40 bg-black/60 backdrop-blur-sm transition-all duration-500 ease-in-out ${
+                className={`fixed z-30 bg-black/60 backdrop-blur-sm transition-all duration-500 ease-in-out ${
                     isScrolled 
                         ? 'top-0 py-1.5' 
                         : 'top-[70px] py-4'
