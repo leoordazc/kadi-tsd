@@ -13,6 +13,7 @@ interface CartSidebarProps {
   removeFromCart: (id: string) => void;
   totalPrice: number;
   user?: any;
+  onLoginRequired?: () => void; // 👈 NUEVO: para abrir login desde el carrito
 }
 
 export default function CartSidebar({
@@ -23,6 +24,7 @@ export default function CartSidebar({
   removeFromCart,
   totalPrice,
   user,
+  onLoginRequired, // 👈 NUEVO
 }: CartSidebarProps) {
   const [paymentMethod, setPaymentMethod] = useState("transferencia");
   const [showBankModal, setShowBankModal] = useState(false);
@@ -34,14 +36,12 @@ export default function CartSidebar({
   // CREAR O OBTENER EL PEDIDO (SOLO UNA VEZ)
   // ============================================
   const crearObtenerPedido = async (): Promise<{ id: string; folio: string } | null> => {
-    // Si ya tenemos un pedido activo, usarlo
     if (pedidoId && folio) {
       console.log('📦 Usando pedido existente:', { id: pedidoId, folio });
       return { id: pedidoId, folio };
     }
 
     try {
-      // 1. Generar folio
       const res = await fetch('/api/folio?tipo=transferencia');
       const data = await res.json();
 
@@ -53,7 +53,6 @@ export default function CartSidebar({
       const nuevoFolio = data.folio_completo;
       console.log('📝 Nuevo folio generado:', nuevoFolio);
 
-      // 2. Crear pedido en Supabase
       const pedido = {
         user_id: user?.id || null,
         user_email: user?.email || 'anonimo',
@@ -123,14 +122,12 @@ export default function CartSidebar({
   const handleTransferencia = async () => {
     setGuardando(true);
     
-    // Crear o usar pedido existente
     const pedido = await crearObtenerPedido();
     if (!pedido) {
       setGuardando(false);
       return;
     }
     
-    // Actualizar método de pago si es diferente
     if (paymentMethod !== 'transferencia') {
       await actualizarMetodoPago('transferencia');
     }
@@ -145,14 +142,12 @@ export default function CartSidebar({
   const handleCardPayment = async () => {
     setGuardando(true);
     
-    // Crear o usar pedido existente
     const pedido = await crearObtenerPedido();
     if (!pedido) {
       setGuardando(false);
       return;
     }
     
-    // Actualizar método de pago si es diferente
     if (paymentMethod !== 'tarjeta') {
       await actualizarMetodoPago('tarjeta');
     }
@@ -226,6 +221,15 @@ export default function CartSidebar({
   // CHECKOUT PRINCIPAL
   // ============================================
   const handleCheckout = async () => {
+    // 👇 PRIMERO: Verificar si el usuario está logueado
+    if (!user) {
+      // Cerrar carrito y abrir login
+      onClose();
+      onLoginRequired?.();
+      return;
+    }
+
+    // Si está logueado, continuar con el pago
     if (paymentMethod === "transferencia") {
       await handleTransferencia();
     } else if (paymentMethod === "tarjeta") {
@@ -261,7 +265,7 @@ export default function CartSidebar({
             transition={{ type: "spring", damping: 30 }}
             className="fixed right-0 top-0 z-50 h-full w-full max-w-md bg-gradient-to-b from-[#1a1a1a] to-[#2a2a2a] border-l border-white/5 shadow-2xl flex flex-col"
           >
-            {/* Header y contenido del carrito (igual que antes) */}
+            {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-white/5">
               <h2 className="text-xl font-light text-white/90">Tu carrito</h2>
               <button onClick={handleClose} className="text-white/40 hover:text-white/60">
@@ -269,6 +273,7 @@ export default function CartSidebar({
               </button>
             </div>
 
+            {/* Contenido */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {cartItems.length === 0 ? (
                 <div className="text-center text-white/40 mt-20">
@@ -316,8 +321,32 @@ export default function CartSidebar({
               )}
             </div>
 
+            {/* 👇 SECCIÓN DE PAGO - MODIFICADA */}
             {cartItems.length > 0 && (
               <div className="border-t border-white/5 p-6">
+                {/* Banner de registro (solo si no hay usuario) */}
+                {!user && (
+                  <div className="mb-3 p-3 bg-[#ef4444]/10 border border-[#ef4444]/20 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <span className="text-[#ef4444] text-sm">🔒</span>
+                      <div>
+                        <p className="text-white/70 text-xs font-medium">
+                          Regístrate o inicia sesión para comprar
+                        </p>
+                        <button
+                          onClick={() => {
+                            onClose();
+                            onLoginRequired?.();
+                          }}
+                          className="text-[#ef4444] text-xs hover:underline"
+                        >
+                          Crear cuenta →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex justify-between mb-4">
                   <span className="text-white/40">Total:</span>
                   <span className="text-xl text-white/90">${totalPrice.toLocaleString()}</span>
@@ -339,9 +368,11 @@ export default function CartSidebar({
                 <button
                   onClick={handleCheckout}
                   disabled={guardando}
-                  className="w-full bg-gradient-to-r from-[#ef4444] to-[#f97316] text-white py-3 rounded-lg font-medium hover:from-[#ef4444]/90 hover:to-[#f97316]/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full bg-gradient-to-r from-[#ef4444] to-[#f97316] text-white py-3 rounded-lg font-medium transition ${
+                    !user ? 'opacity-60 cursor-not-allowed' : 'hover:from-[#ef4444]/90 hover:to-[#f97316]/90'
+                  }`}
                 >
-                  {guardando ? "Procesando..." : "Proceder al pago"}
+                  {!user ? "🔒 Inicia sesión para comprar" : (guardando ? "Procesando..." : "Proceder al pago")}
                 </button>
               </div>
             )}
