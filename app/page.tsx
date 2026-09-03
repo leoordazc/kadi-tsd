@@ -19,6 +19,7 @@ import LocationWidget from "@/components/LocationWidget";
 import { useCart } from "@/context/CartContext"; // 👈 IMPORTAR EL CONTEXTO
 import NIAChat from "@/components/NIA/NIAChat";
 import AboutModal from "@/components//AboutModal";
+import { useRouter } from "next/navigation";
 
 
 // Tipos para los mensajes
@@ -94,6 +95,7 @@ useEffect(() => {
   const [trackingNumber, setTrackingNumber] = useState("");
   const [isLegalOpen, setIsLegalOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const router = useRouter();
 
   // Función para manejar catálogo
   const handleCatalogClick = () => {
@@ -440,54 +442,159 @@ useEffect(() => {
 </section>
 
       {/* ===== SERVICIOS ===== */}
-      <section className="relative z-10 py-16 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl font-light text-white/90 mb-2">¿Qué necesitas hoy?</h2>
-            <p className="text-white/40 text-sm">Tres formas de mantener tu vehículo en movimiento</p>
-          </motion.div>
+<section className="relative z-10 py-16 border-t border-white/5">
+  <div className="max-w-7xl mx-auto px-4">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      className="text-center mb-12"
+    >
+      <h2 className="text-3xl font-light text-white/90 mb-2">¿Qué necesitas hoy?</h2>
+      <p className="text-white/40 text-sm">Tres formas de mantener tu vehículo en movimiento</p>
+    </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <ServiceCard 
-              icon="🔧"
-              title="VENTA DE UNIDADES"
-              description="Transmisiones y diferenciales listos para instalar. Verificadas en banco de pruebas con garantía de hasta 4 meses."
-              cta="VER CATÁLOGO"
-              color="#ef4444"
-              delay={0.1}
-            />
-            <ServiceCard 
-              icon="⚙️"
-              title="REPARACIÓN ESPECIALIZADA"
-              description="Reconstrucción mayor con limpieza quimica total, ajuste de tolerancias y reemplazo de componentes críticos."
-              cta="COTIZAR REPARACIÓN"
-              color="#4ade80"
-              delay={0.2}
-            />
-            <ServiceCard 
-              icon="🛡️"
-              title="MANTENIMIENTO PREVENTIVO"
-              description="Cambio de aceite, inspección de retenes, soportes y juego en flechas. Alarga la vida de tu inversión."
-              cta="AGENDAR CITA"
-              color="#60a5fa"
-              delay={0.3}
-            />
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* ===== TARJETA 1: VENTA DE UNIDADES ===== */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        whileHover={{ y: -8 }}
+        className="group relative bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl overflow-hidden border border-white/5 cursor-pointer"
+        onClick={() => router.push("/catalogo")}
+      >
+        {/* Línea superior de color */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#ef4444] to-[#f97316]" />
+        
+        {/* Imagen de fondo */}
+        <div className="relative h-48 overflow-hidden">
+          <img 
+            src="/images/venta-unidades.jpg" 
+            alt="Venta de transmisiones"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          
+          {/* Icono flotante */}
+          <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-2xl border border-white/10">
+            🔧
           </div>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-center text-white/20 text-xs mt-8"
-          >
-            * Todos los servicios incluyen diagnóstico previo y garantía por escrito
-          </motion.p>
         </div>
-      </section>
+        
+        {/* Contenido */}
+        <div className="relative z-10 p-6">
+          <h3 className="text-xl font-bold text-white/90 mb-2 group-hover:text-[#ef4444] transition-colors">
+            VENTA DE UNIDADES
+          </h3>
+          <p className="text-white/50 text-sm leading-relaxed">
+            Transmisiones y diferenciales listos para instalar. Verificadas en banco de pruebas con garantía de hasta 4 meses.
+          </p>
+          <motion.div
+            whileHover={{ x: 5 }}
+            className="flex items-center gap-2 text-sm font-medium text-[#ef4444] mt-4"
+          >
+            VER CATÁLOGO →
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* ===== TARJETA 2: REPARACIÓN ESPECIALIZADA ===== */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        whileHover={{ y: -8 }}
+        className="group relative bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl overflow-hidden border border-white/5 cursor-pointer"
+        onClick={() => {
+          const message = encodeURIComponent("Hola, quiero cotizar una reparación.");
+          window.open(`https://wa.me/5573382923?text=${message}`, "_blank");
+        }}
+      >
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#4ade80] to-[#22d3ee]" />
+        
+        <div className="relative h-48 overflow-hidden">
+          <img 
+            src="/images/reparacion-especializada.jpg" 
+            alt="Reparación especializada"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          
+          <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-2xl border border-white/10">
+            ⚙️
+          </div>
+        </div>
+        
+        <div className="relative z-10 p-6">
+          <h3 className="text-xl font-bold text-white/90 mb-2 group-hover:text-[#4ade80] transition-colors">
+            REPARACIÓN ESPECIALIZADA
+          </h3>
+          <p className="text-white/50 text-sm leading-relaxed">
+            Reconstrucción mayor con limpieza quimica total, ajuste de tolerancias y reemplazo de componentes críticos.
+          </p>
+          <motion.div
+            whileHover={{ x: 5 }}
+            className="flex items-center gap-2 text-sm font-medium text-[#4ade80] mt-4"
+          >
+            COTIZAR REPARACIÓN →
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* ===== TARJETA 3: MANTENIMIENTO PREVENTIVO ===== */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        whileHover={{ y: -8 }}
+        className="group relative bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl overflow-hidden border border-white/5 cursor-pointer"
+        onClick={() => {
+          const message = encodeURIComponent("Hola, quiero agendar una cita para mantenimiento.");
+          window.open(`https://wa.me/5573382923?text=${message}`, "_blank");
+        }}
+      >
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#60a5fa] to-[#818cf8]" />
+        
+        <div className="relative h-48 overflow-hidden">
+          <img 
+            src="/images/mantenimiento-preventivo.jpg" 
+            alt="Mantenimiento preventivo"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          
+          <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-2xl border border-white/10">
+            🛡️
+          </div>
+        </div>
+        
+        <div className="relative z-10 p-6">
+          <h3 className="text-xl font-bold text-white/90 mb-2 group-hover:text-[#60a5fa] transition-colors">
+            MANTENIMIENTO PREVENTIVO
+          </h3>
+          <p className="text-white/50 text-sm leading-relaxed">
+            Cambio de aceite, inspección de retenes, soportes y juego en flechas. Alarga la vida de tu inversión.
+          </p>
+          <motion.div
+            whileHover={{ x: 5 }}
+            className="flex items-center gap-2 text-sm font-medium text-[#60a5fa] mt-4"
+          >
+            AGENDAR CITA →
+          </motion.div>
+        </div>
+      </motion.div>
+    </div>
+
+    <motion.p
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      transition={{ delay: 0.5 }}
+      className="text-center text-white/20 text-xs mt-8"
+    >
+      * Todos los servicios incluyen diagnóstico previo y garantía por escrito
+    </motion.p>
+  </div>
+</section>
 
       {/* ===== REFACCIONES ===== */}
       <RefaccionesSearch
