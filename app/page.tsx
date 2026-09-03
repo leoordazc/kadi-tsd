@@ -210,14 +210,21 @@ useEffect(() => {
     <div className="flex items-center justify-between h-full relative">
       
       {/* ===== LADO IZQUIERDO ===== */}
-      <div className="flex items-center gap-4">
-        {/* Legal - SOLO TEXTO */}
+      <div className="flex items-center gap-2 sm:gap-4">
+        {/* Legal - ICONO en móvil, TEXTO en desktop */}
         <button 
           onClick={() => setIsLegalOpen(true)}
-          className="text-white/50 hover:text-white/90 transition-colors duration-300 text-xs sm:text-sm font-light tracking-wide uppercase"
+          className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
           title="Información Legal"
         >
-          Legal
+          {/* Ícono siempre visible en móvil */}
+          <svg className="w-5 h-5 block sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+          {/* Texto visible en desktop */}
+          <span className="hidden sm:block text-white/50 hover:text-white/90 transition-colors duration-300 text-sm font-light tracking-wide uppercase">
+            Legal
+          </span>
         </button>
         
         {/* Ubicación con animación */}
@@ -229,57 +236,81 @@ useEffect(() => {
         <motion.img
           src="/logo.png"
           alt="KADI TSyD"
-          className="h-12 w-auto cursor-pointer"
+          className="h-10 sm:h-12 w-auto cursor-pointer"
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.2 }}
           onClick={() => window.location.href = "/"}
         />
       </div>
 
-      {/* ===== LADO DERECHO - SOLO TEXTO (excepto carrito) ===== */}
-      <div className="flex items-center gap-4 sm:gap-6">
+      {/* ===== LADO DERECHO ===== */}
+      <div className="flex items-center gap-1 sm:gap-4">
         
-        {/* Account - SOLO TEXTO */}
+        {/* Account - ICONO en móvil, TEXTO en desktop */}
         {user ? (
           <Link
             href="/perfil"
-            className="text-white/50 hover:text-white/90 transition-colors duration-300 text-xs sm:text-sm font-light tracking-wide uppercase"
+            className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
             title="Mi perfil"
           >
-            {user.email?.split('@')[0] || 'Perfil'}
+            {/* Ícono siempre visible en móvil */}
+            <svg className="w-5 h-5 block sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+            {/* Texto visible en desktop */}
+            <span className="hidden sm:block text-white/50 hover:text-white/90 transition-colors duration-300 text-sm font-light tracking-wide uppercase">
+              {user.email?.split('@')[0] || 'Perfil'}
+            </span>
           </Link>
         ) : (
           <button 
             onClick={() => setIsLoginOpen(true)}
-            className="text-white/50 hover:text-white/90 transition-colors duration-300 text-xs sm:text-sm font-light tracking-wide uppercase"
+            className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
             title="Ingresar"
           >
-            Ingresar
+            {/* Ícono siempre visible en móvil */}
+            <svg className="w-5 h-5 block sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+            {/* Texto visible en desktop */}
+            <span className="hidden sm:block text-white/50 hover:text-white/90 transition-colors duration-300 text-sm font-light tracking-wide uppercase">
+              Ingresar
+            </span>
           </button>
         )}
 
-        {/* Catálogo - SOLO TEXTO */}
+        {/* Catálogo - ICONO en móvil, TEXTO en desktop */}
         <button 
           onClick={handleCatalogClick}
-          className="text-white/50 hover:text-white/90 transition-colors duration-300 text-xs sm:text-sm font-light tracking-wide uppercase"
+          className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
           title="Catálogo"
         >
-          Catálogo
+          <svg className="w-5 h-5 block sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+          </svg>
+          <span className="hidden sm:block text-white/50 hover:text-white/90 transition-colors duration-300 text-sm font-light tracking-wide uppercase">
+            Catálogo
+          </span>
         </button>
 
-        {/* Seguimiento - SOLO TEXTO */}
+        {/* Seguimiento - ICONO en móvil, TEXTO en desktop */}
         <button 
           onClick={() => window.location.href = "/seguimiento"}
-          className="text-white/50 hover:text-white/90 transition-colors duration-300 text-xs sm:text-sm font-light tracking-wide uppercase"
+          className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
           title="Seguimiento"
         >
-          Seguimiento
+          <svg className="w-5 h-5 block sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <span className="hidden sm:block text-white/50 hover:text-white/90 transition-colors duration-300 text-sm font-light tracking-wide uppercase">
+            Seguimiento
+          </span>
         </button>
 
-        {/* Carrito - SOLO ICONO (con contador) */}
+        {/* Carrito - SIEMPRE ICONO (con contador) */}
         <button 
           onClick={() => setIsCartOpen(true)}
-          className="relative text-white/50 hover:text-white/90 transition-colors duration-300"
+          className="relative text-white/70 hover:text-[#D4AF37] transition-all duration-300"
           title="Carrito"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
