@@ -67,54 +67,62 @@ export default function RefaccionesSearch({ onSearch, onAddToCart }: Refacciones
             <div className="max-w-4xl mx-auto px-6 relative z-10">
                 
                 {/* Título estilo Apple */}
-                <div className="text-center mb-10">
-                    <motion.h3
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="text-5xl md:text-6xl font-semibold text-[#1d1d1f] tracking-tight mb-6"
-                    >
-                        ¿Solo necesitas el <span className="text-[#ef4444]">engranaje</span>?
-                    </motion.h3>
-                    
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-xl md:text-2xl text-[#86868b] max-w-2xl mx-auto leading-relaxed"
-                    >
-                        ¿Ya tienes el housing y requieres bronces, baleros, sincronizadores o satélites? Busca la pieza exacta por nombre o síntoma.
-                    </motion.p>
-                </div>
+<div className="text-center mb-10">
+    <motion.h3
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="text-5xl md:text-6xl font-semibold text-[#1d1d1f] tracking-tight mb-6"
+    >
+        ¿Solo necesitas el <span className="text-[#ef4444]">engranaje</span>?
+    </motion.h3>
+    
+    <motion.p
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className="text-xl md:text-2xl text-[#86868b] max-w-2xl mx-auto leading-relaxed"
+    >
+        ¿Ya tienes el housing y requieres bronces, baleros, sincronizadores o satélites? Busca la pieza exacta por nombre o síntoma.
+    </motion.p>
+</div>
 
-                {/* Barra de búsqueda estilo Apple */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    className="relative mb-6"
-                >
-                    <form onSubmit={handleSubmit} className="relative">
-                        <input
-                            type="text"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            onFocus={() => setIsFocused(true)}
-                            onBlur={() => setIsFocused(false)}
-                            placeholder="Ej: bronces para NP300, baleros, satélites..."
-                            className="w-full bg-[#f5f5f7] border-2 border-transparent rounded-2xl py-5 px-6 text-[#1d1d1f] placeholder-[#86868b] text-lg focus:outline-none focus:border-[#0071e3] focus:bg-white transition-all"
-                        />
-                        
-                        <button
-                            type="submit"
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 w-11 h-11 bg-[#0071e3] rounded-xl flex items-center justify-center hover:bg-[#0077ed] transition-colors"
-                        >
-                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </button>
-                    </form>
-                </motion.div>
+{/* ===== IMAGEN DEL COMPONENTE (estilo iPhone) ===== */}
+<motion.div
+    initial={{ opacity: 0, y: 40 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8, delay: 0.2 }}
+    className="relative flex justify-center items-center mb-12"
+>
+    <motion.img
+        src="/images/engrane-hero.jpg"
+        alt="Engrane de transmisión"
+        className="w-full max-w-2xl h-auto object-contain drop-shadow-2xl"
+        animate={{ 
+            y: [0, -10, 0],
+            rotate: [0, 2, 0, -2, 0]
+        }}
+        transition={{ 
+            duration: 6, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+        }}
+    />
+    
+    {/* Sombra debajo de la imagen */}
+    <motion.div
+        animate={{ 
+            scaleX: [1, 0.95, 1],
+            opacity: [0.3, 0.2, 0.3]
+        }}
+        transition={{ 
+            duration: 6, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+        }}
+        className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-3/4 h-4 bg-black/20 blur-2xl rounded-full"
+    />
+</motion.div>
 
                 {/* Sugerencias estilo Apple */}
                 <motion.div
