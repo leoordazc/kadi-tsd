@@ -6,6 +6,23 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
+interface Reclamacion {
+  id: string;
+  folio_pedido: string;
+  producto_nombre: string;
+  producto_codigo?: string;
+  tipo_producto?: string;
+  fecha_compra: string;
+  fecha_inicio_garantia: string;
+  fecha_fin_garantia: string;
+  fecha_reclamacion: string;
+  fecha_resolucion?: string;
+  motivo: string;
+  descripcion: string;
+  status: 'pendiente' | 'en_revision' | 'aprobada' | 'rechazada' | 'resuelta';
+  resolucion?: string;
+}
+
 interface Perfil {
   id: string;
   email: string;
@@ -42,6 +59,19 @@ export default function PerfilPage() {
     direccion: ""
   });
 
+  // Estado para reclamaciones
+  const [reclamaciones, setReclamaciones] = useState<Reclamacion[]>([]);
+  const [mostrandoFormulario, setMostrandoFormulario] = useState(false);
+  const [nuevaReclamacion, setNuevaReclamacion] = useState({
+    pedido_id: '',
+    folio_pedido: '',
+    producto_nombre: '',
+    producto_codigo: '',
+    tipo_producto: '',
+    motivo: '',
+    descripcion: ''
+  });
+
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -52,6 +82,7 @@ export default function PerfilPage() {
       setUser(user);
       await cargarPerfil(user.id);
       await cargarPedidos(user.id);
+      await cargarReclamaciones(user.id);
       setLoading(false);
     };
     getUser();
@@ -91,6 +122,16 @@ export default function PerfilPage() {
     setPedidos(data || []);
   };
 
+  const cargarReclamaciones = async (userId: string) => {
+    const { data } = await supabase
+      .from('reclamaciones_garantia')
+      .select('*')
+      .eq('user_id', userId)
+      .order('fecha_reclamacion', { ascending: false });
+
+    setReclamaciones(data || []);
+  };
+
   const actualizarPerfil = async (campo: string, valor: string) => {
     if (!user) return;
 
@@ -118,6 +159,10 @@ export default function PerfilPage() {
     router.push("/");
   };
 
+  // ============================================
+  // HELPERS
+  // ============================================
+
   const getStatusInfo = (status: string) => {
     switch (status) {
       case 'pendiente_pago': return { text: 'Pendiente de pago', color: 'bg-yellow-500/10 text-yellow-400' };
@@ -136,6 +181,88 @@ export default function PerfilPage() {
       case 'whatsapp': return '📱 WhatsApp';
       default: return metodo;
     }
+  };
+
+  const getReclamacionStatusInfo = (status: string) => {
+    switch (status) {
+      case 'pendiente': return { text: 'Pendiente', color: 'bg-yellow-500/10 text-yellow-400' };
+      case 'en_revision': return { text: 'En revisión', color: 'bg-blue-500/10 text-blue-400' };
+      case 'aprobada': return { text: 'Aprobada', color: 'bg-green-500/10 text-green-400' };
+      case 'rechazada': return { text: 'Rechazada', color: 'bg-red-500/10 text-red-400' };
+      case 'resuelta': return { text: 'Resuelta', color: 'bg-purple-500/10 text-purple-400' };
+      default: return { text: status, color: 'bg-white/5 text-white/40' };
+    }
+  };
+
+  const calcularFechaFinGarantia = (fechaCompra: string, tipo: string) => {
+    const fecha = new Date(fechaCompra);
+    const meses = tipo === 'Nueva' ? 3 : tipo === 'Reconstruida' ? 3 : 1;
+    fecha.setMonth(fecha.getMonth() + meses);
+    return fecha.toISOString().split('T')[0];
+  };
+
+  const garantiaVigente = (fechaFin: string) => {
+    return new Date(fechaFin) >= new Date();
+  };
+
+  // ============================================
+  // CREAR RECLAMACIÓN
+  // ============================================
+
+  const crearReclamacion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    const pedidoSeleccionado = pedidos.find(p => p.id === nuevaReclamacion.pedido_id);
+    if (!pedidoSeleccionado) {
+      alert('Selecciona un pedido');
+      return;
+    }
+
+    const item = pedidoSeleccionado.items?.[0];
+    const fechaCompra = pedidoSeleccionado.created_at;
+    const fechaFin = calcularFechaFinGarantia(fechaCompra, item?.tipo || 'Nueva');
+
+    if (!garantiaVigente(fechaFin)) {
+      alert('⚠️ La garantía de este producto ha vencido.');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('reclamaciones_garantia')
+      .insert({
+        user_id: user.id,
+        user_email: user.email,
+        pedido_id: pedidoSeleccionado.id,
+        folio_pedido: pedidoSeleccionado.folio,
+        producto_nombre: item?.nombre || 'Producto',
+        producto_codigo: item?.codigo_caja || '',
+        tipo_producto: item?.tipo || 'Nueva',
+        fecha_compra: fechaCompra,
+        fecha_inicio_garantia: fechaCompra,
+        fecha_fin_garantia: fechaFin,
+        motivo: nuevaReclamacion.motivo,
+        descripcion: nuevaReclamacion.descripcion,
+        status: 'pendiente'
+      });
+
+    if (error) {
+      alert('Error al crear la reclamación: ' + error.message);
+      return;
+    }
+
+    alert('✅ Reclamación enviada. Te contactaremos pronto.');
+    setMostrandoFormulario(false);
+    setNuevaReclamacion({
+      pedido_id: '',
+      folio_pedido: '',
+      producto_nombre: '',
+      producto_codigo: '',
+      tipo_producto: '',
+      motivo: '',
+      descripcion: ''
+    });
+    await cargarReclamaciones(user.id);
   };
 
   if (loading) {
@@ -178,7 +305,6 @@ export default function PerfilPage() {
           {/* ===== COLUMNA IZQUIERDA (SIDEBAR) ===== */}
           <div className="lg:col-span-1 space-y-6">
             
-            {/* Tarjeta de perfil con avatar */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -205,7 +331,6 @@ export default function PerfilPage() {
               </div>
             </motion.div>
 
-            {/* ===== MENÚ LATERAL FUNCIONAL ===== */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -255,7 +380,6 @@ export default function PerfilPage() {
                   </div>
 
                   <div className="divide-y divide-white/5">
-                    {/* Email */}
                     <div className="flex items-center justify-between p-5">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
@@ -271,7 +395,6 @@ export default function PerfilPage() {
                       <span className="text-[#4ade80] text-xs">✓ Verificado</span>
                     </div>
 
-                    {/* Nombre */}
                     <div className="flex items-center justify-between p-5">
                       <div className="flex items-center gap-4 flex-1">
                         <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
@@ -305,7 +428,6 @@ export default function PerfilPage() {
                       )}
                     </div>
 
-                    {/* Teléfono */}
                     <div className="flex items-center justify-between p-5">
                       <div className="flex items-center gap-4 flex-1">
                         <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
@@ -339,7 +461,6 @@ export default function PerfilPage() {
                       )}
                     </div>
 
-                    {/* Dirección */}
                     <div className="flex items-start justify-between p-5">
                       <div className="flex items-start gap-4 flex-1">
                         <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center flex-shrink-0">
@@ -387,7 +508,6 @@ export default function PerfilPage() {
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
-                  {/* Estado de la cuenta */}
                   <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 overflow-hidden">
                     <div className="p-6 border-b border-white/5">
                       <h2 className="text-xl font-light text-white/90">Estado de la cuenta</h2>
@@ -444,7 +564,6 @@ export default function PerfilPage() {
                     </div>
                   </div>
 
-                  {/* Sesiones activas */}
                   <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 overflow-hidden">
                     <div className="p-6 border-b border-white/5">
                       <h2 className="text-xl font-light text-white/90">Sesiones activas</h2>
@@ -608,7 +727,6 @@ export default function PerfilPage() {
                     </div>
 
                     <div className="p-6 space-y-6">
-                      {/* Garantía de productos */}
                       <div>
                         <h3 className="text-white/80 text-sm font-medium mb-3 flex items-center gap-2">
                           <span>🔧</span> Garantía de productos
@@ -633,7 +751,6 @@ export default function PerfilPage() {
                         </div>
                       </div>
 
-                      {/* Qué cubre */}
                       <div>
                         <h3 className="text-white/80 text-sm font-medium mb-3 flex items-center gap-2">
                           <span>✅</span> ¿Qué cubre la garantía?
@@ -646,7 +763,6 @@ export default function PerfilPage() {
                         </ul>
                       </div>
 
-                      {/* Qué NO cubre */}
                       <div>
                         <h3 className="text-white/80 text-sm font-medium mb-3 flex items-center gap-2">
                           <span>❌</span> ¿Qué NO cubre la garantía?
@@ -658,22 +774,75 @@ export default function PerfilPage() {
                           <li className="flex gap-2"><span className="text-red-400">✗</span> Modificaciones no autorizadas</li>
                         </ul>
                       </div>
-
-                      {/* CTA de contacto */}
-                      <div className="pt-4 border-t border-white/5">
-                        <p className="text-white/60 text-sm mb-3">
-                          ¿Tienes alguna duda sobre tu garantía?
-                        </p>
-                        <a
-                          href="https://wa.me/5573382923?text=Hola,%20tengo%20una%20duda%20sobre%20mi%20garantía"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#4ade80]/10 text-[#4ade80] rounded-lg hover:bg-[#4ade80]/20 transition text-sm border border-[#4ade80]/30"
-                        >
-                          💬 Contactar a soporte
-                        </a>
-                      </div>
                     </div>
+                  </div>
+
+                  {/* ===== MIS RECLAMACIONES ===== */}
+                  <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 overflow-hidden">
+                    <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                      <div>
+                        <h2 className="text-xl font-light text-white/90">Mis reclamaciones</h2>
+                        <p className="text-white/40 text-xs mt-1">{reclamaciones.length} reclamaciones registradas</p>
+                      </div>
+                      <button
+                        onClick={() => setMostrandoFormulario(true)}
+                        className="bg-[#ef4444] text-white px-4 py-2 rounded-lg text-xs hover:bg-[#ef4444]/90 transition"
+                      >
+                        + Nueva reclamación
+                      </button>
+                    </div>
+
+                    {reclamaciones.length === 0 ? (
+                      <div className="text-center py-12">
+                        <p className="text-white/40 text-sm">No has realizado ninguna reclamación</p>
+                        <p className="text-white/20 text-xs mt-2">Si tienes un problema con un producto, puedes reclamar tu garantía aquí.</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-white/5">
+                        {reclamaciones.map((rec) => {
+                          const vigente = garantiaVigente(rec.fecha_fin_garantia);
+                          const statusInfo = getReclamacionStatusInfo(rec.status);
+
+                          return (
+                            <div key={rec.id} className="p-5">
+                              <div className="flex items-center justify-between mb-3">
+                                <div>
+                                  <p className="text-white/90 font-medium text-sm">{rec.folio_pedido}</p>
+                                  <p className="text-white/40 text-xs">{rec.producto_nombre}</p>
+                                </div>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusInfo.color}`}>
+                                  {statusInfo.text}
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3 text-xs">
+                                <div>
+                                  <p className="text-white/30">Fecha de compra</p>
+                                  <p className="text-white/60">{new Date(rec.fecha_compra).toLocaleDateString('es-MX')}</p>
+                                </div>
+                                <div>
+                                  <p className="text-white/30">Vigencia garantía</p>
+                                  <p className={vigente ? 'text-[#4ade80]' : 'text-red-400'}>
+                                    {new Date(rec.fecha_fin_garantia).toLocaleDateString('es-MX')} {vigente ? '(Vigente)' : '(Vencida)'}
+                                  </p>
+                                </div>
+                                <div className="col-span-2">
+                                  <p className="text-white/30">Motivo</p>
+                                  <p className="text-white/60">{rec.motivo}</p>
+                                </div>
+                              </div>
+
+                              {rec.resolucion && (
+                                <div className="mt-3 p-3 bg-[#4ade80]/10 border border-[#4ade80]/20 rounded-lg">
+                                  <p className="text-[#4ade80] text-xs font-medium mb-1">Resolución:</p>
+                                  <p className="text-white/70 text-xs">{rec.resolucion}</p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -681,6 +850,102 @@ export default function PerfilPage() {
           </div>
         </div>
       </div>
+
+      {/* ===== FORMULARIO DE NUEVA RECLAMACIÓN (MODAL) ===== */}
+      <AnimatePresence>
+        {mostrandoFormulario && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+              onClick={() => setMostrandoFormulario(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-lg bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/10 p-6"
+            >
+              <h3 className="text-xl font-light text-white/90 mb-4">Nueva reclamación de garantía</h3>
+              
+              <form onSubmit={crearReclamacion} className="space-y-4">
+                <div>
+                  <label className="text-white/40 text-xs block mb-1">Pedido</label>
+                  <select
+                    value={nuevaReclamacion.pedido_id}
+                    onChange={(e) => {
+                      const pedido = pedidos.find(p => p.id === e.target.value);
+                      setNuevaReclamacion({
+                        ...nuevaReclamacion,
+                        pedido_id: e.target.value,
+                        folio_pedido: pedido?.folio || '',
+                        producto_nombre: pedido?.items?.[0]?.nombre || '',
+                        producto_codigo: pedido?.items?.[0]?.codigo_caja || '',
+                        tipo_producto: pedido?.items?.[0]?.tipo || 'Nueva'
+                      });
+                    }}
+                    required
+                    className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-white/80 text-sm focus:outline-none focus:border-[#ef4444]"
+                  >
+                    <option value="">Selecciona un pedido</option>
+                    {pedidos.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.folio} - {p.items?.[0]?.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-white/40 text-xs block mb-1">Motivo</label>
+                  <select
+                    value={nuevaReclamacion.motivo}
+                    onChange={(e) => setNuevaReclamacion({ ...nuevaReclamacion, motivo: e.target.value })}
+                    required
+                    className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-white/80 text-sm focus:outline-none focus:border-[#ef4444]"
+                  >
+                    <option value="">Selecciona el motivo</option>
+                    <option value="Falla mecánica">Falla mecánica</option>
+                    <option value="Pieza defectuosa">Pieza defectuosa</option>
+                    <option value="No funciona correctamente">No funciona correctamente</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-white/40 text-xs block mb-1">Descripción del problema</label>
+                  <textarea
+                    value={nuevaReclamacion.descripcion}
+                    onChange={(e) => setNuevaReclamacion({ ...nuevaReclamacion, descripcion: e.target.value })}
+                    required
+                    rows={4}
+                    placeholder="Describe el problema con el mayor detalle posible..."
+                    className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-white/80 text-sm focus:outline-none focus:border-[#ef4444] resize-none"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-[#ef4444] text-white py-3 rounded-lg text-sm hover:bg-[#ef4444]/90 transition"
+                  >
+                    Enviar reclamación
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMostrandoFormulario(false)}
+                    className="px-6 bg-white/5 border border-white/10 text-white/70 py-3 rounded-lg text-sm hover:bg-white/10 transition"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
