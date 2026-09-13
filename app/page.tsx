@@ -946,7 +946,7 @@ useEffect(() => {
     }}
     
 />
-     <CartSidebar
+    <CartSidebar
   isOpen={isCartOpen}
   onClose={() => setIsCartOpen(false)}
   cartItems={cartItems}
@@ -954,6 +954,8 @@ useEffect(() => {
   removeFromCart={removeFromCart}
   totalPrice={totalPrice}
   user={user}
+  onLoginRequired={() => setIsLoginOpen(true)}
+  onOpenLegal={() => setIsLegalOpen(true)} // 👈 NUEVO
 />
 
 <LegalSidebar isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />

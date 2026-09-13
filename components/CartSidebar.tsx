@@ -13,7 +13,8 @@ interface CartSidebarProps {
   removeFromCart: (id: string) => void;
   totalPrice: number;
   user?: any;
-  onLoginRequired?: () => void; // 👈 NUEVO: para abrir login desde el carrito
+  onLoginRequired?: () => void; // Abre login desde el carrito
+  onOpenLegal?: () => void;     // Abre el modal legal (términos y condiciones)
 }
 
 export default function CartSidebar({
@@ -24,13 +25,15 @@ export default function CartSidebar({
   removeFromCart,
   totalPrice,
   user,
-  onLoginRequired, // 👈 NUEVO
+  onLoginRequired,
+  onOpenLegal,
 }: CartSidebarProps) {
   const [paymentMethod, setPaymentMethod] = useState("transferencia");
   const [showBankModal, setShowBankModal] = useState(false);
   const [pedidoId, setPedidoId] = useState<string | null>(null);
   const [folio, setFolio] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
 
   // ============================================
   // CREAR O OBTENER EL PEDIDO (SOLO UNA VEZ)
@@ -68,6 +71,7 @@ export default function CartSidebar({
         folio: nuevoFolio,
         metodo_pago: paymentMethod,
         status: 'pendiente_pago',
+        acepta_terminos: aceptaTerminos, // 👈 Guardamos la aceptación
         created_at: new Date().toISOString()
       };
 
@@ -221,15 +225,20 @@ export default function CartSidebar({
   // CHECKOUT PRINCIPAL
   // ============================================
   const handleCheckout = async () => {
-    // 👇 PRIMERO: Verificar si el usuario está logueado
+    // 1. Verificar login
     if (!user) {
-      // Cerrar carrito y abrir login
       onClose();
       onLoginRequired?.();
       return;
     }
 
-    // Si está logueado, continuar con el pago
+    // 2. Verificar aceptación de términos
+    if (!aceptaTerminos) {
+      alert('Debes aceptar los términos y condiciones para continuar');
+      return;
+    }
+
+    // 3. Continuar con el pago
     if (paymentMethod === "transferencia") {
       await handleTransferencia();
     } else if (paymentMethod === "tarjeta") {
@@ -273,7 +282,7 @@ export default function CartSidebar({
               </button>
             </div>
 
-            {/* Contenido */}
+            {/* Contenido (lista de productos) */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {cartItems.length === 0 ? (
                 <div className="text-center text-white/40 mt-20">
@@ -321,7 +330,7 @@ export default function CartSidebar({
               )}
             </div>
 
-            {/* 👇 SECCIÓN DE PAGO - MODIFICADA */}
+            {/* ===== SECCIÓN DE PAGO ===== */}
             {cartItems.length > 0 && (
               <div className="border-t border-white/5 p-6">
                 {/* Banner de registro (solo si no hay usuario) */}
@@ -365,14 +374,59 @@ export default function CartSidebar({
                   </select>
                 </div>
 
+                {/* ===== CASILLA DE TÉRMINOS Y CONDICIONES ===== */}
+                <div className="mb-4">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <div className="relative flex items-center mt-0.5">
+                      <input
+                        type="checkbox"
+                        checked={aceptaTerminos}
+                        onChange={(e) => setAceptaTerminos(e.target.checked)}
+                        className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md checked:bg-[#ef4444] checked:border-[#ef4444] transition-all cursor-pointer"
+                      />
+                      <svg 
+                        className="absolute w-3 h-3 text-white left-1 top-1 pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity"
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span className="text-xs text-white/50 leading-relaxed group-hover:text-white/70 transition">
+                      Acepto los{" "}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenLegal?.();
+                        }}
+                        className="text-[#ef4444] hover:text-[#f97316] underline transition-colors"
+                      >
+                        términos y condiciones
+                      </button>
+                      {" "}del servicio, incluyendo la política de garantía y devoluciones.
+                    </span>
+                  </label>
+                </div>
+
+                {/* ===== BOTÓN DE PAGO ===== */}
                 <button
                   onClick={handleCheckout}
-                  disabled={guardando}
-                  className={`w-full bg-gradient-to-r from-[#ef4444] to-[#f97316] text-white py-3 rounded-lg font-medium transition ${
-                    !user ? 'opacity-60 cursor-not-allowed' : 'hover:from-[#ef4444]/90 hover:to-[#f97316]/90'
+                  disabled={guardando || !user || !aceptaTerminos}
+                  className={`w-full py-3 rounded-lg font-medium transition ${
+                    !user || !aceptaTerminos
+                      ? 'bg-white/10 text-white/30 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-[#ef4444] to-[#f97316] text-white hover:from-[#ef4444]/90 hover:to-[#f97316]/90'
                   }`}
                 >
-                  {!user ? "🔒 Inicia sesión para comprar" : (guardando ? "Procesando..." : "Proceder al pago")}
+                  {!user
+                    ? "🔒 Inicia sesión para comprar"
+                    : !aceptaTerminos
+                      ? "☑️ Acepta los términos para continuar"
+                      : guardando
+                        ? "Procesando..."
+                        : "Proceder al pago"}
                 </button>
               </div>
             )}
