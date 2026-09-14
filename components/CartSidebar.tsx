@@ -90,6 +90,35 @@ export default function CartSidebar({
       setPedidoId(pedidoCreado.id);
       setFolio(pedidoCreado.folio);
       console.log('✅ Pedido creado:', pedidoCreado);
+
+      // ============================================
+// 🔥 EVENTO DE COMPRA PARA META ADS
+// ============================================
+try {
+  await fetch('/api/fb-events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      eventName: 'Purchase',
+      eventData: {
+        value: Number(totalPrice),
+        currency: 'MXN',
+        content_ids: cartItems.map(item => item.codigo_caja || item.id),
+        content_type: 'product',
+        num_items: cartItems.length,
+        order_id: nuevoFolio
+      },
+      userData: {
+        email: user?.email || null,
+        phone: user?.user_metadata?.phone || null,
+        external_id: user?.id || null
+      }
+    })
+  });
+  console.log('📊 Evento Purchase enviado a Meta');
+} catch (err) {
+  console.error('⚠️ Error enviando evento a Meta:', err);
+}
       
       return { id: pedidoCreado.id, folio: pedidoCreado.folio };
 
