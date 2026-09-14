@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import JsonLd from '@/components/JsonLd';
 import { CartProvider } from "@/context/CartContext";
+import { FacebookPixel, PixelPageView } from "next-meta-pixel"; // 👈 NUEVO
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -67,7 +68,6 @@ export const metadata: Metadata = {
     google: 'tu-codigo-de-verificacion',
   },
   category: 'automotive',
-  // 👇 ESTO ES LO NUEVO - CONFIGURACIÓN DEL FAVICON
   icons: {
     icon: '/logo.png',
     shortcut: '/logo.png',
@@ -85,6 +85,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* 👇 PIXEL DE META - Se carga en todas las páginas */}
+        <FacebookPixel />
+        <PixelPageView />
+
         <CartProvider>
           {children}
           <JsonLd />
