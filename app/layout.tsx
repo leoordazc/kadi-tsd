@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import JsonLd from '@/components/JsonLd';
 import { CartProvider } from "@/context/CartContext";
-import { FacebookPixel, PixelPageView } from "next-meta-pixel"; // 👈 NUEVO
+import { MetaPixelWrapper } from '@/components/MetaPixel'; // 👈 NUEVO
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -75,19 +75,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {/* 👇 PIXEL DE META - Se carga en todas las páginas */}
-        <FacebookPixel />
-        <PixelPageView />
+      <body>
+        {/* 👇 AQUÍ LLAMAS AL ENVOLVENTE QUE SÍ ES CLIENT COMPONENT */}
+        <MetaPixelWrapper />
 
         <CartProvider>
           {children}
