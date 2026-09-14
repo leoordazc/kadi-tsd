@@ -92,14 +92,19 @@ export default function CartSidebar({
       console.log('✅ Pedido creado:', pedidoCreado);
 
       // ============================================
+// ============================================
 // 🔥 EVENTO DE COMPRA PARA META ADS
 // ============================================
 try {
+  const uniqueEventId = `order_${nuevoFolio}`; // 👈 Creamos el ID único usando el folio de Supabase
+
   await fetch('/api/fb-events', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       eventName: 'Purchase',
+      eventId: uniqueEventId, // 👈 Se lo pasamos directo aquí para cumplir con Meta
+      eventSourceUrl: 'https://www.kaditsd.com.mx/checkout',
       eventData: {
         value: Number(totalPrice),
         currency: 'MXN',
@@ -115,7 +120,7 @@ try {
       }
     })
   });
-  console.log('📊 Evento Purchase enviado a Meta');
+  console.log('📊 Evento Purchase enviado a Meta con Folio:', uniqueEventId);
 } catch (err) {
   console.error('⚠️ Error enviando evento a Meta:', err);
 }
