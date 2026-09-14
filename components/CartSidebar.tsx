@@ -93,17 +93,22 @@ export default function CartSidebar({
 
       // ============================================
 // ============================================
+// ============================================
 // 🔥 EVENTO DE COMPRA PARA META ADS
 // ============================================
 try {
-  const uniqueEventId = `order_${nuevoFolio}`; // 👈 Creamos el ID único usando el folio de Supabase
+  const uniqueEventId = `order_${nuevoFolio}`;
+
+  // Extraemos el correo de forma segura de cualquier propiedad de Supabase Auth
+  const customerEmail = user?.email || user?.user_metadata?.email || 'contacto@kaditsd.com.mx';
+  const customerPhone = user?.user_metadata?.phone || user?.phone || '5500000000';
 
   await fetch('/api/fb-events', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       eventName: 'Purchase',
-      eventId: uniqueEventId, // 👈 Se lo pasamos directo aquí para cumplir con Meta
+      eventId: uniqueEventId,
       eventSourceUrl: 'https://www.kaditsd.com.mx/checkout',
       eventData: {
         value: Number(totalPrice),
@@ -114,13 +119,13 @@ try {
         order_id: nuevoFolio
       },
       userData: {
-        email: user?.email || null,
-        phone: user?.user_metadata?.phone || null,
+        email: customerEmail, // 👈 Obligatorio para que Meta acepte el evento
+        phone: customerPhone,
         external_id: user?.id || null
       }
     })
   });
-  console.log('📊 Evento Purchase enviado a Meta con Folio:', uniqueEventId);
+  console.log('📊 Evento Purchase enviado exitosamente a Meta con Folio:', uniqueEventId);
 } catch (err) {
   console.error('⚠️ Error enviando evento a Meta:', err);
 }
