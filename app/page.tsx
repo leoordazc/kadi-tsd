@@ -16,9 +16,10 @@ import LegalSidebar from "@/components/LegalSidebar";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import LocationWidget from "@/components/LocationWidget";
-import { useCart } from "@/context/CartContext"; // 👈 IMPORTAR EL CONTEXTO
+import { useCart } from "@/context/CartContext";
 import NIAChat from "@/components/NIA/NIAChat";
 import AboutModal from "@/components//AboutModal";
+import NovedadesKadi from "@/components/NovedadesKadi";
 import { useRouter } from "next/navigation";
 
 
@@ -51,7 +52,6 @@ const puntosLuz = [...Array(30)].map(() => ({
 }));
 
 export default function Home() {
-  // 👈 USAR EL CONTEXTO DEL CARRITO
   const { cartItems, addToCart, removeFromCart, updateQuantity, totalPrice } = useCart();
 
   const [messages, setMessages] = useState<Message[]>([
@@ -66,11 +66,9 @@ export default function Home() {
   const [showBuyButton, setShowBuyButton] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
-  // Estados para autenticación
-const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
 
 
-// Efecto para cargar el usuario al montar la página
 useEffect(() => {
     const getUser = async () => {
         const { data: { user } } = await supabase.auth.getUser();
@@ -78,7 +76,6 @@ useEffect(() => {
     };
     getUser();
 
-    // Escuchar cambios en la autenticación
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
         setUser(session?.user || null);
     });
@@ -88,7 +85,6 @@ useEffect(() => {
     };
 }, []);
 
-  // Estados para modales y funcionalidades
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
@@ -97,20 +93,17 @@ useEffect(() => {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const router = useRouter();
 
-  // Función para manejar catálogo
   const handleCatalogClick = () => {
     window.location.href = "/catalogo";
   };
-// Función para consulta NIA para boton stock 
+
   const handleStockConsulta = (consulta: any) => {
-  // Enviar el mensaje al chat de NIA
   setInput(consulta.textoConsulta);
-  // Opcional: abrir el chat o enfocar el input
   setTimeout(() => {
     sendMessage();
   }, 100);
 };
-  // Función para rastrear paquete
+
   const handleTrackPackage = () => {
     if (trackingNumber) {
       console.log("Rastreando:", trackingNumber);
@@ -135,7 +128,6 @@ useEffect(() => {
     color: Math.random() > 0.5 ? 'rgba(239, 68, 68, 0.8)' : 'rgba(249, 115, 22, 0.6)',
   }));
 
-  // Mouse move effect
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   
@@ -144,14 +136,12 @@ useEffect(() => {
     mouseY.set(e.clientY);
   };
 
-  // Scroll suave del contenedor de mensajes
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // Para evitar errores de hidratación
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -203,37 +193,29 @@ useEffect(() => {
       onMouseMove={handleMouseMove}
       className="min-h-screen bg-[#0a0a0a] text-white relative overflow-x-hidden"
     >  
-      {/* ===== FONDO NEGRO SÓLIDO (SIN EFECTOS) ===== */}
-<div className="fixed inset-0 bg-black pointer-events-none" />
+      <div className="fixed inset-0 bg-black pointer-events-none" />
 
-   {/* ===== HEADER GLASSMORPHISM (estilo premium) ===== */}
 <header className="sticky top-0 z-50 h-[70px] backdrop-blur-xl bg-black/75 border-b border-white/5">
   <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full">
     <div className="flex items-center justify-between h-full relative">
       
-      {/* ===== LADO IZQUIERDO ===== */}
       <div className="flex items-center gap-2 sm:gap-4">
-        {/* Legal - ICONO en móvil, TEXTO en desktop */}
         <button 
           onClick={() => setIsLegalOpen(true)}
           className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
           title="Información Legal"
         >
-          {/* Ícono siempre visible en móvil */}
           <svg className="w-5 h-5 block sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
-          {/* Texto visible en desktop */}
           <span className="hidden sm:block text-white/50 hover:text-white/90 transition-colors duration-300 text-sm font-light tracking-wide uppercase">
             Legal
           </span>
         </button>
         
-        {/* Ubicación con animación */}
         <LocationWidget />
-      </div>  {/* ← Cierre del LADO IZQUIERDO */}
+      </div>
 
-      {/* ===== LOGO CENTRADO ===== */}
       <div className="absolute left-1/2 transform -translate-x-1/2">
         <motion.img
           src="/logo.png"
@@ -245,21 +227,17 @@ useEffect(() => {
         />
       </div>
 
-      {/* ===== LADO DERECHO ===== */}
       <div className="flex items-center gap-1 sm:gap-4">
         
-        {/* Account - ICONO en móvil, TEXTO en desktop */}
         {user ? (
           <Link
             href="/perfil"
             className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
             title="Mi perfil"
           >
-            {/* Ícono siempre visible en móvil */}
             <svg className="w-5 h-5 block sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
             </svg>
-            {/* Texto visible en desktop */}
             <span className="hidden sm:block text-white/50 hover:text-white/90 transition-colors duration-300 text-sm font-light tracking-wide uppercase">
               {user.email?.split('@')[0] || 'Perfil'}
             </span>
@@ -270,18 +248,15 @@ useEffect(() => {
             className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
             title="Ingresar"
           >
-            {/* Ícono siempre visible en móvil */}
             <svg className="w-5 h-5 block sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
             </svg>
-            {/* Texto visible en desktop */}
             <span className="hidden sm:block text-white/50 hover:text-white/90 transition-colors duration-300 text-sm font-light tracking-wide uppercase">
               Ingresar
             </span>
           </button>
         )}
 
-        {/* Catálogo - ICONO en móvil, TEXTO en desktop */}
         <button 
           onClick={handleCatalogClick}
           className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
@@ -295,7 +270,6 @@ useEffect(() => {
           </span>
         </button>
 
-        {/* Seguimiento - ICONO en móvil, TEXTO en desktop */}
         <button 
           onClick={() => window.location.href = "/seguimiento"}
           className="text-white/70 hover:text-[#D4AF37] transition-all duration-300"
@@ -309,7 +283,6 @@ useEffect(() => {
           </span>
         </button>
 
-        {/* Carrito - SIEMPRE ICONO (con contador) */}
         <button 
           onClick={() => setIsCartOpen(true)}
           className="relative text-white/70 hover:text-[#D4AF37] transition-all duration-300"
@@ -322,22 +295,17 @@ useEffect(() => {
             {cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0)}
           </span>
         </button>
-      </div>  {/* ← Cierre del LADO DERECHO */}
-    </div>  {/* ← Cierre del div flex */}
-  </div>  {/* ← Cierre del div container */}
-</header>  {/* ← Cierre del header */}
+      </div>
+    </div>
+  </div>
+</header>
 
-      {/* ===== BUSCADOR NIA ===== */}
       <NIASearchBar onSearch={(query) => console.log("Buscando:", query)} />
 
-      {/* ===== HERO: INGENIERÍA QUE MUEVE TU INVERSIÓN ===== */}
 <section className="relative z-10 min-h-[80vh] flex items-center overflow-hidden pt-[120px] md:pt-[100px]">
   
-  {/* ===== FONDO ESTILO SPACEX ===== */}
-  {/* Fondo oscuro base */}
   <div className="absolute inset-0 bg-black" />
   
-  {/* Imagen de fondo tipo SpaceX (cubre toda la pantalla) */}
   <div 
     className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
     style={{ 
@@ -346,18 +314,15 @@ useEffect(() => {
     }}
   />
   
-  {/* Degradados laterales para dar profundidad (como SpaceX) */}
   <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-black/60 to-transparent" />
   <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black via-black/80 to-transparent" />
   
-  {/* Luces de acento sutiles (efecto tenue) */}
   <div className="absolute top-20 left-1/4 w-64 h-64 bg-[#ef4444]/5 rounded-full blur-3xl" />
   <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
 
   <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
     <div className="grid md:grid-cols-2 gap-12 items-center">
       
-      {/* COLUMNA IZQUIERDA (TEXTO) */}
       <motion.div
         initial={{ opacity: 0, x: -30 }}
         animate={{ opacity: 1, x: 0 }}
@@ -377,7 +342,6 @@ useEffect(() => {
           </span>
         </p>
 
-        {/* Botón CTA con efecto glow */}
        <button
   onClick={() => setIsAboutOpen(true)}
   className="relative group px-8 py-4 bg-transparent border border-[#ef4444] text-white font-medium rounded-lg overflow-hidden hover:bg-[#ef4444]/10 transition"
@@ -391,7 +355,6 @@ useEffect(() => {
   />
 </button>
 
-        {/* BARRA DE CONFIANZA */}
         <div className="pt-8 flex flex-wrap gap-6">
           {[
             { icon: "🛡️", title: "Garantía KADI", desc: "Piezas verificadas" },
@@ -411,7 +374,6 @@ useEffect(() => {
         </div>
       </motion.div>
 
-      {/* COLUMNA DERECHA (IMAGEN) */}
       <motion.div
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
@@ -441,7 +403,6 @@ useEffect(() => {
   </div>
 </section>
 
-      {/* ===== SERVICIOS ===== */}
 <section className="relative z-10 py-16 border-t border-white/5">
   <div className="max-w-7xl mx-auto px-4">
     <motion.div
@@ -454,7 +415,6 @@ useEffect(() => {
     </motion.div>
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {/* ===== TARJETA 1: VENTA DE UNIDADES ===== */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -463,10 +423,8 @@ useEffect(() => {
         className="group relative bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl overflow-hidden border border-white/5 cursor-pointer"
         onClick={() => router.push("/catalogo")}
       >
-        {/* Línea superior de color */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#ef4444] to-[#f97316]" />
         
-        {/* Imagen de fondo */}
         <div className="relative h-48 overflow-hidden">
           <img 
             src="/images/venta-unidades.jpg" 
@@ -475,13 +433,11 @@ useEffect(() => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
           
-          {/* Icono flotante */}
           <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-2xl border border-white/10">
             🔧
           </div>
         </div>
         
-        {/* Contenido */}
         <div className="relative z-10 p-6">
           <h3 className="text-xl font-bold text-white/90 mb-2 group-hover:text-[#ef4444] transition-colors">
             VENTA DE UNIDADES
@@ -498,7 +454,6 @@ useEffect(() => {
         </div>
       </motion.div>
 
-      {/* ===== TARJETA 2: REPARACIÓN ESPECIALIZADA ===== */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -541,7 +496,6 @@ useEffect(() => {
         </div>
       </motion.div>
 
-      {/* ===== TARJETA 3: MANTENIMIENTO PREVENTIVO ===== */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -596,13 +550,14 @@ useEffect(() => {
   </div>
 </section>
 
-      {/* ===== REFACCIONES ===== */}
       <RefaccionesSearch
     onSearch={(query) => console.log("Buscando refacción:", query)}
     onAddToCart={addToCart}
 />
 
-      {/* ===== AUTORIDAD ===== */}
+      {/* ===== NOVEDADES KADI - SEPTIEMBRE PATRIO ===== */}
+      <NovedadesKadi />
+
       <section className="relative z-10 py-24 border-t border-white/5 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
         
@@ -642,7 +597,6 @@ useEffect(() => {
             ))}
           </div>
 
-          {/* CARRUSEL DE MARCAS */}
           <div className="mb-24">
             <h3 className="text-sm text-white/30 mb-8 tracking-widest text-center">MARCAS QUE CONFÍAN EN KADI</h3>
             
@@ -672,7 +626,6 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* CÓMO FUNCIONA NIA */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               { step: "01", title: "Consulta", desc: "Habla con NIA sobre tu vehículo" },
@@ -695,10 +648,8 @@ useEffect(() => {
         </div>
       </section>
 
-      {/* ===== TIPS KADI ===== */}
       <TipsKadi onTipClick={(tip) => console.log("Tip seleccionado:", tip.title)} />
 
-      {/* ===== GLOBO 3D ===== */}
       <section className="relative z-10 py-24 border-t border-white/5 overflow-hidden">
         <div className="max-w-7xl mx-auto px-8">
           <motion.div
@@ -802,10 +753,8 @@ useEffect(() => {
         </div>
       </section>
 
-      {/* ===== PAGOS ===== */}
       <PaymentSection />
 
-      {/* ===== FAQ ===== */}
       <section className="relative z-10 py-16 border-t border-white/5">
         <div className="max-w-6xl mx-auto px-8">
           <h2 className="text-3xl font-light text-white/90 mb-8">Preguntas frecuentes sobre transmisiones</h2>
@@ -829,28 +778,23 @@ useEffect(() => {
         </div>
       </section>
 
-      {/* ===== FOOTER ===== */}
 <footer className="relative z-10 border-t border-white/5 bg-black/40">
   <div className="max-w-6xl mx-auto px-8 py-16">
     <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
       
-      {/* Columna 1: KADI TS&D */}
       <div>
         <h5 className="text-white/90 mb-4">KADI TS&D</h5>
         <p className="text-sm text-white/30">Transmisiones manuales y diferenciales</p>
       </div>
       
-      {/* Columna 2: Contacto (con funcionalidad) */}
       <div>
         <h5 className="text-white/90 mb-4">Contacto</h5>
-        {/* Correo - abre Gmail */}
         <a 
           href="mailto:ventas.kaditsd@gmail.com.mx?subject=Contacto desde KADI TS&D"
           className="text-sm text-white/30 hover:text-[#D4AF37] transition-colors duration-300 block mb-2"
         >
            ventas.kaditsd@gmail.com.mx
         </a>
-        {/* Teléfono / WhatsApp - abre WhatsApp con mensaje */}
         <a 
           href="https://wa.me/5573382923?text=Hola,%20me%20interesa%20conocer%20más%20sobre%20KADI%20TS&D"
           target="_blank"
@@ -860,11 +804,9 @@ useEffect(() => {
            +52 55 7338 2923
         </a>
         
-        {/* Redes Sociales */}
         <div className="flex gap-4 mt-4">
-          {/* Facebook */}
           <a
-            href="https://www.facebook.com/share/1CpLsJJzAs/"  // 👈 CAMBIA ESTO por tu URL real de Facebook
+            href="https://www.facebook.com/share/1CpLsJJzAs/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-white/30 hover:text-[#D4AF37] transition-colors duration-300"
@@ -877,13 +819,11 @@ useEffect(() => {
         </div>
       </div>
       
-      {/* Columna 3: Ubicación */}
       <div>
         <h5 className="text-white/90 mb-4">Ubicación</h5>
         <p className="text-sm text-white/30">CEDIS en Acolman Edo. de México 55870</p>
       </div>
       
-      {/* Columna 4: Legal (con funcionalidad - abre el mismo panel del header) */}
       <div>
         <h5 className="text-white/90 mb-4">Legal</h5>
         <button 
@@ -901,7 +841,6 @@ useEffect(() => {
   </div>
 </footer>
 
-      {/* ===== MODALES (siempre al final) ===== */}
       <AnimatePresence>
         {isTrackingOpen && (
           <motion.div
@@ -941,7 +880,6 @@ useEffect(() => {
     isOpen={isLoginOpen} 
     onClose={() => setIsLoginOpen(false)} 
     onLoginSuccess={() => {
-        // Actualizar el usuario después de login exitoso
         supabase.auth.getUser().then(({ data }) => setUser(data.user));
     }}
     
@@ -955,7 +893,7 @@ useEffect(() => {
   totalPrice={totalPrice}
   user={user}
   onLoginRequired={() => setIsLoginOpen(true)}
-  onOpenLegal={() => setIsLegalOpen(true)} // 👈 NUEVO
+  onOpenLegal={() => setIsLegalOpen(true)}
 />
 
 <LegalSidebar isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />
