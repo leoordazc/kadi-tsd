@@ -110,12 +110,12 @@ export default function CatalogoPage() {
 
     function getMarcaIcono(marca: string): string {
         const iconos: Record<string, string> = {
-            nissan: "🚗", toyota: "🚙", ford: "🛻", chevrolet: "🚛",
-            volkswagen: "🚘", renault: "🚙", mitsubishi: "🚗",
-            seat: "🚗", honda: "🚗", mazda: "🚗", fiat: "🚙",
-            audi: "🚗", mercedes: "🚙", hyundai: "🚗", suzuki: "🚗"
+            nissan: "", toyota: "", ford: "", chevrolet: "",
+            volkswagen: "", renault: "", mitsubishi: "",
+            seat: "", honda: "", mazda: "", fiat: "",
+            audi: "", mercedes: "", hyundai: "", suzuki: ""
         };
-        return iconos[marca.toLowerCase()] || "🔧";
+        return iconos[marca.toLowerCase()] || "";
     }
 
     if (loading) {
@@ -194,7 +194,7 @@ export default function CatalogoPage() {
                                 onClick={() => setShowBrands(!showBrands)}
                                 className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white/70 hover:bg-white/10 transition text-sm"
                             >
-                                <span>🚗 Filtrar</span>
+                                <span> Filtrar</span>
                                 {selectedMarca && (
                                     <span className="bg-[#ef4444] text-white text-[10px] px-1.5 rounded-full">
                                         1
