@@ -35,9 +35,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     // ============================================
     useEffect(() => {
         const handleScroll = () => {
-            const scrollY = window.scrollY;
-            // Cuando el scroll pasa el header (aprox 70px), se activa el modo compacto
-            setIsScrolled(scrollY > 70);
+            setIsScrolled(window.scrollY > 80);
         };
 
         window.addEventListener("scroll", handleScroll);
@@ -45,7 +43,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     }, []);
 
     // ============================================
-    // GHOST TYPING (EFECTO MÁQUINA DE ESCRIBIR)
+    // GHOST TYPING
     // ============================================
     
     const phrases = [
@@ -92,9 +90,8 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     }, [currentText, isDeleting, currentPhraseIndex, isFocused, inputValue]);
 
     // ============================================
-    // FIN GHOST TYPING
+    // USER ID
     // ============================================
-
     useEffect(() => {
         let id = localStorage.getItem('nia_user_id');
         if (!id) {
@@ -104,12 +101,28 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
         setUserId(id);
     }, []);
 
+    // ============================================
+    // AUTOSCROLL
+    // ============================================
     useEffect(() => {
         if (chatContainerRef.current && hasInteracted) {
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
     }, [messages, hasInteracted]);
 
+    // ============================================
+    // CERRAR CHAT
+    // ============================================
+    const handleCloseChat = () => {
+        setHasInteracted(false);
+        setMessages([]);
+        setInputValue("");
+        setIsFocused(false);
+    };
+
+    // ============================================
+    // ENVIAR MENSAJE
+    // ============================================
     const sendMessage = async () => {
         if (!inputValue.trim() || loading) return;
 
@@ -181,71 +194,49 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
     };
 
     return (
-        <>
-            {/* ===== BARRA DE BÚSQUEDA FIJA (FIXED) ===== */}
-            <div 
-    className={`fixed z-30 bg-black/60 backdrop-blur-sm transition-all duration-500 ease-in-out ${
-        isScrolled 
-            ? 'top-0 py-1.5' 
-            : 'top-[56px] py-3'
-    }`}
-                style={{
-                    left: 0,
-                    right: 0,
-                    width: '100%',
-                    borderBottom: isScrolled ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                    boxShadow: isScrolled ? '0 4px 30px rgba(0,0,0,0.4)' : 'none',
-                    transform: 'translateZ(0)', // Acelera el rendering
-                    willChange: 'transform, opacity',
-                }}
-            >
-                <div className={`w-full max-w-3xl mx-auto px-4 transition-all duration-500 ease-in-out ${
-                    isScrolled ? 'scale-[0.98]' : 'scale-100'
-                }`}>
-                    
-                    {/* ===== BARRA DE BÚSQUEDA ===== */}
-                    <motion.div
-                        animate={loading ? {
-                            boxShadow: [
-                                "0px 0px 0px rgba(15, 43, 92, 0)",
-                                "0px 0px 25px rgba(30, 74, 140, 0.8)",
-                                "0px 0px 0px rgba(15, 43, 92, 0)"
-                            ],
-                            borderColor: ["rgba(255,255,255,0.2)", "rgba(30, 74, 140, 1)", "rgba(255,255,255,0.2)"]
-                        } : {
-                            boxShadow: "0px 0px 0px rgba(15, 43, 92, 0)",
-                            borderColor: isFocused ? "rgba(30, 74, 140, 0.8)" : "rgba(255,255,255,0.2)"
-                        }}
-                        transition={{
-                            duration: 1.5,
-                            repeat: loading ? Infinity : 0,
-                            ease: "easeInOut"
-                        }}
-                        className={`relative backdrop-blur-md border transition-all duration-500 ease-in-out ${
-                            isFocused ? 'bg-black/90' : 'bg-black/70'
-                        } ${isScrolled ? 'rounded-xl' : 'rounded-2xl'}`}
-                    >
-                        <form onSubmit={handleSubmit}>
-                            <div className="flex items-center">
-                                {/* Icono o indicador NIA */}
-                                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                                    {isScrolled ? (
-                                        <div className="flex items-center gap-1.5">
-                                            <svg 
-                                                className={`w-3.5 h-3.5 transition-colors ${
-                                                    isFocused ? 'text-[#c49a2b]' : 'text-white/50'
-                                                }`}
-                                                fill="none" 
-                                                stroke="currentColor" 
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                            </svg>
-                                            <span className="text-[10px] font-medium text-white/40 tracking-wider">NIA</span>
-                                        </div>
-                                    ) : (
+        <div 
+            className={`sticky z-30 bg-black/60 backdrop-blur-sm transition-all duration-500 ease-in-out ${
+                isScrolled ? 'top-0 py-1.5' : 'top-[56px] py-3'
+            }`}
+            style={{
+                borderBottom: isScrolled || hasInteracted ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                boxShadow: hasInteracted ? '0 4px 30px rgba(0,0,0,0.4)' : 'none',
+            }}
+        >
+            <div className={`w-full max-w-3xl mx-auto px-4 transition-all duration-500 ease-in-out ${
+                isScrolled && !hasInteracted ? 'scale-[0.98]' : 'scale-100'
+            }`}>
+                
+                {/* ===== BARRA DE BÚSQUEDA ===== */}
+                <motion.div
+                    animate={loading ? {
+                        boxShadow: [
+                            "0px 0px 0px rgba(15, 43, 92, 0)",
+                            "0px 0px 25px rgba(30, 74, 140, 0.8)",
+                            "0px 0px 0px rgba(15, 43, 92, 0)"
+                        ],
+                        borderColor: ["rgba(255,255,255,0.2)", "rgba(30, 74, 140, 1)", "rgba(255,255,255,0.2)"]
+                    } : {
+                        boxShadow: "0px 0px 0px rgba(15, 43, 92, 0)",
+                        borderColor: isFocused ? "rgba(30, 74, 140, 0.8)" : "rgba(255,255,255,0.2)"
+                    }}
+                    transition={{
+                        duration: 1.5,
+                        repeat: loading ? Infinity : 0,
+                        ease: "easeInOut"
+                    }}
+                    className={`relative backdrop-blur-md border transition-all duration-500 ease-in-out ${
+                        isFocused ? 'bg-black/90' : 'bg-black/70'
+                    } ${isScrolled && !hasInteracted ? 'rounded-xl' : 'rounded-2xl'}`}
+                >
+                    <form onSubmit={handleSubmit}>
+                        <div className="flex items-center">
+                            {/* Icono o indicador NIA */}
+                            <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                                {isScrolled && !hasInteracted ? (
+                                    <div className="flex items-center gap-1.5">
                                         <svg 
-                                            className={`w-4 h-4 transition-colors ${
+                                            className={`w-3.5 h-3.5 transition-colors ${
                                                 isFocused ? 'text-[#c49a2b]' : 'text-white/50'
                                             }`}
                                             fill="none" 
@@ -254,185 +245,234 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                                         >
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
-                                    )}
-                                </div>
-                                
-                                {/* Input */}
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    value={inputValue}
-                                    onChange={(e) => setInputValue(e.target.value)}
-                                    onFocus={() => setIsFocused(true)}
-                                    onBlur={() => setIsFocused(false)}
-                                    onKeyPress={handleKeyPress}
-                                    placeholder={isFocused ? "Escribe tu pregunta a NIA..." : (currentText || "Pregúntale a NIA...")}
-                                    className={`w-full bg-transparent text-white/90 focus:outline-none placeholder-white/40 rounded-2xl transition-all duration-500 ease-in-out ${
-                                        isScrolled 
-                                            ? 'text-xs py-2 pl-16 pr-12' 
-                                            : 'text-sm py-3 pl-12 pr-14'
-                                    }`}
-                                    style={{ caretColor: "#c49a2b" }}
-                                />
-                                
-                                {/* Botón enviar */}
-                                {inputValue && (
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className={`absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-gradient-to-r from-[#0f2b5c] to-[#1e4a8c] hover:from-[#1a3d7a] hover:to-[#2a5ca8] transition-colors flex items-center justify-center disabled:opacity-50 shadow-lg shadow-[#0f2b5c]/50 ${
-                                            isScrolled 
-                                                ? 'w-6 h-6 text-[10px]' 
-                                                : 'w-8 h-8 text-sm'
+                                        <span className="text-[10px] font-medium text-white/40 tracking-wider">NIA</span>
+                                    </div>
+                                ) : (
+                                    <svg 
+                                        className={`w-4 h-4 transition-colors ${
+                                            isFocused ? 'text-[#c49a2b]' : 'text-white/50'
                                         }`}
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
                                     >
-                                        {loading ? (
-                                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                        ) : (
-                                            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        )}
-                                    </button>
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
                                 )}
                             </div>
-                        </form>
-                        
-                        {/* Luz animada inferior */}
-                        <motion.div
-                            className="absolute -bottom-px left-0 right-0 h-px"
-                            animate={{
-                                x: isFocused ? ["-100%", "100%"] : "0%",
-                                opacity: isFocused ? [0, 0.8, 0] : 0
-                            }}
-                            transition={{
-                                duration: 1.5,
-                                repeat: isFocused ? Infinity : 0,
-                                ease: "easeInOut"
-                            }}
-                            style={{
-                                background: "linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.8), transparent)"
-                            }}
-                        />
-                    </motion.div>
-
-                    {/* Mensaje de bienvenida - se oculta al hacer scroll */}
-                    <AnimatePresence>
-                        {!isScrolled && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.3 }}
-                                className="text-center mt-3"
-                            >
-                                <p className="text-xs text-white/50">
-                                    🔧 Diagnóstico gratis · ⚡ Respuesta en segundos · 📦 Envío a todo México
-                                </p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    {/* Área de mensajes del chat */}
-                    <AnimatePresence>
-                        {hasInteracted && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.3 }}
-                                className="mt-3 overflow-hidden"
-                            >
-                                <div 
-                                    ref={chatContainerRef}
-                                    className="space-y-4 overflow-y-auto custom-scroll"
-                                    style={{ maxHeight: "450px", minHeight: "300px" }}
+                            
+                            {/* Input */}
+                            <input
+                                ref={inputRef}
+                                type="text"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                onFocus={() => setIsFocused(true)}
+                                onBlur={() => setIsFocused(false)}
+                                onKeyPress={handleKeyPress}
+                                placeholder={isFocused ? "Escribe tu pregunta a NIA..." : (currentText || "Pregúntale a NIA...")}
+                                className={`w-full bg-transparent text-white/90 focus:outline-none placeholder-white/40 rounded-2xl transition-all duration-500 ease-in-out ${
+                                    isScrolled && !hasInteracted 
+                                        ? 'text-xs py-2 pl-16 pr-12' 
+                                        : 'text-sm py-3 pl-12 pr-14'
+                                }`}
+                                style={{ caretColor: "#c49a2b" }}
+                            />
+                            
+                            {/* Botón enviar */}
+                            {inputValue && (
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className={`absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-gradient-to-r from-[#0f2b5c] to-[#1e4a8c] hover:from-[#1a3d7a] hover:to-[#2a5ca8] transition-colors flex items-center justify-center disabled:opacity-50 shadow-lg shadow-[#0f2b5c]/50 ${
+                                        isScrolled && !hasInteracted
+                                            ? 'w-6 h-6 text-[10px]' 
+                                            : 'w-8 h-8 text-sm'
+                                    }`}
                                 >
-                                    {messages.map((msg) => (
-                                        <div key={msg.id}>
-                                            {/* Burbuja de mensaje */}
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                                    {loading ? (
+                                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    ) : (
+                                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    )}
+                                </button>
+                            )}
+                        </div>
+                    </form>
+                    
+                    {/* Luz animada inferior */}
+                    <motion.div
+                        className="absolute -bottom-px left-0 right-0 h-px"
+                        animate={{
+                            x: isFocused ? ["-100%", "100%"] : "0%",
+                            opacity: isFocused ? [0, 0.8, 0] : 0
+                        }}
+                        transition={{
+                            duration: 1.5,
+                            repeat: isFocused ? Infinity : 0,
+                            ease: "easeInOut"
+                        }}
+                        style={{
+                            background: "linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.8), transparent)"
+                        }}
+                    />
+                </motion.div>
+
+                {/* ===== BOTÓN DE CERRAR CHAT (solo cuando hay interacción) ===== */}
+                <AnimatePresence>
+                    {hasInteracted && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="flex items-center justify-between mt-2 px-1"
+                        >
+                            <div className="flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-[#4ade80] rounded-full animate-pulse" />
+                                <span className="text-white/40 text-[10px] tracking-wider uppercase">
+                                    Conversación activa
+                                </span>
+                            </div>
+                            <button
+                                onClick={handleCloseChat}
+                                className="flex items-center gap-1.5 text-white/40 hover:text-white/80 transition-colors text-[10px] tracking-wider uppercase"
+                                title="Cerrar conversación"
+                            >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                Cerrar
+                            </button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* ===== MENSAJE DE BIENVENIDA (cuando NO hay interacción) ===== */}
+                <AnimatePresence>
+                    {!hasInteracted && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.3 }}
+                            className="text-center mt-3"
+                        >
+                            <p className="text-xs text-white/50">
+                                🔧 Diagnóstico gratis · ⚡ Respuesta en segundos · 📦 Envío a todo México
+                            </p>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* ===== ÁREA DE MENSAJES DEL CHAT ===== */}
+                <AnimatePresence>
+                    {hasInteracted && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="mt-3 overflow-hidden"
+                        >
+                            <div 
+                                ref={chatContainerRef}
+                                className="space-y-4 overflow-y-auto custom-scroll pr-1"
+                                style={{ maxHeight: "400px", minHeight: "200px" }}
+                            >
+                                {messages.map((msg) => (
+                                    <div key={msg.id}>
+                                        {/* Burbuja de mensaje */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                                        >
+                                            <div
+                                                className={`max-w-[85%] p-3 rounded-2xl ${
+                                                    msg.role === "user"
+                                                        ? "bg-gradient-to-r from-[#0f2b5c] to-[#1a3d7a] text-white rounded-br-sm shadow-lg shadow-[#0f2b5c]/30"
+                                                        : "bg-white/15 text-white/90 rounded-bl-sm border border-white/10"
+                                                }`}
                                             >
-                                                <div
-                                                    className={`max-w-[80%] p-3 rounded-2xl ${
-                                                        msg.role === "user"
-                                                            ? "bg-gradient-to-r from-[#0f2b5c] to-[#1a3d7a] text-white rounded-br-sm shadow-lg shadow-[#0f2b5c]/30"
-                                                            : "bg-white/15 text-white/90 rounded-bl-sm border border-white/10"
-                                                    }`}
-                                                >
-                                                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                                                </div>
-                                            </motion.div>
-                                            
-                                            {/* Tarjetas de productos */}
-                                            {msg.products && msg.products.length > 0 && (
-                                                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                    {msg.products.map((product) => (
-                                                        <Link 
-                                                            key={product.id} 
-                                                            href={`/catalogo/${product.codigo_caja}`}
-                                                            className="block group"
-                                                        >
-                                                            <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-xl border border-white/15 p-3 hover:border-[#1e4a8c]/70 transition-all cursor-pointer">
-                                                                <div className="relative w-full h-32 mb-2 rounded-lg overflow-hidden bg-black/50">
-                                                                    {product.imagen_url ? (
-                                                                        <Image
-                                                                            src={product.imagen_url}
-                                                                            alt={product.nombre}
-                                                                            fill
-                                                                            className="object-contain group-hover:scale-105 transition-transform duration-300"
-                                                                        />
-                                                                    ) : (
-                                                                        <div className="w-full h-full flex items-center justify-center text-white/40">
-                                                                            🔧
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                                <h4 className="text-white/90 font-medium text-sm group-hover:text-[#ef4444] transition">
-                                                                    {product.nombre}
-                                                                </h4>
-                                                                <p className="text-white/40 text-xs">Código: {product.codigo_caja}</p>
-                                                                <p className="text-white/40 text-xs">Tipo: {product.tipo}</p>
-                                                                <p className="text-[#ef4444] font-bold text-lg mt-2">${product.precio?.toLocaleString()}</p>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.preventDefault();
-                                                                        addToCart(product);
-                                                                    }}
-                                                                    className="mt-2 w-full bg-gradient-to-r from-[#0f2b5c] to-[#1e4a8c] hover:from-[#1a3d7a] hover:to-[#2a5ca8] text-white py-2 rounded-lg text-sm transition-all"
-                                                                >
-                                                                    🛒 Agregar al carrito
-                                                                </button>
+                                                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                            </div>
+                                        </motion.div>
+                                        
+                                        {/* Tarjetas de productos */}
+                                        {msg.products && msg.products.length > 0 && (
+                                            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                {msg.products.map((product) => (
+                                                    <Link 
+                                                        key={product.id} 
+                                                        href={`/catalogo/${product.codigo_caja}`}
+                                                        className="block group"
+                                                    >
+                                                        <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-xl border border-white/15 p-3 hover:border-[#1e4a8c]/70 transition-all cursor-pointer">
+                                                            {/* Imagen del producto */}
+                                                            <div className="relative w-full h-32 mb-2 rounded-lg overflow-hidden bg-white">
+                                                                {product.imagen_url ? (
+                                                                    <Image
+                                                                        src={product.imagen_url}
+                                                                        alt={product.nombre}
+                                                                        fill
+                                                                        className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center text-black/20">
+                                                                        🔧
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                        </Link>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                    
-                                    {loading && (
-                                        <div className="flex justify-start">
-                                            <div className="bg-white/15 p-3 rounded-2xl rounded-bl-sm">
-                                                <div className="flex gap-1">
-                                                    <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                                                    <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                                                    <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                                                </div>
+                                                            
+                                                            <h4 className="text-white/90 font-medium text-sm group-hover:text-[#ef4444] transition line-clamp-2">
+                                                                {product.nombre}
+                                                            </h4>
+                                                            <p className="text-white/40 text-xs mt-1">Código: {product.codigo_caja}</p>
+                                                            <p className={`text-xs ${
+                                                                product.stock > 2 ? 'text-green-400' : 'text-yellow-400'
+                                                            }`}>
+                                                                {product.stock > 2 ? '✓ Stock disponible' : `⚠️ Quedan ${product.stock}`}
+                                                            </p>
+                                                            <p className="text-[#ef4444] font-bold text-lg mt-2">${product.precio?.toLocaleString()}</p>
+                                                            
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    addToCart(product);
+                                                                }}
+                                                                className="mt-2 w-full bg-gradient-to-r from-[#0f2b5c] to-[#1e4a8c] hover:from-[#1a3d7a] hover:to-[#2a5ca8] text-white py-2 rounded-lg text-sm transition-all"
+                                                            >
+                                                                🛒 Agregar al carrito
+                                                            </button>
+                                                        </div>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                
+                                {/* Indicador de escritura */}
+                                {loading && (
+                                    <div className="flex justify-start">
+                                        <div className="bg-white/15 p-3 rounded-2xl rounded-bl-sm border border-white/10">
+                                            <div className="flex gap-1">
+                                                <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                                                <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                                                <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                                             </div>
                                         </div>
-                                    )}
-                                    
-                                    <div ref={messagesEndRef} />
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
+                                    </div>
+                                )}
+                                
+                                <div ref={messagesEndRef} />
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
-        </>
+        </div>
     );
 }
