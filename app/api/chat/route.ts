@@ -78,13 +78,128 @@ function getBusinessResponse(message: string): string | null {
 }
 
 // ============================================
+// 🔥 FUNCIÓN CLAVE: GENERAR VARIANTES DE BÚSQUEDA
+// ============================================
+function generarVariantes(termino: string): string[] {
+    const lower = termino.toLowerCase();
+    const capitalized = termino.charAt(0).toUpperCase() + termino.slice(1).toLowerCase();
+    const upper = termino.toUpperCase();
+    
+    // Detectar si es modelo alfanumérico (NP300, D21, etc.)
+    const esModelo = /^[a-z]{0,3}\d+[a-z0-9]*$/i.test(termino);
+    
+    const variantes: string[] = [lower, capitalized, upper];
+    
+    if (esModelo) {
+        variantes.push(termino);
+    }
+    
+    // Eliminar duplicados
+    return [...new Set(variantes)];
+}
+
+// ============================================
+// 🔥 FUNCIÓN CLAVE: BUSCAR PRODUCTOS CON VARIANTES
+// ============================================
+async function buscarProductos(mensaje: string) {
+    const lowerMsg = mensaje.toLowerCase();
+    
+    const marcasModelos = [
+        'fiat ducato', 'fiat', 'ducato', 'chevrolet', 'nissan', 'toyota', 'ford', 
+        'vw', 'volkswagen', 'honda', 'mazda', 'mitsubishi', 'seat', 'renault', 
+        'hyundai', 'kia', 'suzuki', 'audi', 'mercedes', 'bmw', 'peugeot', 
+        'dodge', 'ram', 'jeep',
+        'np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 'ibiza', 'frontier',
+        'tacoma', '4runner', 'l200', 's10', 'hr-v', 'cr-v', 'civic', 'accord',
+        'focus', 'fiesta', 'fusion', 'explorer', 'escape',
+        'corolla', 'camry', 'rav4', 'avanza', 'hiace',
+        'versa', 'sentra', 'tsuru', 'march', 'x-trail', 'pathfinder',
+        'gol', 'jetta', 'amarok', 'saveiro', 'polo'
+    ];
+    
+    let searchTerm = '';
+    for (const term of marcasModelos) {
+        if (lowerMsg.includes(term)) {
+            searchTerm = term;
+            break;
+        }
+    }
+    
+    console.log('🔍 Buscando productos para:', searchTerm || 'catálogo completo');
+    
+    // Generar variantes del término
+    const variantes = searchTerm ? generarVariantes(searchTerm) : [];
+    console.log('🔤 Variantes:', variantes);
+    
+    // Buscar en Supabase
+    let query = supabase
+        .from('productos')
+        .select('*')
+        .eq('activo', true);
+    
+    if (variantes.length > 0) {
+        // Construir búsqueda OR con todas las variantes
+        const condiciones: string[] = [];
+        
+        for (const variante of variantes) {
+            condiciones.push(`nombre.ilike.%${variante}%`);
+            condiciones.push(`descripcion.ilike.%${variante}%`);
+            condiciones.push(`modelo_vehiculo.cs.{${variante}}`);
+            condiciones.push(`marca_vehiculo.cs.{${variante}}`);
+        }
+        
+        query = query.or(condiciones.join(','));
+    }
+    
+    const { data: productos, error } = await query.limit(6);
+    
+    if (error) {
+        console.error('❌ Error buscando productos:', error);
+        return null;
+    }
+    
+    // Si no encontró, búsqueda parcial
+    if ((!productos || productos.length === 0) && searchTerm) {
+        console.log('🔄 Búsqueda parcial...');
+        const palabras = searchTerm.split(' ');
+        
+        for (const palabra of palabras) {
+            if (palabra.length > 2) {
+                const variantesParcial = generarVariantes(palabra);
+                const condicionesParcial: string[] = [];
+                
+                for (const variante of variantesParcial) {
+                    condicionesParcial.push(`nombre.ilike.%${variante}%`);
+                    condicionesParcial.push(`descripcion.ilike.%${variante}%`);
+                    condicionesParcial.push(`modelo_vehiculo.cs.{${variante}}`);
+                }
+                
+                const { data: fallback } = await supabase
+                    .from('productos')
+                    .select('*')
+                    .eq('activo', true)
+                    .or(condicionesParcial.join(','))
+                    .limit(6);
+                
+                if (fallback && fallback.length > 0) {
+                    console.log(`✅ Encontrados ${fallback.length} productos con "${palabra}"`);
+                    return { productos: fallback, searchTerm: palabra };
+                }
+            }
+        }
+    }
+    
+    return { productos: productos || [], searchTerm };
+}
+
+// ============================================
 // POST PRINCIPAL
 // ============================================
 
 export async function POST(req: Request) {
     try {
         const { message, reset, userId = 'anonymous' } = await req.json();
-        const lowerMsg = message.toLowerCase().trim();
+        const lowerMsg = message?.toLowerCase().trim() || '';
         
         if (reset) {
             niaSession.clearSession(userId);
@@ -114,7 +229,7 @@ export async function POST(req: Request) {
         }
         
         // ============================================
-        // DETECCIÓN DE SÍNTOMAS (PRIMERO)
+        // DETECCIÓN DE SÍNTOMAS
         // ============================================
         
         const sintomasKeywords = [
@@ -127,7 +242,7 @@ export async function POST(req: Request) {
         const esConsultaDeSintoma = sintomasKeywords.some(keyword => lowerMsg.includes(keyword));
         
         // ============================================
-        // DETECCIÓN DE INTENCIÓN DE COMPRA (SEGUNDO)
+        // DETECCIÓN DE INTENCIÓN DE COMPRA
         // ============================================
         
         const compraKeywords = [
@@ -138,172 +253,56 @@ export async function POST(req: Request) {
         
         const esIntencionCompra = compraKeywords.some(keyword => lowerMsg.includes(keyword)) && !esConsultaDeSintoma;
         
-        if (esIntencionCompra) {
-            console.log('🛒 Intención de compra detectada, buscando producto...');
-            
-            // ============================================
-            // LISTA COMPLETA DE MARCAS Y MODELOS (MEJORADA)
-            // ============================================
-            const marcasModelos = [
-                // Marcas
-                'fiat', 'ducato', 'chevrolet', 'nissan', 'toyota', 'ford', 'vw', 'volkswagen',
-                'honda', 'mazda', 'mitsubishi', 'seat', 'renault', 'hyundai', 'kia', 'suzuki',
-                'audi', 'mercedes', 'bmw', 'peugeot', 'citroen', 'dodge', 'ram', 'jeep',
-                // Modelos populares
-                'np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 'ibiza', 'frontier',
-                'tacoma', '4runner', 'l200', 's10', 'hr-v', 'cr-v', 'civic', 'accord',
-                'focus', 'fiesta', 'fusion', 'explorer', 'escape', 'mustang',
-                'corolla', 'camry', 'rav4', 'avanza', 'hiace',
-                'versa', 'sentra', 'tsuru', 'march', 'x-trail', 'pathfinder',
-                'gol', 'jetta', 'amarok', 'saveiro', 'polo',
-                // Términos genéricos
-                'transmision', 'caja de velocidades', 'diferencial', 'caja manual'
-            ];
-            
-            let modeloBuscado = '';
-            for (const term of marcasModelos) {
-                if (lowerMsg.includes(term)) {
-                    modeloBuscado = term;
-                    break;
-                }
-            }
-            
-            if (!modeloBuscado) {
-                const reply = `🔧 Para ayudarte con tu compra, necesito saber qué modelo de transmisión buscas. Por ejemplo: NP300, Hilux, Fiat Ducato, etc.`;
-                niaSession.addMessage(userId, 'assistant', reply);
-                return NextResponse.json({ reply });
-            }
-            
-            // ============================================
-            // BÚSQUEDA FLEXIBLE EN SUPABASE
-            // ============================================
-            let query = supabase.from('productos').select('*').eq('activo', true);
-            query = query.or(
-                `nombre.ilike.%${modeloBuscado}%,` +
-                `descripcion.ilike.%${modeloBuscado}%,` +
-                `modelo_vehiculo.cs.{${modeloBuscado}}`
-            );
-            
-            let { data: productos, error } = await query.limit(6);
-            
-            if (error) {
-                console.error('Error buscando producto:', error);
-            }
-            
-            // ============================================
-            // BÚSQUEDA PARCIAL (fallback)
-            // ============================================
-            if (!productos || productos.length === 0) {
-                console.log('🔍 Intentando búsqueda parcial...');
-                const palabras = modeloBuscado.split(' ');
-                for (const palabra of palabras) {
-                    if (palabra.length > 2) {
-                        const { data: fallback } = await supabase
-                            .from('productos')
-                            .select('*')
-                            .eq('activo', true)
-                            .or(
-                                `nombre.ilike.%${palabra}%,` +
-                                `descripcion.ilike.%${palabra}%,` +
-                                `modelo_vehiculo.cs.{${palabra}}`
-                            )
-                            .limit(3);
-                        
-                        if (fallback && fallback.length > 0) {
-                            productos = fallback;
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            if (productos && productos.length > 0) {
-                const reply = `🛒 **Productos compatibles con ${modeloBuscado.toUpperCase()}:**`;
-                
-                return NextResponse.json({
-                    type: 'product_recommendations',
-                    message: reply,
-                    products: productos
-                });
-            } else {
-                const reply = `🔧 No encontré una transmisión para "${modeloBuscado}" en nuestro catálogo. ¿Quieres que busque algo similar o te ayudo con otra cosa?`;
-                niaSession.addMessage(userId, 'assistant', reply);
-                return NextResponse.json({ reply });
-            }
-        }
-        
         // ============================================
-        // DETECCIÓN DE SÍNTOMAS (continuar a diagnóstico)
-        // ============================================
-        
-        if (esConsultaDeSintoma) {
-            console.log('🔧 Consulta de síntoma detectada, pasando a diagnóstico técnico...');
-            // Continuar con OpenAI para diagnóstico
-        }
-        
-        // ============================================
-        // MOSTRAR PRODUCTOS CON TARJETAS (MEJORADO)
+        // DETECCIÓN DE PRODUCTO
         // ============================================
         
         const productKeywords = [
             'muéstrame', 'ver producto', 'enséñame', 'quiero ver', 'cual es el',
             'dime del', 'información del', 'qué transmisiones tienes',
-            'muestra', 'enséname', 'qué productos', 'catálogo', 'qué vendes'
+            'muestra', 'enséname', 'qué productos', 'catálogo', 'qué vendes',
+            'tienes', 'vendes', 'disponible', 'existencia', 'tienen', 'hay',
+            'precio de', 'costo de', 'cuánto cuesta'
         ];
         
-        const esConsultaDeProducto = productKeywords.some(keyword => lowerMsg.includes(keyword)) && !esConsultaDeSintoma && !esIntencionCompra;
+        const esConsultaDeProducto = productKeywords.some(keyword => lowerMsg.includes(keyword)) && !esConsultaDeSintoma;
         
-        // Lista completa de modelos para búsqueda
-        const modelos = [
-            'np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 'ibiza',
-            'frontier', 'tacoma', '4runner', 'l200', 's10',
-            'fiat ducato', 'fiat', 'ducato',
-            'chevrolet', 'nissan', 'toyota', 'ford', 'vw', 'volkswagen',
-            'honda', 'mazda', 'mitsubishi', 'seat', 'renault', 'hyundai'
+        // Detectar mención de marca/modelo
+        const marcasDetectadas = [
+            'fiat', 'ducato', 'chevrolet', 'nissan', 'toyota', 'ford', 'vw', 'volkswagen',
+            'honda', 'mazda', 'mitsubishi', 'seat', 'renault', 'hyundai', 'kia', 'suzuki',
+            'np300', 'hilux', 'd21', 'ranger', 'spark', 'vento', 'ibiza', 'frontier',
+            'tacoma', '4runner', 'l200', 's10', 'tsuru', 'jetta', 'gol'
         ];
+        const mencionaMarca = marcasDetectadas.some(m => lowerMsg.includes(m));
         
-        let searchTerm = '';
-        for (const modelo of modelos) {
-            if (lowerMsg.includes(modelo)) {
-                searchTerm = modelo;
-                break;
-            }
-        }
-        
-        if ((esConsultaDeProducto || searchTerm) && !esConsultaDeSintoma && !esIntencionCompra) {
-            console.log('📦 Buscando productos con filtros...');
+        // 🔥 REGLA CLAVE: Si menciona marca/modelo O pide producto → BUSCAR
+        if ((esConsultaDeProducto || mencionaMarca || esIntencionCompra) && !esConsultaDeSintoma) {
+            console.log('📦 Consulta de producto detectada. Buscando en Supabase...');
             
-            let query = supabase.from('productos').select('*').eq('activo', true);
+            const resultado = await buscarProductos(message);
             
-            if (searchTerm) {
-                query = query.or(
-                    `nombre.ilike.%${searchTerm}%,` +
-                    `descripcion.ilike.%${searchTerm}%,` +
-                    `modelo_vehiculo.cs.{${searchTerm}}`
-                );
-                console.log(`🔍 Filtrando por: ${searchTerm}`);
-            }
-            
-            const { data: productos, error } = await query.limit(6);
-            
-            if (error) {
-                console.error('Error buscando productos:', error);
-            }
-            
-            if (productos && productos.length > 0) {
-                let reply = searchTerm 
-                    ? `🔧 **Productos compatibles con ${searchTerm.toUpperCase()}:**`
+            if (resultado && resultado.productos.length > 0) {
+                const reply = resultado.searchTerm 
+                    ? `🔧 **Productos compatibles con ${resultado.searchTerm.toUpperCase()}:**`
                     : `🔧 **Nuestros productos disponibles:**`;
                 
-                console.log(`✅ Encontrados ${productos.length} productos`);
+                console.log(`✅ Encontrados ${resultado.productos.length} productos`);
                 
                 return NextResponse.json({
                     type: 'product_recommendations',
                     message: reply,
-                    products: productos
+                    products: resultado.productos
                 });
             } else {
-                console.log('❌ No se encontraron productos, pasando a OpenAI...');
+                const reply = resultado?.searchTerm
+                    ? `🔧 No encontré productos específicos para "${resultado.searchTerm}" en este momento.
+
+📞 Contáctanos directamente por WhatsApp al **5573382923** para verificar disponibilidad, o pregúntame por otra marca/modelo.`
+                    : `🔧 No encontré productos en el catálogo. ¿Podrías decirme la marca y modelo de tu vehículo?`;
+                
+                niaSession.addMessage(userId, 'assistant', reply);
+                return NextResponse.json({ reply });
             }
         }
         
