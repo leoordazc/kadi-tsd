@@ -91,7 +91,8 @@ const MARCAS_MODELOS = [
     'focus', 'fiesta', 'fusion', 'explorer', 'escape',
     'corolla', 'camry', 'rav4', 'avanza', 'hiace',
     'versa', 'sentra', 'tsuru', 'march', 'x-trail', 'pathfinder',
-    'gol', 'jetta', 'amarok', 'saveiro', 'polo'
+    'gol', 'jetta', 'amarok', 'saveiro', 'polo',
+    'crossfox', 'cordoba', 'córdoba', 'lupo', 'toledo'
 ];
 
 /**
@@ -153,25 +154,63 @@ function construirCondiciones(terminos: string[]): string {
 }
 
 // ============================================
+// AÑO
+// ============================================
+
+/** Extrae un año de 4 dígitos (19xx o 20xx) de un texto, o null si no hay. */
+function extraerAnio(texto: string): number | null {
+    const match = texto.match(/\b(19|20)\d{2}\b/);
+    return match ? parseInt(match[0], 10) : null;
+}
+
+// Nombres reales de columna en tu tabla `productos` (confirmado en Supabase)
+const COLUMNA_ANIO_INICIO = 'año_inicio';
+const COLUMNA_ANIO_FIN = 'año_fin';
+
+// ============================================
 // BÚSQUEDA DE PRODUCTOS
 // ============================================
-async function buscarProductos(mensaje: string) {
-    const lowerMsg = mensaje.toLowerCase();
 
-    // Capturar TODOS los términos mencionados (marca + modelo, no solo el primero)
-    const terminosDetectados = MARCAS_MODELOS.filter(term => lowerMsg.includes(term));
+/**
+ * Busca marca/modelo y año, combinando el mensaje actual con el historial
+ * reciente de la conversación (para cuando el usuario responde solo con el
+ * año, sin repetir el modelo que ya había mencionado antes).
+ */
+async function buscarProductos(mensajeActual: string, userId: string) {
+    const lowerMsgActual = mensajeActual.toLowerCase();
 
-    console.log('🔍 Términos detectados:', terminosDetectados);
+    let anio = extraerAnio(mensajeActual);
+    let terminosDetectados = MARCAS_MODELOS.filter(term => lowerMsgActual.includes(term));
 
-    let query = supabase
-        .from('productos')
-        .select('*')
-        .eq('activo', true);
+    // Si falta marca/modelo o año en el mensaje actual, revisa el historial reciente
+    if (terminosDetectados.length === 0 || anio === null) {
+        const historial = niaSession.getHistory(userId, 8);
 
+        for (let i = historial.length - 1; i >= 0; i--) {
+            const msg = historial[i];
+            if (msg.role !== 'user') continue;
+            const lowerHist = msg.content.toLowerCase();
+
+            if (terminosDetectados.length === 0) {
+                const encontrados = MARCAS_MODELOS.filter(term => lowerHist.includes(term));
+                if (encontrados.length > 0) terminosDetectados = encontrados;
+            }
+            if (anio === null) {
+                anio = extraerAnio(msg.content);
+            }
+            if (terminosDetectados.length > 0 && anio !== null) break;
+        }
+    }
+
+    console.log('🔍 Términos:', terminosDetectados, '| Año:', anio);
+
+    // --- Intento 1: marca/modelo + año (si hay ambos) ---
+    let query = supabase.from('productos').select('*').eq('activo', true);
     if (terminosDetectados.length > 0) {
-        const condiciones = construirCondiciones(terminosDetectados);
-        console.log('🔎 Condiciones OR construidas:', condiciones);
-        query = query.or(condiciones);
+        query = query.or(construirCondiciones(terminosDetectados));
+    }
+    if (anio !== null) {
+        query = query.lte(COLUMNA_ANIO_INICIO, anio).gte(COLUMNA_ANIO_FIN, anio);
     }
 
     const { data: productos, error } = await query.limit(6);
@@ -181,34 +220,53 @@ async function buscarProductos(mensaje: string) {
         return null;
     }
 
-    console.log(`✅ Encontrados ${productos?.length || 0} productos`);
+    if (productos && productos.length > 0) {
+        console.log(`✅ Encontrados ${productos.length} productos (modelo + año)`);
+        return { productos, searchTerm: terminosDetectados[0] || '', anio };
+    }
 
-    // Fallback: búsqueda por palabra suelta si no hubo resultados
-    if ((!productos || productos.length === 0) && terminosDetectados.length > 0) {
+    // --- Intento 2: si había año pero no dio resultados, reintenta solo con modelo ---
+    // (evita decir "no encontré nada" cuando el modelo existe pero el año en tabla
+    // no cubre exactamente ese valor, o el rango está mal cargado)
+    if (anio !== null && terminosDetectados.length > 0) {
+        console.log('🔄 Reintentando sin filtro de año...');
+        const { data: sinAnio } = await supabase
+            .from('productos')
+            .select('*')
+            .eq('activo', true)
+            .or(construirCondiciones(terminosDetectados))
+            .limit(6);
+
+        if (sinAnio && sinAnio.length > 0) {
+            console.log(`✅ Encontrados ${sinAnio.length} productos (modelo, año ${anio} no coincidió exacto)`);
+            return { productos: sinAnio, searchTerm: terminosDetectados[0] || '', anio: null };
+        }
+    }
+
+    // --- Intento 3: búsqueda parcial por palabra suelta ---
+    if (terminosDetectados.length > 0) {
         console.log('🔄 Búsqueda parcial...');
 
         for (const termino of terminosDetectados) {
             const palabras = termino.split(' ').filter(p => p.length > 2);
 
             for (const palabra of palabras) {
-                const condiciones = construirCondiciones([palabra]);
-
                 const { data: fallback } = await supabase
                     .from('productos')
                     .select('*')
                     .eq('activo', true)
-                    .or(condiciones)
+                    .or(construirCondiciones([palabra]))
                     .limit(6);
 
                 if (fallback && fallback.length > 0) {
                     console.log(`✅ Encontrados ${fallback.length} productos con "${palabra}"`);
-                    return { productos: fallback, searchTerm: palabra };
+                    return { productos: fallback, searchTerm: palabra, anio: null };
                 }
             }
         }
     }
 
-    return { productos: productos || [], searchTerm: terminosDetectados[0] || '' };
+    return { productos: [], searchTerm: terminosDetectados[0] || '', anio };
 }
 
 // ============================================
@@ -283,16 +341,18 @@ export async function POST(req: Request) {
         const esConsultaDeProducto = productKeywords.some(keyword => lowerMsg.includes(keyword)) && !esConsultaDeSintoma;
 
         const mencionaMarca = MARCAS_MODELOS.some(m => lowerMsg.includes(m));
+        const mencionaAnio = extraerAnio(message) !== null;
 
-        // Si menciona marca/modelo, pide producto o quiere comprar → BUSCAR
-        if ((esConsultaDeProducto || mencionaMarca || esIntencionCompra) && !esConsultaDeSintoma) {
+        // Si menciona marca/modelo, año, pide producto o quiere comprar → BUSCAR
+        // (mencionaAnio cubre el caso de "2013" como respuesta sola a "¿qué año es?")
+        if ((esConsultaDeProducto || mencionaMarca || mencionaAnio || esIntencionCompra) && !esConsultaDeSintoma) {
             console.log('📦 Consulta de producto detectada. Buscando en Supabase...');
 
-            const resultado = await buscarProductos(message);
+            const resultado = await buscarProductos(message, userId);
 
             if (resultado && resultado.productos.length > 0) {
                 const reply = resultado.searchTerm
-                    ? `🔧 **Productos compatibles con ${resultado.searchTerm.toUpperCase()}:**`
+                    ? `🔧 **Productos compatibles con ${resultado.searchTerm.toUpperCase()}${resultado.anio ? ' ' + resultado.anio : ''}:**`
                     : `🔧 **Nuestros productos disponibles:**`;
 
                 console.log(`✅ Encontrados ${resultado.productos.length} productos`);
