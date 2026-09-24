@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import JsonLd from '@/components/JsonLd';
 import { CartProvider } from "@/context/CartContext";
-import { MetaPixelWrapper } from '@/components/MetaPixel'; // 👈 NUEVO
+import { MetaPixelWrapper } from '@/components/MetaPixel';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -78,8 +78,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body>
-        {/* 👇 AQUÍ LLAMAS AL ENVOLVENTE QUE SÍ ES CLIENT COMPONENT */}
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        {/* 👇 Pixel de Meta */}
         <MetaPixelWrapper />
 
         <CartProvider>
