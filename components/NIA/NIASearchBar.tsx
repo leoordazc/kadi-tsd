@@ -195,13 +195,14 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
 
     return (
         <div 
-            className={`sticky z-30 bg-black/60 backdrop-blur-sm transition-all duration-500 ease-in-out ${
-                isScrolled ? 'top-0 py-1.5' : 'top-[56px] py-3'
+    className={`fixed z-30 bg-black/60 backdrop-blur-sm transition-all duration-500 ease-in-out ${
+        isScrolled ? 'top-0 py-1.5' : 'top-[56px] py-3'
             }`}
-            style={{
-                borderBottom: isScrolled || hasInteracted ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                boxShadow: hasInteracted ? '0 4px 30px rgba(0,0,0,0.4)' : 'none',
-            }}
+    style={{
+        left: 0,
+        right: 0,
+        width: '100%',
+    }}
         >
             <div className={`w-full max-w-3xl mx-auto px-4 transition-all duration-500 ease-in-out ${
                 isScrolled && !hasInteracted ? 'scale-[0.98]' : 'scale-100'
