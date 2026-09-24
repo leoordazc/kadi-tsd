@@ -302,7 +302,7 @@ useEffect(() => {
 
       <NIASearchBar onSearch={(query) => console.log("Buscando:", query)} />
 
-<section className="relative z-10 min-h-[80vh] flex items-center overflow-hidden pt-[120px] md:pt-[100px]">
+<section className="relative z-10 min-h-[80vh] flex items-center overflow-hidden pt-[140px] md:pt-[120px]">
   <div className="absolute inset-0 bg-black" />
   
   <div 
