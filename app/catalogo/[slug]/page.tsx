@@ -273,7 +273,7 @@ export default function ProductoDetallePage() {
                                 <div>
                                     <p className="text-white/30 text-xs sm:text-sm">Precio</p>
                                     <p className="text-2xl sm:text-4xl font-light">${producto.precio.toLocaleString()}</p>
-                                    <p className="text-white/20 text-[10px] sm:text-xs mt-0.5 sm:mt-1">IVA NO INCLUIDO</p>
+                                    <p className="text-white/20 text-[10px] sm:text-xs mt-0.5 sm:mt-1">IVA INCLUIDO</p>
                                 </div>
                                 <button
                                     onClick={() => {
@@ -301,7 +301,7 @@ export default function ProductoDetallePage() {
                                 }}
                                 className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 sm:py-3 text-white/70 hover:bg-white/10 transition text-xs sm:text-sm"
                             >
-                                📱 Consultar con un experto
+                                 Consultar con un experto
                             </button>
                         </div>
                     </div>
