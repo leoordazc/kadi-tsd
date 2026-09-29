@@ -21,6 +21,7 @@ import NIAChat from "@/components/NIA/NIAChat";
 import AboutModal from "@/components//AboutModal";
 import NovedadesKadi from "@/components/NovedadesKadi";
 import { useRouter } from "next/navigation";
+import ReferenciasCarrusel from "@/components/ReferenciasCarrusel";
 
 
 // Tipos para los mensajes
@@ -557,97 +558,9 @@ useEffect(() => {
       {/* ===== NOVEDADES KADI - SEPTIEMBRE PATRIO ===== */}
       <NovedadesKadi />
 
-      <section className="relative z-10 py-24 border-t border-white/5 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
-        
-        <div className="max-w-6xl mx-auto px-8 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-5xl font-light text-white/90 mb-4">
-              15 años <span className="text-[#4ade80]">liderando</span> la distribución
-            </h2>
-            <p className="text-xl text-white/40">La confianza de miles de talleres en México</p>
-          </motion.div>
+      {/* ===== REFERENCIAS REALES ===== */}
+<ReferenciasCarrusel />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
-            {[
-              { value: 3000, suffix: "+", label: "TRANSMISIONES VENDIDAS", desc: "En los últimos 4 años" },
-              { value: 98, suffix: "%", label: "CLIENTES SATISFECHOS", desc: "Encuestas post-venta" },
-              { value: 24, suffix: "/7", label: "SOPORTE CON NIA", desc: "Respuesta en menos de 2 minutos" }
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="group backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-[#4ade80]/30 transition-all duration-500"
-                style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.2)" }}
-              >
-                <div className="text-5xl font-light text-[#4ade80] mb-2">
-                  <Counter value={item.value} suffix={item.suffix} />
-                </div>
-                <div className="text-sm text-white/40 tracking-wider">{item.label}</div>
-                <div className="mt-4 text-xs text-white/20">{item.desc}</div>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="mb-24">
-            <h3 className="text-sm text-white/30 mb-8 tracking-widest text-center">MARCAS QUE CONFÍAN EN KADI</h3>
-            
-            <div className="relative overflow-hidden">
-              <div className="absolute left-0 top-0 w-32 h-full bg-gradient-to-r from-[#0a0a0a] to-transparent z-10" />
-              <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-[#0a0a0a] to-transparent z-10" />
-              
-              <motion.div
-                className="flex gap-16 items-center"
-                animate={{ x: [0, -1920] }}
-                transition={{ duration: 30, repeat: Infinity, ease: "linear", repeatType: "loop" }}
-              >
-                {[...Array(2)].map((_, setIndex) => (
-                  <div key={setIndex} className="flex gap-16 items-center">
-                    {["TOYOTA", "NISSAN", "FORD", "CHEVY", "VW", "HONDA", "MAZDA", "HYUNDAI"].map((brand, i) => (
-                      <motion.div
-                        key={`${setIndex}-${i}`}
-                        className="text-2xl font-light text-white/20 hover:text-[#4ade80]/70 transition-colors cursor-default whitespace-nowrap"
-                        whileHover={{ scale: 1.1 }}
-                      >
-                        {brand}
-                      </motion.div>
-                    ))}
-                  </div>
-                ))}
-              </motion.div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { step: "01", title: "Consulta", desc: "Habla con NIA sobre tu vehículo" },
-              { step: "02", title: "Recomendación", desc: "IA analiza compatibilidad y stock" },
-              { step: "03", title: "Entrega", desc: "Recibe tu transmisión en tiempo record" }
-            ].map((step, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="relative border border-white/5 rounded-xl p-6 backdrop-blur-sm bg-white/5"
-              >
-                <div className="text-6xl font-light text-white/5 mb-4">{step.step}</div>
-                <h4 className="text-xl text-white/90 mb-2">{step.title}</h4>
-                <p className="text-white/40">{step.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <TipsKadi onTipClick={(tip) => console.log("Tip seleccionado:", tip.title)} />
 
       <section className="relative z-10 py-24 border-t border-white/5 overflow-hidden">
         <div className="max-w-7xl mx-auto px-8">
