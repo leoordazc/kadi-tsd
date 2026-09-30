@@ -22,6 +22,7 @@ import AboutModal from "@/components//AboutModal";
 import NovedadesKadi from "@/components/NovedadesKadi";
 import { useRouter } from "next/navigation";
 import ReferenciasCarrusel from "@/components/ReferenciasCarrusel";
+import HeroKadiStyle from "@/components/HeroKadiStyle";
 
 
 // Tipos para los mensajes
@@ -303,105 +304,7 @@ useEffect(() => {
 
       <NIASearchBar onSearch={(query) => console.log("Buscando:", query)} />
 
-<section className="relative z-10 min-h-[80vh] flex items-center overflow-hidden pt-[140px] md:pt-[120px]">
-  <div className="absolute inset-0 bg-black" />
-  
-  <div 
-    className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
-    style={{ 
-      backgroundImage: "url('/transmision-hero-bg.jpg')",
-      backgroundPosition: "center 30%",
-    }}
-  />
-  
-  <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-black/60 to-transparent" />
-  <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black via-black/80 to-transparent" />
-  
-  <div className="absolute top-20 left-1/4 w-64 h-64 bg-[#ef4444]/5 rounded-full blur-3xl" />
-  <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
-
-  <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
-    <div className="grid md:grid-cols-2 gap-12 items-center">
-      
-      <motion.div
-        initial={{ opacity: 0, x: -30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8 }}
-        className="space-y-6"
-      >
-        <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-          <span className="text-white">ENCUENTRA O DIAGNOSTICA</span>
-          <br />
-          <span className="text-[#ef4444]">TU TRANSMISION ESTANDAR EN MINUTOS</span>
-        </h1>
-
-        <p className="text-xl text-white/60 max-w-lg">
-          Piezas verificadas y asesoría técnica especializada.
-          <span className="block text-white/40 text-lg mt-2">
-            Transmisiones manuales y diferenciales con calidad y compromiso.
-          </span>
-        </p>
-
-       <button
-  onClick={() => setIsAboutOpen(true)}
-  className="relative group px-8 py-4 bg-transparent border border-[#ef4444] text-white font-medium rounded-lg overflow-hidden hover:bg-[#ef4444]/10 transition"
->
-  <span className="relative z-10">📖 CONOCE KADI</span>
-  <motion.div
-    className="absolute inset-0 bg-[#ef4444]/20"
-    initial={{ x: "-100%" }}
-    whileHover={{ x: 0 }}
-    transition={{ duration: 0.4 }}
-  />
-</button>
-
-        <div className="pt-8 flex flex-wrap gap-6">
-          {[
-            { icon: "🛡️", title: "Garantía KADI", desc: "Piezas verificadas" },
-            { icon: "📦", title: "Envío Seguro", desc: "Trazabilidad 24/7" },
-            { icon: "⚙️", title: "Soporte Experto", desc: "Asesoría pre-compra" }
-          ].map((item, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
-                <span className="text-white/60 text-xl">{item.icon}</span>
-              </div>
-              <div>
-                <p className="text-white/90 font-medium text-sm">{item.title}</p>
-                <p className="text-white/40 text-xs">{item.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-        className="relative flex justify-center items-center"
-      >
-        <motion.div
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="relative w-full max-w-md"
-        >
-          <div className="aspect-square rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-            <img 
-              src="/transmision-hero.png.png" 
-              alt="Transmisión manual reconstruida" 
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <motion.div
-            animate={{ scale: [1, 0.95, 1], opacity: [0.3, 0.2, 0.3] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 w-4/5 h-4 bg-black/30 blur-xl rounded-full"
-          />
-        </motion.div>
-      </motion.div>
-    </div>
-  </div>
-</section>
+<HeroKadiStyle />
 
 <section className="relative z-10 py-16 border-t border-white/5">
   <div className="max-w-7xl mx-auto px-4">

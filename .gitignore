@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Videos de referencias (subidos a Supabase Storage)
+public/referencias/*.mp4
+public/referencias/*.mov
+public/referencias/*.webm
