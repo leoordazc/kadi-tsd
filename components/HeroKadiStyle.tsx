@@ -1,54 +1,193 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { ShieldCheck, Wrench, Truck, ArrowRight } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 
 interface HeroKadiStyleProps {
   onConoceKadi: () => void;
 }
 
-const features = [
+interface Feature {
+  id: string;
+  imagen: string;
+  title: string;
+  desc: string;
+  cta: string;
+  color: string;
+  badge: string;
+  href?: string;
+}
+
+const features: Feature[] = [
   {
-    icon: ShieldCheck,
-    title: "Garantía por escrito",
-    desc: "3 meses respaldados en cada reparación.",
-    cta: "Conoce más",
-    color: "#4ade80",
-    gradient: "from-[#4ade80]/20 to-[#22d3ee]/10",
-  },
-  {
-    icon: Wrench,
-    title: "Especialistas en estándar",
-    desc: "Solo transmisiones manuales y diferenciales.",
+    id: "1",
+    imagen: "/images/venta-unidades.jpg",
+    title: "Venta de unidades",
+    desc: "Transmisiones y diferenciales listos para instalar.",
     cta: "Ver catálogo",
     color: "#ef4444",
-    gradient: "from-[#ef4444]/20 to-[#f97316]/10",
+    badge: "Nuevas · Reconstruidas",
+    href: "/catalogo",
   },
   {
-    icon: Truck,
-    title: "Envío nacional",
-    desc: "Paquetería segura y rastreable.",
-    cta: "Ver cobertura",
-    color: "#D4AF37",
-    gradient: "from-[#D4AF37]/20 to-[#ef4444]/10",
+    id: "2",
+    imagen: "/images/reparacion-especializada.jpg",
+    title: "Reparación especializada",
+    desc: "Reconstrucción mayor con tolerancias OEM.",
+    cta: "Cotizar reparación",
+    color: "#4ade80",
+    badge: "Reparación mayor",
+  },
+  {
+    id: "3",
+    imagen: "/images/mantenimiento-preventivo.jpg",
+    title: "Mantenimiento preventivo",
+    desc: "Cambio de aceite e inspección completa.",
+    cta: "Agendar cita",
+    color: "#60a5fa",
+    badge: "Preventivo",
   },
 ];
 
+// ============================================
+// COMPONENTE DE TARJETA CON EFECTO 3D
+// ============================================
+function FeatureCard3D({ feature, onClick }: { feature: Feature; onClick?: () => void }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isHovering, setIsHovering] = useState(false);
+
+  // Motion values para rotación 3D
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [8, -8]), {
+    stiffness: 300,
+    damping: 30,
+  });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-8, 8]), {
+    stiffness: 300,
+    damping: 30,
+  });
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={handleMouseLeave}
+      onClick={onClick}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+        perspective: 1000,
+      }}
+      whileHover={{ y: -8 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className={`group relative bg-[#1a1a1a] rounded-[32px] p-3 shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:shadow-[0_25px_50px_rgb(0,0,0,0.5)] transition-all duration-500 ease-out overflow-hidden text-left ${
+        feature.href ? "cursor-pointer" : "cursor-default"
+      }`}
+    >
+      {/* ===== IMAGEN SUPERIOR ===== */}
+      <div className="relative h-44 sm:h-48 rounded-[24px] mb-4 overflow-hidden bg-black">
+        <img
+          src={feature.imagen}
+          alt={feature.title}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+            const parent = e.currentTarget.parentElement;
+            if (parent) {
+              parent.innerHTML = `
+                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
+                  <span class="text-6xl opacity-30">🔧</span>
+                </div>
+              `;
+            }
+          }}
+        />
+
+        {/* Overlay con gradiente */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+
+        {/* Badge de tipo */}
+        <div
+          className="absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-medium tracking-wider uppercase backdrop-blur-sm border"
+          style={{
+            backgroundColor: `${feature.color}25`,
+            color: feature.color,
+            borderColor: `${feature.color}50`,
+          }}
+        >
+          {feature.badge}
+        </div>
+
+        {/* Efecto de brillo al hover */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          animate={{ opacity: isHovering ? 1 : 0 }}
+          transition={{ duration: 0.3 }}
+          style={{
+            background: `radial-gradient(circle at 50% 0%, ${feature.color}30, transparent 70%)`,
+          }}
+        />
+      </div>
+
+      {/* ===== CONTENIDO ===== */}
+      <div className="px-3 pb-2">
+        <h3 className="text-lg font-semibold text-white/95 mb-2 leading-tight">
+          {feature.title}
+        </h3>
+        <p className="text-sm text-white/50 leading-relaxed mb-4">
+          {feature.desc}
+        </p>
+
+        {/* CTA con flecha */}
+        <div
+          className="flex items-center gap-1 text-sm font-medium transition-colors"
+          style={{ color: feature.color }}
+        >
+          {feature.cta}
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ============================================
+// HERO PRINCIPAL
+// ============================================
 export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
   const [mounted, setMounted] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     setMounted(true);
-    
+
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 20,
         y: (e.clientY / window.innerHeight - 0.5) * 20,
       });
     };
-    
+
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
@@ -60,7 +199,7 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
       
       {/* Fondo con gradiente KADI */}
       <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0f0a0a] to-black" />
-      
+
       {/* Glow dinámico */}
       <motion.div
         animate={{
@@ -165,68 +304,21 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
             </motion.button>
           </motion.div>
 
-          {/* ===== TARJETAS ESTILO GOOGLE LABS (adaptadas a KADI) ===== */}
-          <motion.div 
+          {/* ===== TARJETAS CON EFECTO 3D E IMÁGENES ===== */}
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl"
           >
-            {features.map((feature, idx) => (
-              <motion.a
-                key={idx}
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (idx === 1) window.location.href = "/catalogo";
+            {features.map((feature) => (
+              <FeatureCard3D
+                key={feature.id}
+                feature={feature}
+                onClick={() => {
+                  if (feature.href) window.location.href = feature.href;
                 }}
-                whileHover={{ y: -8 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="group relative bg-[#1a1a1a] rounded-[32px] p-3 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.4)] transition-all duration-500 ease-out overflow-hidden text-left"
-              >
-                {/* Área visual superior con gradiente */}
-                <div 
-                  className={`relative h-40 rounded-[24px] mb-4 overflow-hidden bg-gradient-to-br ${feature.gradient} flex items-center justify-center border border-white/5`}
-                >
-                  {/* Icono flotante grande */}
-                  <motion.div
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    transition={{ duration: 0.3 }}
-                    className="relative"
-                  >
-                    <feature.icon 
-                      className="w-16 h-16 drop-shadow-2xl" 
-                      style={{ color: feature.color }}
-                      strokeWidth={1.5}
-                    />
-                  </motion.div>
-
-                  {/* Decoración sutil de fondo */}
-                  <div 
-                    className="absolute -bottom-4 -right-4 w-24 h-24 rounded-full blur-2xl opacity-30"
-                    style={{ backgroundColor: feature.color }}
-                  />
-                </div>
-
-                {/* Contenido inferior */}
-                <div className="px-3 pb-2">
-                  <h3 className="text-lg font-semibold text-white/90 mb-2 leading-tight">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm text-white/50 leading-relaxed mb-4">
-                    {feature.desc}
-                  </p>
-
-                  {/* CTA con flecha */}
-                  <div 
-                    className="flex items-center gap-1 text-sm font-medium transition-colors"
-                    style={{ color: feature.color }}
-                  >
-                    {feature.cta}
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </motion.a>
+              />
             ))}
           </motion.div>
 
