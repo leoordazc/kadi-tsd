@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck, Wrench, Truck } from "lucide-react";
+import { ShieldCheck, Wrench, Truck, ArrowRight } from "lucide-react";
 
 interface HeroKadiStyleProps {
   onConoceKadi: () => void;
@@ -13,19 +13,25 @@ const features = [
     icon: ShieldCheck,
     title: "Garantía por escrito",
     desc: "3 meses respaldados en cada reparación.",
+    cta: "Conoce más",
     color: "#4ade80",
+    gradient: "from-[#4ade80]/20 to-[#22d3ee]/10",
   },
   {
     icon: Wrench,
     title: "Especialistas en estándar",
     desc: "Solo transmisiones manuales y diferenciales.",
+    cta: "Ver catálogo",
     color: "#ef4444",
+    gradient: "from-[#ef4444]/20 to-[#f97316]/10",
   },
   {
     icon: Truck,
     title: "Envío nacional",
     desc: "Paquetería segura y rastreable.",
+    cta: "Ver cobertura",
     color: "#D4AF37",
+    gradient: "from-[#D4AF37]/20 to-[#ef4444]/10",
   },
 ];
 
@@ -50,12 +56,12 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
   if (!mounted) return null;
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-black text-white pt-[140px]">
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-black text-white pt-[140px] pb-20">
       
-      {/* ===== FONDO CON GRADIENTE DINÁMICO ===== */}
+      {/* Fondo con gradiente KADI */}
       <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0f0a0a] to-black" />
       
-      {/* Glow que sigue al mouse */}
+      {/* Glow dinámico */}
       <motion.div
         animate={{
           x: mousePosition.x * 15,
@@ -72,7 +78,7 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
 
       {/* Partículas sutiles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(15)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-1 h-1 bg-[#ef4444]/40 rounded-full"
@@ -98,7 +104,7 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
       <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
         <div className="flex flex-col items-center text-center">
           
-          {/* ===== BADGE SUPERIOR ===== */}
+          {/* Badge superior */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -111,7 +117,7 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
             </span>
           </motion.div>
 
-          {/* ===== TÍTULO PRINCIPAL ===== */}
+          {/* Título */}
           <motion.h1
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -124,7 +130,7 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
             </span>
           </motion.h1>
 
-          {/* ===== SUBTÍTULO ===== */}
+          {/* Subtítulo */}
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -134,12 +140,12 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
             Encuentra o diagnostica en <span className="text-[#4ade80] font-medium">segundos</span>.
           </motion.p>
 
-          {/* ===== BOTÓN PRINCIPAL (CONOCE KADI) ===== */}
+          {/* Botón principal */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className="mb-16"
+            className="mb-20"
           >
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -159,32 +165,68 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
             </motion.button>
           </motion.div>
 
-          {/* ===== TARJETAS DE CARACTERÍSTICAS ===== */}
+          {/* ===== TARJETAS ESTILO GOOGLE LABS (adaptadas a KADI) ===== */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 w-full max-w-4xl"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl"
           >
             {features.map((feature, idx) => (
-              <motion.div
+              <motion.a
                 key={idx}
-                whileHover={{ y: -6, backgroundColor: "rgba(255,255,255,0.05)" }}
-                className="flex flex-col items-center p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl transition-all duration-300"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (idx === 1) window.location.href = "/catalogo";
+                }}
+                whileHover={{ y: -8 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="group relative bg-[#1a1a1a] rounded-[32px] p-3 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.4)] transition-all duration-500 ease-out overflow-hidden text-left"
               >
+                {/* Área visual superior con gradiente */}
                 <div 
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-                  style={{ backgroundColor: `${feature.color}15`, border: `1px solid ${feature.color}30` }}
+                  className={`relative h-40 rounded-[24px] mb-4 overflow-hidden bg-gradient-to-br ${feature.gradient} flex items-center justify-center border border-white/5`}
                 >
-                  <feature.icon className="w-7 h-7" style={{ color: feature.color }} />
+                  {/* Icono flotante grande */}
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    transition={{ duration: 0.3 }}
+                    className="relative"
+                  >
+                    <feature.icon 
+                      className="w-16 h-16 drop-shadow-2xl" 
+                      style={{ color: feature.color }}
+                      strokeWidth={1.5}
+                    />
+                  </motion.div>
+
+                  {/* Decoración sutil de fondo */}
+                  <div 
+                    className="absolute -bottom-4 -right-4 w-24 h-24 rounded-full blur-2xl opacity-30"
+                    style={{ backgroundColor: feature.color }}
+                  />
                 </div>
-                <h3 className="text-base font-medium text-white/90 mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-xs text-white/40 text-center leading-relaxed">
-                  {feature.desc}
-                </p>
-              </motion.div>
+
+                {/* Contenido inferior */}
+                <div className="px-3 pb-2">
+                  <h3 className="text-lg font-semibold text-white/90 mb-2 leading-tight">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-white/50 leading-relaxed mb-4">
+                    {feature.desc}
+                  </p>
+
+                  {/* CTA con flecha */}
+                  <div 
+                    className="flex items-center gap-1 text-sm font-medium transition-colors"
+                    style={{ color: feature.color }}
+                  >
+                    {feature.cta}
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </motion.a>
             ))}
           </motion.div>
 
