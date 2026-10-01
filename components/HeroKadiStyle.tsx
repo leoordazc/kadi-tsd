@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import FeatureCarrusel from "@/components/FeatureCarrusel";
 
 interface HeroKadiStyleProps {
   onConoceKadi: () => void;
@@ -304,23 +305,10 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
             </motion.button>
           </motion.div>
 
-          {/* ===== TARJETAS CON EFECTO 3D E IMÁGENES ===== */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl"
-          >
-            {features.map((feature) => (
-              <FeatureCard3D
-                key={feature.id}
-                feature={feature}
-                onClick={() => {
-                  if (feature.href) window.location.href = feature.href;
-                }}
-              />
-            ))}
-          </motion.div>
+          {/* ===== CARRUSEL DE FEATURES ===== */}
+<div className="w-full max-w-5xl mt-4">
+    <FeatureCarrusel />
+</div>
 
         </div>
       </div>
