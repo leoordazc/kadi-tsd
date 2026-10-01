@@ -23,6 +23,7 @@ import NovedadesKadi from "@/components/NovedadesKadi";
 import { useRouter } from "next/navigation";
 import ReferenciasCarrusel from "@/components/ReferenciasCarrusel";
 import HeroKadiStyle from "@/components/HeroKadiStyle";
+import ServiciosCarrusel from "@/components/ServiciosCarrusel";
 
 
 // Tipos para los mensajes
@@ -306,7 +307,10 @@ useEffect(() => {
 
 <HeroKadiStyle onConoceKadi={() => setIsAboutOpen(true)} />
 
-      <RefaccionesSearch
+{/* ===== SERVICIOS EN CARRUSEL 3D ===== */}
+<ServiciosCarrusel />
+
+<RefaccionesSearch
     onSearch={(query) => console.log("Buscando refacción:", query)}
     onAddToCart={addToCart}
 />
