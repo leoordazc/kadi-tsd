@@ -1,49 +1,44 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
-import { ShieldCheck, Wrench, Truck, ArrowRight } from "lucide-react";
-import { LucideIcon } from "lucide-react";
+import { motion, useMotionValue, PanInfo } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 
 interface Servicio {
     id: string;
-    icon: LucideIcon;
+    imagen: string;
     title: string;
     desc: string;
     cta: string;
     color: string;
-    gradient: string;
     href?: string;
 }
 
 const servicios: Servicio[] = [
     {
         id: "1",
-        icon: ShieldCheck,
-        title: "Garantía por escrito",
-        desc: "3 meses respaldados en cada reparación. Si falla, respondemos.",
-        cta: "Conoce más",
-        color: "#4ade80",
-        gradient: "from-[#4ade80]/20 to-[#22d3ee]/10",
-    },
-    {
-        id: "2",
-        icon: Wrench,
-        title: "Especialistas en estándar",
-        desc: "Solo transmisiones manuales y diferenciales. No tocamos automáticas.",
+        imagen: "/images/venta-unidades.jpg",
+        title: "Venta de unidades",
+        desc: "Transmisiones y diferenciales listos para instalar. Verificadas en banco de pruebas.",
         cta: "Ver catálogo",
         color: "#ef4444",
-        gradient: "from-[#ef4444]/20 to-[#f97316]/10",
         href: "/catalogo",
     },
     {
+        id: "2",
+        imagen: "/images/reparacion-especializada.jpg",
+        title: "Reparación especializada",
+        desc: "Reconstrucción mayor con limpieza química total, ajuste de tolerancias y reemplazo de componentes críticos.",
+        cta: "Cotizar reparación",
+        color: "#4ade80",
+    },
+    {
         id: "3",
-        icon: Truck,
-        title: "Envío nacional",
-        desc: "Paquetería segura y rastreable a todo México.",
-        cta: "Ver cobertura",
-        color: "#D4AF37",
-        gradient: "from-[#D4AF37]/20 to-[#ef4444]/10",
+        imagen: "/images/mantenimiento-preventivo.jpg",
+        title: "Mantenimiento preventivo",
+        desc: "Cambio de aceite, inspección de retenes, soportes y juego en flechas. Alarga la vida de tu inversión.",
+        cta: "Agendar cita",
+        color: "#60a5fa",
     },
 ];
 
@@ -59,15 +54,12 @@ export default function ServiciosCarrusel() {
         const offset = info.offset.x;
         const velocity = info.velocity.x;
         
-        // Determinar dirección por offset o velocidad
         const swipeDirection = offset < -swipeThreshold || velocity < -500 ? 1 : 
                               offset > swipeThreshold || velocity > 500 ? -1 : 0;
         
         if (swipeDirection === 1) {
-            // Swipe hacia la izquierda → siguiente tarjeta
             setActiveIndex((prev) => Math.min(prev + 1, servicios.length - 1));
         } else if (swipeDirection === -1) {
-            // Swipe hacia la derecha → tarjeta anterior
             setActiveIndex((prev) => Math.max(prev - 1, 0));
         }
     };
@@ -91,9 +83,8 @@ export default function ServiciosCarrusel() {
                 </motion.div>
 
                 {/* ===== CARRUSEL 3D ===== */}
-                <div className="relative h-[420px] sm:h-[450px] flex items-center justify-center perspective-[1500px]">
+                <div className="relative h-[450px] sm:h-[500px] flex items-center justify-center perspective-[1500px]">
                     
-                    {/* Contenedor con drag */}
                     <motion.div
                         className="relative w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing"
                         drag="x"
@@ -107,18 +98,14 @@ export default function ServiciosCarrusel() {
                             const offset = index - activeIndex;
                             const absOffset = Math.abs(offset);
                             
-                            // Solo mostramos tarjetas cercanas al centro
                             if (absOffset > 2) return null;
                             
-                            // Calcular propiedades visuales según distancia al centro
-                            const scale = absOffset === 0 ? 1 : absOffset === 1 ? 0.8 : 0.6;
-                            const opacity = absOffset === 0 ? 1 : absOffset === 1 ? 0.6 : 0.3;
-                            const translateX = offset * 320; // px entre tarjetas
-                            const translateZ = -absOffset * 150; // profundidad
-                            const rotateY = offset * -15; // rotación en Y
+                            const scale = absOffset === 0 ? 1 : absOffset === 1 ? 0.82 : 0.65;
+                            const opacity = absOffset === 0 ? 1 : absOffset === 1 ? 0.5 : 0.2;
+                            const translateX = offset * 340;
+                            const translateZ = -absOffset * 150;
+                            const rotateY = offset * -12;
                             const zIndex = 50 - absOffset;
-                            
-                            const Icon = servicio.icon;
                             
                             return (
                                 <motion.div
@@ -143,58 +130,60 @@ export default function ServiciosCarrusel() {
                                         pointerEvents: absOffset === 0 ? "auto" : "none",
                                     }}
                                 >
-                                    {/* Tarjeta */}
+                                    {/* ===== TARJETA ===== */}
                                     <div 
                                         onClick={() => {
                                             if (servicio.href && !isDragging) {
                                                 window.location.href = servicio.href;
                                             }
                                         }}
-                                        className={`group bg-[#1a1a1a] rounded-[32px] p-3 shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.5)] transition-all duration-500 ease-out overflow-hidden w-[280px] sm:w-[320px] ${
+                                        className={`group bg-[#1a1a1a] rounded-[32px] p-3 shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.5)] transition-all duration-500 ease-out overflow-hidden w-[300px] sm:w-[360px] ${
                                             servicio.href ? 'cursor-pointer' : 'cursor-default'
                                         }`}
                                     >
-                                        {/* Área visual superior */}
-                                        <div 
-                                            className={`relative h-44 sm:h-48 rounded-[24px] mb-4 overflow-hidden bg-gradient-to-br ${servicio.gradient} flex items-center justify-center border border-white/5`}
-                                        >
-                                            {/* Icono flotante grande */}
-                                            <motion.div
-                                                animate={absOffset === 0 ? { 
-                                                    y: [0, -6, 0],
-                                                } : {}}
-                                                transition={{ 
-                                                    duration: 3, 
-                                                    repeat: Infinity, 
-                                                    ease: "easeInOut" 
+                                        {/* ===== IMAGEN DEL PRODUCTO ===== */}
+                                        <div className="relative h-56 sm:h-64 rounded-[24px] mb-4 overflow-hidden bg-black">
+                                            <img 
+                                                src={servicio.imagen}
+                                                alt={servicio.title}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                                onError={(e) => {
+                                                    // Fallback si no carga la imagen
+                                                    e.currentTarget.style.display = 'none';
+                                                    const parent = e.currentTarget.parentElement;
+                                                    if (parent) {
+                                                        parent.innerHTML = `
+                                                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
+                                                                <span class="text-6xl opacity-30">🔧</span>
+                                                            </div>
+                                                        `;
+                                                    }
+                                                }}
+                                            />
+                                            {/* Overlay con gradiente para mejor legibilidad */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                                            
+                                            {/* Badge de color */}
+                                            <div 
+                                                className="absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-medium tracking-wider uppercase backdrop-blur-sm border"
+                                                style={{ 
+                                                    backgroundColor: `${servicio.color}20`,
+                                                    color: servicio.color,
+                                                    borderColor: `${servicio.color}40`
                                                 }}
                                             >
-                                               <Icon 
-    className="w-20 h-20 drop-shadow-2xl" 
-    style={{ 
-        color: servicio.color,
-        strokeWidth: 1.5
-    } as React.CSSProperties}
-/>
-                                            </motion.div>
-
-                                            {/* Glow de fondo */}
-                                            <div 
-                                                className="absolute -bottom-6 -right-6 w-32 h-32 rounded-full blur-3xl opacity-30"
-                                                style={{ backgroundColor: servicio.color }}
-                                            />
-                                            <div 
-                                                className="absolute -top-4 -left-4 w-24 h-24 rounded-full blur-2xl opacity-20"
-                                                style={{ backgroundColor: servicio.color }}
-                                            />
+                                                {servicio.id === "1" && "Nuevas · Reconstruidas"}
+                                                {servicio.id === "2" && "Reparación mayor"}
+                                                {servicio.id === "3" && "Preventivo"}
+                                            </div>
                                         </div>
 
-                                        {/* Contenido inferior */}
+                                        {/* ===== CONTENIDO ===== */}
                                         <div className="px-3 pb-2">
-                                            <h3 className="text-lg font-semibold text-white/95 mb-2 leading-tight">
+                                            <h3 className="text-xl font-semibold text-white/95 mb-2 leading-tight">
                                                 {servicio.title}
                                             </h3>
-                                            <p className="text-sm text-white/50 leading-relaxed mb-4">
+                                            <p className="text-sm text-white/50 leading-relaxed mb-4 line-clamp-3">
                                                 {servicio.desc}
                                             </p>
 
