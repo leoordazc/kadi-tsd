@@ -23,7 +23,7 @@ const features: Feature[] = [
         title: "Garantía por escrito",
         desc: "3 meses respaldados con póliza firmada.",
         cta: "Conoce más",
-        color: "#D4AF37", // Dorado KADI (antes verde)
+        color: "#D4AF37",
         badge: "Póliza oficial",
     },
     {
@@ -32,7 +32,7 @@ const features: Feature[] = [
         title: "Especialistas en estándar",
         desc: "Solo transmisiones manuales y diferenciales.",
         cta: "Ver catálogo",
-        color: "#1e4a8c", // Azul metálico KADI (antes rojo)
+        color: "#1e4a8c",
         badge: "Ingeniería",
         href: "/catalogo",
     },
@@ -42,7 +42,7 @@ const features: Feature[] = [
         title: "Envío nacional",
         desc: "Paquetería segura y rastreable.",
         cta: "Ver cobertura",
-        color: "#D4AF37", // Dorado KADI (se mantiene)
+        color: "#D4AF37",
         badge: "Guía de envío",
     },
 ];
@@ -62,13 +62,8 @@ export default function FeatureCarrusel() {
         }
     };
 
-    const goNext = () => {
-        setActiveIndex((prev) => (prev + 1) % features.length);
-    };
-
-    const goPrev = () => {
-        setActiveIndex((prev) => (prev - 1 + features.length) % features.length);
-    };
+    const goNext = () => setActiveIndex((prev) => (prev + 1) % features.length);
+    const goPrev = () => setActiveIndex((prev) => (prev - 1 + features.length) % features.length);
 
     const getPositionData = (index: number) => {
         let offset = index - activeIndex;
@@ -80,7 +75,7 @@ export default function FeatureCarrusel() {
         const absOffset = Math.abs(offset);
         const scale = absOffset === 0 ? 1 : absOffset === 1 ? 0.85 : 0.7;
         const opacity = absOffset === 0 ? 1 : absOffset === 1 ? 0.4 : 0;
-        const translateX = offset * 320;
+        const translateX = offset * 440;   // ← más separación para tarjetas grandes
         const zIndex = 50 - absOffset;
 
         return { scale, opacity, translateX, zIndex, absOffset };
@@ -102,7 +97,7 @@ export default function FeatureCarrusel() {
             </div>
 
             {/* CARRUSEL */}
-            <div className="relative h-[380px] sm:h-[420px] flex items-center justify-center overflow-hidden">
+            <div className="relative h-[520px] sm:h-[560px] flex items-center justify-center overflow-hidden">
                 <motion.div
                     className="relative w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing"
                     drag="x"
@@ -145,18 +140,21 @@ export default function FeatureCarrusel() {
                                             window.location.href = feature.href;
                                         }
                                     }}
-                                    className={`rounded-[32px] p-3 shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden w-[280px] sm:w-[320px] ${
+                                    className={`rounded-[32px] p-4 shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden w-[380px] sm:w-[440px] ${
                                         feature.href ? "cursor-pointer" : "cursor-default"
                                     }`}
                                     style={{ backgroundColor: "var(--bg-card)" }}
                                 >
                                     {/* IMAGEN */}
-                                    <div className="relative h-44 rounded-[24px] mb-4 overflow-hidden" style={{ backgroundColor: "var(--bg-primary)" }}>
+                                    <div
+                                        className="relative h-60 sm:h-64 rounded-[24px] mb-5 overflow-hidden"
+                                        style={{ backgroundColor: "var(--bg-primary)" }}
+                                    >
                                         <Image
                                             src={feature.imagen}
                                             alt={feature.title}
                                             fill
-                                            sizes="320px"
+                                            sizes="440px"
                                             className="object-cover"
                                             priority={absOffset === 0}
                                             quality={75}
@@ -176,7 +174,7 @@ export default function FeatureCarrusel() {
 
                                     {/* CONTENIDO */}
                                     <div className="px-3 pb-2">
-                                        <h3 className="text-lg font-semibold text-white/95 mb-2 leading-tight">
+                                        <h3 className="text-xl font-semibold text-white/95 mb-2 leading-tight">
                                             {feature.title}
                                         </h3>
                                         <p className="text-sm text-white/50 leading-relaxed mb-4">
