@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, useMotionValue, PanInfo } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 interface Feature {
     id: string;
@@ -48,34 +49,21 @@ const features: Feature[] = [
 
 export default function FeatureCarrusel() {
     const [activeIndex, setActiveIndex] = useState(0);
-    const [isDragging, setIsDragging] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const dragX = useMotionValue(0);
 
-    // ============================================
-    // AUTO-SCROLL CADA 3 SEGUNDOS
-    // ============================================
+    // AUTO-SCROLL optimizado (5 segundos)
     useEffect(() => {
-        if (isPaused || isDragging) return;
+        if (isPaused) return;
 
         const interval = setInterval(() => {
             setActiveIndex((prev) => (prev + 1) % features.length);
-        }, 3000);
+        }, 5000);
 
         return () => clearInterval(interval);
-    }, [isPaused, isDragging]);
-
-    // ============================================
-    // MANEJO DE DRAG
-    // ============================================
-    const handleDragStart = () => {
-        setIsDragging(true);
-        setIsPaused(true);
-    };
+    }, [isPaused]);
 
     const handleDragEnd = (event: any, info: PanInfo) => {
-        setIsDragging(false);
-
         const swipeThreshold = 50;
         const offset = info.offset.x;
         const velocity = info.velocity.x;
@@ -93,35 +81,28 @@ export default function FeatureCarrusel() {
             setActiveIndex((prev) => (prev - 1 + features.length) % features.length);
         }
 
-        // Reanudar auto-scroll después de 5 segundos de inactividad
         setTimeout(() => setIsPaused(false), 5000);
     };
 
-    // ============================================
-    // CÁLCULO DE POSICIONES 3D
-    // ============================================
     const getPositionData = (index: number) => {
         let offset = index - activeIndex;
         const total = features.length;
 
-        // Ajustar offset para carrusel infinito
         if (offset > total / 2) offset -= total;
         if (offset < -total / 2) offset += total;
 
         const absOffset = Math.abs(offset);
-        const scale = absOffset === 0 ? 1 : absOffset === 1 ? 0.75 : 0.5;
-        const opacity = absOffset === 0 ? 1 : absOffset === 1 ? 0.5 : 0.15;
-        const translateX = offset * 340;
-        const translateZ = -absOffset * 150;
-        const rotateY = offset * -12;
+        const scale = absOffset === 0 ? 1 : absOffset === 1 ? 0.8 : 0.6;
+        const opacity = absOffset === 0 ? 1 : absOffset === 1 ? 0.4 : 0.1;
+        const translateX = offset * 320;
         const zIndex = 50 - absOffset;
 
-        return { scale, opacity, translateX, translateZ, rotateY, zIndex, absOffset };
+        return { scale, opacity, translateX, zIndex, absOffset };
     };
 
     return (
         <div className="relative">
-            {/* ===== TÍTULO ===== */}
+            {/* TÍTULO */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -139,25 +120,23 @@ export default function FeatureCarrusel() {
                 </h2>
             </motion.div>
 
-            {/* ===== CARRUSEL 3D ===== */}
-            <div className="relative h-[400px] sm:h-[440px] flex items-center justify-center perspective-[1500px]">
-                
+            {/* CARRUSEL */}
+            <div className="relative h-[380px] sm:h-[420px] flex items-center justify-center overflow-hidden">
                 <motion.div
                     className="relative w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing"
                     drag="x"
                     dragConstraints={{ left: 0, right: 0 }}
-                    dragElastic={0.2}
-                    onDragStart={handleDragStart}
+                    dragElastic={0.1}
                     onDragEnd={handleDragEnd}
                     style={{ x: dragX }}
                     onMouseEnter={() => setIsPaused(true)}
                     onMouseLeave={() => setIsPaused(false)}
                 >
                     {features.map((feature, index) => {
-                        const { scale, opacity, translateX, translateZ, rotateY, zIndex, absOffset } =
+                        const { scale, opacity, translateX, zIndex, absOffset } =
                             getPositionData(index);
 
-                        if (absOffset > 1.5) return null;
+                        if (absOffset > 1) return null;
 
                         return (
                             <motion.div
@@ -168,54 +147,38 @@ export default function FeatureCarrusel() {
                                     x: translateX,
                                     scale: scale,
                                     opacity: opacity,
-                                    rotateY: rotateY,
                                     zIndex: zIndex,
                                 }}
                                 transition={{
                                     type: "spring",
-                                    stiffness: 260,
-                                    damping: 25,
+                                    stiffness: 200,
+                                    damping: 30,
                                 }}
                                 style={{
-                                    transformStyle: "preserve-3d",
-                                    transform: `translateZ(${translateZ}px)`,
                                     pointerEvents: absOffset === 0 ? "auto" : "none",
                                 }}
                             >
-                                {/* ===== TARJETA ===== */}
                                 <div
                                     onClick={() => {
-                                        if (feature.href && !isDragging) {
+                                        if (feature.href) {
                                             window.location.href = feature.href;
                                         }
                                     }}
-                                    className={`group bg-[#1a1a1a] rounded-[32px] p-3 shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:shadow-[0_25px_50px_rgb(0,0,0,0.5)] transition-all duration-500 ease-out overflow-hidden w-[300px] sm:w-[340px] ${
+                                    className={`group bg-[#1a1a1a] rounded-[32px] p-3 shadow-[0_8px_30px_rgb(0,0,0,0.3)] transition-all duration-300 overflow-hidden w-[280px] sm:w-[320px] ${
                                         feature.href ? "cursor-pointer" : "cursor-default"
                                     }`}
                                 >
-                                    {/* ===== IMAGEN ===== */}
-                                    <div className="relative h-48 rounded-[24px] mb-4 overflow-hidden bg-black">
-                                        <img
+                                    {/* IMAGEN con Next.js Image (optimizada) */}
+                                    <div className="relative h-44 rounded-[24px] mb-4 overflow-hidden bg-black">
+                                        <Image
                                             src={feature.imagen}
                                             alt={feature.title}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                                            onError={(e) => {
-                                                e.currentTarget.style.display = "none";
-                                                const parent = e.currentTarget.parentElement;
-                                                if (parent) {
-                                                    parent.innerHTML = `
-                                                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
-                                                            <span class="text-6xl opacity-30">📷</span>
-                                                        </div>
-                                                    `;
-                                                }
-                                            }}
+                                            fill
+                                            sizes="(max-width: 768px) 280px, 320px"
+                                            className="object-cover"
+                                            priority={absOffset === 0}
                                         />
-
-                                        {/* Overlay con gradiente */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-
-                                        {/* Badge */}
                                         <div
                                             className="absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-medium tracking-wider uppercase backdrop-blur-sm border"
                                             style={{
@@ -228,7 +191,7 @@ export default function FeatureCarrusel() {
                                         </div>
                                     </div>
 
-                                    {/* ===== CONTENIDO ===== */}
+                                    {/* CONTENIDO */}
                                     <div className="px-3 pb-2">
                                         <h3 className="text-lg font-semibold text-white/95 mb-2 leading-tight">
                                             {feature.title}
@@ -236,10 +199,8 @@ export default function FeatureCarrusel() {
                                         <p className="text-sm text-white/50 leading-relaxed mb-4">
                                             {feature.desc}
                                         </p>
-
-                                        {/* CTA */}
                                         <div
-                                            className="flex items-center gap-1 text-sm font-medium transition-colors"
+                                            className="flex items-center gap-1 text-sm font-medium"
                                             style={{ color: feature.color }}
                                         >
                                             {feature.cta}
@@ -252,15 +213,14 @@ export default function FeatureCarrusel() {
                     })}
                 </motion.div>
 
-                {/* ===== BOTONES DE NAVEGACIÓN ===== */}
+                {/* BOTONES */}
                 <button
                     onClick={() => {
                         setActiveIndex((prev) => (prev - 1 + features.length) % features.length);
                         setIsPaused(true);
                         setTimeout(() => setIsPaused(false), 5000);
                     }}
-                    className="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white flex items-center justify-center transition-all z-[60]"
-                    aria-label="Anterior"
+                    className="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white flex items-center justify-center z-[60]"
                 >
                     ◀
                 </button>
@@ -270,15 +230,14 @@ export default function FeatureCarrusel() {
                         setIsPaused(true);
                         setTimeout(() => setIsPaused(false), 5000);
                     }}
-                    className="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white flex items-center justify-center transition-all z-[60]"
-                    aria-label="Siguiente"
+                    className="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white flex items-center justify-center z-[60]"
                 >
                     ▶
                 </button>
             </div>
 
-            {/* ===== INDICADORES ===== */}
-            <div className="flex justify-center gap-2 mt-8">
+            {/* INDICADORES */}
+            <div className="flex justify-center gap-2 mt-6">
                 {features.map((_, idx) => (
                     <button
                         key={idx}
@@ -292,15 +251,9 @@ export default function FeatureCarrusel() {
                                 ? "w-8 bg-[#ef4444]"
                                 : "w-2 bg-white/20 hover:bg-white/40"
                         }`}
-                        aria-label={`Ir a tarjeta ${idx + 1}`}
                     />
                 ))}
             </div>
-
-            {/* ===== HINT DE DRAG ===== */}
-            <p className="text-center text-white/20 text-xs mt-6 tracking-wider">
-                ← Desliza o espera para ver más →
-            </p>
         </div>
     );
 }
