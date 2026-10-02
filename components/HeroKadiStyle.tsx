@@ -32,20 +32,20 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden text-white pt-[140px] pb-20">
       
       {/* ===== IMAGEN DE FONDO ===== */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ 
-          backgroundImage: "url('/images/transmision-hero-bg.jpg')",
-        }}
-      />
-      
-      {/* ===== OVERLAY OSCURO PARA QUE EL TEXTO SE LEA ===== */}
-      <div 
-        className="absolute inset-0"
-        style={{ 
-          background: "linear-gradient(to bottom, rgba(15, 18, 21, 0.85) 0%, rgba(15, 18, 21, 0.75) 50%, rgba(15, 18, 21, 0.92) 100%)",
-        }}
-      />
+<div 
+  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+  style={{ 
+    backgroundImage: "url('/transmision-hero-bg.jpg')",
+  }}
+/>
+
+{/* ===== OVERLAY OSCURO PARA QUE EL TEXTO SE LEA ===== */}
+<div 
+  className="absolute inset-0"
+  style={{ 
+    background: "linear-gradient(to bottom, rgba(15, 18, 21, 0.85) 0%, rgba(15, 18, 21, 0.7) 50%, rgba(15, 18, 21, 0.95) 100%)",
+  }}
+/>
 
       {/* Glow dinámico (dorado + azul metálico) */}
       <motion.div

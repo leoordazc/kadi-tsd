@@ -93,29 +93,36 @@ export default function ServiciosCarrusel() {
     return (
         <section className="relative z-10 py-16 border-t border-white/5 overflow-hidden">
             
-            {/* ===== LOGO MEDIA LUNA DE FONDO ===== */}
-            <motion.div
-                className="absolute top-1/2 -translate-y-1/2 pointer-events-none z-0"
-                animate={{ opacity: logoOpacity }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                style={{
-                    left: "-12%",
-                    width: "clamp(300px, 40vw, 600px)",
-                    height: "auto",
-                    maskImage: "linear-gradient(to left, black 60%, transparent 100%)",
-                    WebkitMaskImage: "linear-gradient(to left, black 60%, transparent 100%)",
-                }}
-            >
-                <img
-                    src="/logo.png"
-                    alt=""
-                    className="w-full h-auto"
-                    style={{
-                        opacity: 0.12,
-                        filter: "grayscale(30%) brightness(1.3)",
-                    }}
-                />
-            </motion.div>
+            {/* ===== LOGO MEDIA LUNA DE FONDO (se mueve en X con el scroll) ===== */}
+<motion.div
+    className="absolute top-1/2 -translate-y-1/2 pointer-events-none z-0 overflow-hidden"
+    animate={{ 
+        opacity: logoOpacity,
+        x: activeIndex * -120,  // ← se desplaza a la izquierda conforme avanzas
+    }}
+    transition={{ 
+        opacity: { duration: 0.5, ease: "easeOut" },
+        x: { type: "spring", stiffness: 100, damping: 25 },
+    }}
+    style={{
+        left: "-15%",
+        width: "clamp(320px, 45vw, 680px)",
+        height: "clamp(320px, 45vw, 680px)",
+        borderRadius: "0 50% 50% 0",         // ← esquinas redondeadas (media luna)
+        overflow: "hidden",
+        boxShadow: "40px 0 80px rgba(212, 175, 55, 0.08)",
+    }}
+>
+    <img
+        src="/logo.png"
+        alt=""
+        className="w-full h-full object-cover"
+        style={{
+            opacity: 0.14,
+            filter: "grayscale(30%) brightness(1.3)",
+        }}
+    />
+</motion.div>
 
             <div className="max-w-7xl mx-auto px-4 relative z-10">
                 
