@@ -73,3 +73,20 @@ body {
         -webkit-overflow-scrolling: touch !important;
     }
 }
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  80% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-100vh);
+    opacity: 0;
+  }
+}

@@ -216,30 +216,21 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
         }}
       />
 
-      {/* Partículas sutiles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-[#ef4444]/40 rounded-full"
-            initial={{
-              x: Math.random() * 100 + "%",
-              y: Math.random() * 100 + "%",
-              opacity: 0,
-            }}
-            animate={{
-              y: [null, "-20%"],
-              opacity: [0, 0.6, 0],
-            }}
-            transition={{
-              duration: Math.random() * 8 + 8,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: "linear",
-            }}
-          />
-        ))}
-      </div>
+     {/* Partículas sutiles (optimizadas: solo 8) */}
+<div className="absolute inset-0 overflow-hidden pointer-events-none">
+  {[...Array(8)].map((_, i) => (
+    <div
+      key={i}
+      className="absolute w-1 h-1 bg-[#ef4444]/40 rounded-full"
+      style={{
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        animation: `floatUp ${8 + Math.random() * 6}s linear infinite`,
+        animationDelay: `${Math.random() * 5}s`,
+      }}
+    />
+  ))}
+</div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
         <div className="flex flex-col items-center text-center">
