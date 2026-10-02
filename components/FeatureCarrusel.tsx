@@ -23,7 +23,7 @@ const features: Feature[] = [
         title: "Garantía por escrito",
         desc: "3 meses respaldados con póliza firmada.",
         cta: "Conoce más",
-        color: "#4ade80",
+        color: "#D4AF37", // Dorado KADI (antes verde)
         badge: "Póliza oficial",
     },
     {
@@ -32,7 +32,7 @@ const features: Feature[] = [
         title: "Especialistas en estándar",
         desc: "Solo transmisiones manuales y diferenciales.",
         cta: "Ver catálogo",
-        color: "#ef4444",
+        color: "#1e4a8c", // Azul metálico KADI (antes rojo)
         badge: "Ingeniería",
         href: "/catalogo",
     },
@@ -42,7 +42,7 @@ const features: Feature[] = [
         title: "Envío nacional",
         desc: "Paquetería segura y rastreable.",
         cta: "Ver cobertura",
-        color: "#D4AF37",
+        color: "#D4AF37", // Dorado KADI (se mantiene)
         badge: "Guía de envío",
     },
 ];
@@ -56,10 +56,8 @@ export default function FeatureCarrusel() {
         const offset = info.offset.x;
 
         if (offset < -swipeThreshold) {
-            // Swipe izquierda → siguiente
             setActiveIndex((prev) => (prev + 1) % features.length);
         } else if (offset > swipeThreshold) {
-            // Swipe derecha → anterior
             setActiveIndex((prev) => (prev - 1 + features.length) % features.length);
         }
     };
@@ -72,7 +70,6 @@ export default function FeatureCarrusel() {
         setActiveIndex((prev) => (prev - 1 + features.length) % features.length);
     };
 
-    // Calcular posición sin animación 3D pesada
     const getPositionData = (index: number) => {
         let offset = index - activeIndex;
         const total = features.length;
@@ -94,13 +91,13 @@ export default function FeatureCarrusel() {
             {/* TÍTULO */}
             <div className="text-center mb-8">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-4">
-                    <span className="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
                     <span className="text-xs font-medium text-white/80 tracking-wider uppercase">
                         Nuestro compromiso
                     </span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-light text-white/90">
-                    Lo que <span className="text-[#ef4444]">garantizamos</span>
+                    Lo que <span className="text-[#D4AF37]">garantizamos</span>
                 </h2>
             </div>
 
@@ -148,12 +145,13 @@ export default function FeatureCarrusel() {
                                             window.location.href = feature.href;
                                         }
                                     }}
-                                    className={`bg-[#1a1a1a] rounded-[32px] p-3 shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden w-[280px] sm:w-[320px] ${
+                                    className={`rounded-[32px] p-3 shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden w-[280px] sm:w-[320px] ${
                                         feature.href ? "cursor-pointer" : "cursor-default"
                                     }`}
+                                    style={{ backgroundColor: "var(--bg-card)" }}
                                 >
                                     {/* IMAGEN */}
-                                    <div className="relative h-44 rounded-[24px] mb-4 overflow-hidden bg-black">
+                                    <div className="relative h-44 rounded-[24px] mb-4 overflow-hidden" style={{ backgroundColor: "var(--bg-primary)" }}>
                                         <Image
                                             src={feature.imagen}
                                             alt={feature.title}
@@ -201,14 +199,16 @@ export default function FeatureCarrusel() {
                 {/* BOTONES */}
                 <button
                     onClick={goPrev}
-                    className="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white flex items-center justify-center z-[60] transition-colors"
+                    className="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full backdrop-blur-sm text-white flex items-center justify-center z-[60] transition-colors"
+                    style={{ backgroundColor: "rgba(15, 18, 21, 0.6)" }}
                     aria-label="Anterior"
                 >
                     ◀
                 </button>
                 <button
                     onClick={goNext}
-                    className="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white flex items-center justify-center z-[60] transition-colors"
+                    className="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full backdrop-blur-sm text-white flex items-center justify-center z-[60] transition-colors"
+                    style={{ backgroundColor: "rgba(15, 18, 21, 0.6)" }}
                     aria-label="Siguiente"
                 >
                     ▶
@@ -223,9 +223,10 @@ export default function FeatureCarrusel() {
                         onClick={() => setActiveIndex(idx)}
                         className={`h-1.5 rounded-full transition-all duration-300 ${
                             idx === activeIndex
-                                ? "w-8 bg-[#ef4444]"
+                                ? "w-8"
                                 : "w-2 bg-white/20 hover:bg-white/40"
                         }`}
+                        style={idx === activeIndex ? { backgroundColor: "var(--kadi-gold)" } : {}}
                         aria-label={`Ir a tarjeta ${idx + 1}`}
                     />
                 ))}

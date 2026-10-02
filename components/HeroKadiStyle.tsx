@@ -9,172 +9,6 @@ interface HeroKadiStyleProps {
   onConoceKadi: () => void;
 }
 
-interface Feature {
-  id: string;
-  imagen: string;
-  title: string;
-  desc: string;
-  cta: string;
-  color: string;
-  badge: string;
-  href?: string;
-}
-
-const features: Feature[] = [
-  {
-    id: "1",
-    imagen: "/images/venta-unidades.jpg",
-    title: "Venta de unidades",
-    desc: "Transmisiones y diferenciales listos para instalar.",
-    cta: "Ver catálogo",
-    color: "#ef4444",
-    badge: "Nuevas · Reconstruidas",
-    href: "/catalogo",
-  },
-  {
-    id: "2",
-    imagen: "/images/reparacion-especializada.jpg",
-    title: "Reparación especializada",
-    desc: "Reconstrucción mayor con tolerancias OEM.",
-    cta: "Cotizar reparación",
-    color: "#4ade80",
-    badge: "Reparación mayor",
-  },
-  {
-    id: "3",
-    imagen: "/images/mantenimiento-preventivo.jpg",
-    title: "Mantenimiento preventivo",
-    desc: "Cambio de aceite e inspección completa.",
-    cta: "Agendar cita",
-    color: "#60a5fa",
-    badge: "Preventivo",
-  },
-];
-
-// ============================================
-// COMPONENTE DE TARJETA CON EFECTO 3D
-// ============================================
-function FeatureCard3D({ feature, onClick }: { feature: Feature; onClick?: () => void }) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [isHovering, setIsHovering] = useState(false);
-
-  // Motion values para rotación 3D
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [8, -8]), {
-    stiffness: 300,
-    damping: 30,
-  });
-  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-8, 8]), {
-    stiffness: 300,
-    damping: 30,
-  });
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    mouseX.set(x);
-    mouseY.set(y);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovering(false);
-    mouseX.set(0);
-    mouseY.set(0);
-  };
-
-  return (
-    <motion.div
-      ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={handleMouseLeave}
-      onClick={onClick}
-      style={{
-        rotateX,
-        rotateY,
-        transformStyle: "preserve-3d",
-        perspective: 1000,
-      }}
-      whileHover={{ y: -8 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className={`group relative bg-[#1a1a1a] rounded-[32px] p-3 shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:shadow-[0_25px_50px_rgb(0,0,0,0.5)] transition-all duration-500 ease-out overflow-hidden text-left ${
-        feature.href ? "cursor-pointer" : "cursor-default"
-      }`}
-    >
-      {/* ===== IMAGEN SUPERIOR ===== */}
-      <div className="relative h-44 sm:h-48 rounded-[24px] mb-4 overflow-hidden bg-black">
-        <img
-          src={feature.imagen}
-          alt={feature.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-            const parent = e.currentTarget.parentElement;
-            if (parent) {
-              parent.innerHTML = `
-                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
-                  <span class="text-6xl opacity-30">🔧</span>
-                </div>
-              `;
-            }
-          }}
-        />
-
-        {/* Overlay con gradiente */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-
-        {/* Badge de tipo */}
-        <div
-          className="absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-medium tracking-wider uppercase backdrop-blur-sm border"
-          style={{
-            backgroundColor: `${feature.color}25`,
-            color: feature.color,
-            borderColor: `${feature.color}50`,
-          }}
-        >
-          {feature.badge}
-        </div>
-
-        {/* Efecto de brillo al hover */}
-        <motion.div
-          className="absolute inset-0 pointer-events-none"
-          animate={{ opacity: isHovering ? 1 : 0 }}
-          transition={{ duration: 0.3 }}
-          style={{
-            background: `radial-gradient(circle at 50% 0%, ${feature.color}30, transparent 70%)`,
-          }}
-        />
-      </div>
-
-      {/* ===== CONTENIDO ===== */}
-      <div className="px-3 pb-2">
-        <h3 className="text-lg font-semibold text-white/95 mb-2 leading-tight">
-          {feature.title}
-        </h3>
-        <p className="text-sm text-white/50 leading-relaxed mb-4">
-          {feature.desc}
-        </p>
-
-        {/* CTA con flecha */}
-        <div
-          className="flex items-center gap-1 text-sm font-medium transition-colors"
-          style={{ color: feature.color }}
-        >
-          {feature.cta}
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// ============================================
-// HERO PRINCIPAL
-// ============================================
 export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
   const [mounted, setMounted] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -196,41 +30,46 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
   if (!mounted) return null;
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-black text-white pt-[140px] pb-20">
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden text-white pt-[140px] pb-20" style={{ backgroundColor: "var(--bg-primary)" }}>
       
-      {/* Fondo con gradiente KADI */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0f0a0a] to-black" />
+      {/* Fondo con gradiente KADI (gris metalizado) */}
+      <div 
+        className="absolute inset-0" 
+        style={{ background: "linear-gradient(to bottom, var(--bg-primary), #16191f, var(--bg-primary))" }}
+      />
 
-      {/* Glow dinámico */}
+      {/* Glow dinámico (dorado + azul metálico) */}
       <motion.div
         animate={{
           x: mousePosition.x * 15,
           y: mousePosition.y * 15,
         }}
         transition={{ type: "spring", damping: 50, stiffness: 100 }}
-        className="absolute w-[600px] h-[600px] bg-gradient-to-tr from-[#ef4444]/20 via-[#D4AF37]/10 to-transparent rounded-full blur-[120px] opacity-60 pointer-events-none"
+        className="absolute w-[600px] h-[600px] rounded-full blur-[120px] opacity-60 pointer-events-none"
         style={{
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
+          background: "radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(30, 74, 140, 0.10) 50%, transparent 70%)",
         }}
       />
 
-     {/* Partículas sutiles (optimizadas: solo 8) */}
-<div className="absolute inset-0 overflow-hidden pointer-events-none">
-  {[...Array(8)].map((_, i) => (
-    <div
-      key={i}
-      className="absolute w-1 h-1 bg-[#ef4444]/40 rounded-full"
-      style={{
-        left: `${Math.random() * 100}%`,
-        top: `${Math.random() * 100}%`,
-        animation: `floatUp ${8 + Math.random() * 6}s linear infinite`,
-        animationDelay: `${Math.random() * 5}s`,
-      }}
-    />
-  ))}
-</div>
+      {/* Partículas sutiles (optimizadas: solo 8) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              backgroundColor: "rgba(212, 175, 55, 0.4)",
+              animation: `floatUp ${8 + Math.random() * 6}s linear infinite`,
+              animationDelay: `${Math.random() * 5}s`,
+            }}
+          />
+        ))}
+      </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
         <div className="flex flex-col items-center text-center">
@@ -242,7 +81,7 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
             transition={{ duration: 0.6, ease: "easeOut" }}
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8"
           >
-            <span className="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse" />
+            <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: "var(--kadi-gold)" }} />
             <span className="text-xs font-medium text-white/80 tracking-wider uppercase">
               Impulsado por NIA
             </span>
@@ -256,7 +95,7 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
             className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight"
           >
             <span className="block text-white/90">Tu transmisión manual</span>
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#ef4444] via-[#f97316] to-[#D4AF37]">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#1e4a8c] via-[#2a5ca8] to-[#D4AF37]">
               en un solo lugar.
             </span>
           </motion.h1>
@@ -268,10 +107,10 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-xl md:text-2xl text-white/60 max-w-2xl mb-10 font-light"
           >
-            Encuentra o diagnostica en <span className="text-[#4ade80] font-medium">segundos</span>.
+            Encuentra o diagnostica en <span className="font-medium" style={{ color: "var(--kadi-gold)" }}>segundos</span>.
           </motion.p>
 
-          {/* Botón principal */}
+          {/* Botón principal (mantiene rojo por ser CTA urgente) */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -297,9 +136,9 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
           </motion.div>
 
           {/* ===== CARRUSEL DE FEATURES ===== */}
-<div className="w-full max-w-5xl mt-4">
-    <FeatureCarrusel />
-</div>
+          <div className="w-full max-w-5xl mt-4">
+            <FeatureCarrusel />
+          </div>
 
         </div>
       </div>

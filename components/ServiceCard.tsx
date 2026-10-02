@@ -10,7 +10,7 @@ interface ServiceCardProps {
     cta: string;
     color: string;
     delay?: number;
-    onClick?: () => void;  // ← NUEVO: función opcional para manejar el clic
+    onClick?: () => void;
 }
 
 export default function ServiceCard({ icon, title, description, cta, color, delay = 0, onClick }: ServiceCardProps) {
@@ -20,7 +20,6 @@ export default function ServiceCard({ icon, title, description, cta, color, dela
         if (onClick) {
             onClick();
         } else {
-            // Comportamiento por defecto según el título
             if (title === "VENTA DE UNIDADES") {
                 router.push("/catalogo");
             } else if (title === "REPARACIÓN ESPECIALIZADA") {
@@ -39,7 +38,10 @@ export default function ServiceCard({ icon, title, description, cta, color, dela
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay }}
             whileHover={{ y: -5 }}
-            className="group relative bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl overflow-hidden border border-white/5 p-8 cursor-pointer"
+            className="group relative rounded-2xl overflow-hidden border border-white/5 p-8 cursor-pointer"
+            style={{
+                background: `linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)`,
+            }}
             onClick={handleClick}
         >
             {/* Línea superior de color */}
