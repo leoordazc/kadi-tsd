@@ -192,13 +192,20 @@ useEffect(() => {
 
   return (
     <main 
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      className="min-h-screen bg-[#0a0a0a] text-white relative overflow-x-hidden"
-    >  
-      <div className="fixed inset-0 bg-black pointer-events-none" />
+  ref={containerRef}
+  onMouseMove={handleMouseMove}
+  className="min-h-screen text-white relative overflow-x-hidden"
+  style={{ backgroundColor: 'var(--bg-primary)' }}
+>
+      <div 
+  className="fixed inset-0 pointer-events-none" 
+  style={{ backgroundColor: 'var(--bg-primary)' }} 
+/>
 
-<header className="sticky top-0 z-50 h-[56px] backdrop-blur-xl bg-black/75 border-b border-white/5">
+<header 
+  className="sticky top-0 z-50 h-[56px] backdrop-blur-xl border-b border-white/5"
+  style={{ backgroundColor: 'rgba(15, 18, 21, 0.75)' }}
+>
   <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full">
     <div className="flex items-center justify-between h-full relative">
       
@@ -449,8 +456,10 @@ useEffect(() => {
           </div>
         </div>
       </section>
-
-<footer className="relative z-10 border-t border-white/5 bg-black/40">
+<footer 
+  className="relative z-10 border-t border-white/5"
+  style={{ backgroundColor: 'rgba(15, 18, 21, 0.4)' }}
+>
   <div className="max-w-6xl mx-auto px-8 py-16">
     <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
       
