@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import FeatureCarrusel from "@/components/FeatureCarrusel";
 
 interface HeroKadiStyleProps {
@@ -30,12 +29,22 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
   if (!mounted) return null;
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden text-white pt-[140px] pb-20" style={{ backgroundColor: "var(--bg-primary)" }}>
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden text-white pt-[140px] pb-20">
       
-      {/* Fondo con gradiente KADI (gris metalizado) */}
+      {/* ===== IMAGEN DE FONDO ===== */}
       <div 
-        className="absolute inset-0" 
-        style={{ background: "linear-gradient(to bottom, var(--bg-primary), #16191f, var(--bg-primary))" }}
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: "url('/images/transmision-hero-bg.jpg')",
+        }}
+      />
+      
+      {/* ===== OVERLAY OSCURO PARA QUE EL TEXTO SE LEA ===== */}
+      <div 
+        className="absolute inset-0"
+        style={{ 
+          background: "linear-gradient(to bottom, rgba(15, 18, 21, 0.85) 0%, rgba(15, 18, 21, 0.75) 50%, rgba(15, 18, 21, 0.92) 100%)",
+        }}
       />
 
       {/* Glow dinámico (dorado + azul metálico) */}
