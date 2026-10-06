@@ -329,108 +329,155 @@ useEffect(() => {
 <ReferenciasCarrusel />
 
 
-      <section className="relative z-10 py-24 border-t border-white/5 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-4xl font-light text-white/90 mb-3">
-              Red de <span className="text-[#ef4444]">Distribución</span>
-            </h2>
-            <p className="text-white/40 text-sm tracking-widest">COBERTURA NACIONAL · ENTREGA 2-3 dias habiles</p>
-            <div className="w-12 h-px bg-gradient-to-r from-transparent via-[#ef4444] to-transparent mx-auto mt-6" />
-          </motion.div>
+     <section 
+  className="relative z-10 py-24 border-t border-white/5 overflow-hidden"
+  style={{ backgroundColor: "var(--bg-primary)" }}
+>
+  <div className="max-w-7xl mx-auto px-8">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="text-center mb-12"
+    >
+      <h2 className="text-4xl font-light text-white/90 mb-3">
+        Red de <span 
+          className="text-transparent bg-clip-text"
+          style={{
+            backgroundImage: "linear-gradient(90deg, #1e4a8c, #2a5ca8, #D4AF37)",
+          }}
+        >
+          Distribución
+        </span>
+      </h2>
+      <p className="text-white/40 text-sm tracking-widest">COBERTURA NACIONAL · ENTREGA 2-3 días hábiles</p>
+      <div 
+        className="w-12 h-px mx-auto mt-6" 
+        style={{
+          background: "linear-gradient(to right, transparent, var(--kadi-gold), transparent)",
+        }}
+      />
+    </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative -ml-20 lg:-ml-40"
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 items-center">
+      <motion.div
+        initial={{ opacity: 0, x: -50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        className="relative -ml-8 lg:-ml-16"
+      >
+        <div className="relative overflow-visible">
+          <Globe3D />
+          <div 
+            className="absolute top-0 right-0 w-32 h-full pointer-events-none lg:block hidden"
+            style={{
+              background: "linear-gradient(to left, var(--bg-primary), transparent)",
+            }}
+          />
+        </div>
+      </motion.div>
+      
+      <motion.div
+        initial={{ opacity: 0, x: 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
+        className="lg:pl-12 space-y-8"
+      >
+        <div className="space-y-6">
+          <div>
+            <div className="text-sm text-white/30 tracking-wider mb-2">COBERTURA</div>
+            <div 
+              className="text-6xl font-light"
+              style={{ color: "var(--kadi-blue-bright)" }}
             >
-              <div className="relative overflow-visible">
-                <Globe3D />
-                <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-[#0a0a0a] to-transparent pointer-events-none lg:block hidden" />
-              </div>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="lg:pl-12 space-y-8"
-            >
-              <div className="space-y-6">
-                <div>
-                  <div className="text-sm text-white/30 tracking-wider mb-2">COBERTURA</div>
-                  <div className="text-6xl font-light text-[#ef4444]">32</div>
-                  <div className="text-lg text-white/40">estados de México</div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <div className="text-3xl font-light text-white/90">24h</div>
-                    <div className="text-xs text-white/30 tracking-wider">ENTREGA PROMEDIO EN FLETERA</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-light text-white/90">100%</div>
-                    <div className="text-xs text-white/30 tracking-wider">RASTREABLE</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="pt-4">
-                <div className="flex items-center space-x-1 text-[10px] text-white/20">
-                  <span>PEDIDO</span>
-                  <div className="flex-1 h-px bg-white/10" />
-                  <span className="text-[#ef4444]">●</span>
-                  <div className="flex-1 h-px bg-white/10" />
-                  <span>EMPAQUE</span>
-                  <div className="flex-1 h-px bg-white/10" />
-                  <span className="text-[#ef4444]">●</span>
-                  <div className="flex-1 h-px bg-white/10" />
-                  <span>ENVÍO</span>
-                  <div className="flex-1 h-px bg-white/10" />
-                  <span className="text-[#ef4444]">●</span>
-                  <div className="flex-1 h-px bg-white/10" />
-                  <span>ENTREGA</span>
-                </div>
-              </div>
-              
-              <div className="pt-4 space-y-3">
-                {["✅ Envío gratis a todo México", "✅ Seguro incluido contra daños", "✅ Rastreo en tiempo real", "✅ Garantía de satisfacción"].map((beneficio, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: 20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 + i * 0.1 }}
-                    className="flex items-center space-x-3 text-sm text-white/40"
-                  >
-                    <span>{beneficio}</span>
-                  </motion.div>
-                ))}
-              </div>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1 }}
-                className="pt-6"
-              >
-                <button className="group relative px-8 py-4 bg-transparent border border-[#ef4444]/30 hover:border-[#ef4444]/60 transition-all w-full lg:w-auto">
-                  <span className="text-[#ef4444] text-sm tracking-widest group-hover:text-[#ef4444]/90">
-                    VER ZONAS DE COBERTURA
-                  </span>
-                  <div className="absolute inset-0 border border-[#ef4444]/10 group-hover:border-[#ef4444]/30 -top-[2px] -left-[2px] -right-[2px] -bottom-[2px] transition-all" />
-                </button>
-              </motion.div>
-            </motion.div>
+              32
+            </div>
+            <div className="text-lg text-white/40">estados de México</div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <div className="text-3xl font-light text-white/90">24h</div>
+              <div className="text-xs text-white/30 tracking-wider">ENTREGA PROMEDIO EN FLETERA</div>
+            </div>
+            <div>
+              <div className="text-3xl font-light text-white/90">100%</div>
+              <div className="text-xs text-white/30 tracking-wider">RASTREABLE</div>
+            </div>
           </div>
         </div>
-      </section>
+        
+        <div className="pt-4">
+          <div className="flex items-center space-x-1 text-[10px] text-white/20">
+            <span>PEDIDO</span>
+            <div className="flex-1 h-px bg-white/10" />
+            <span style={{ color: "var(--kadi-gold)" }}>●</span>
+            <div className="flex-1 h-px bg-white/10" />
+            <span>EMPAQUE</span>
+            <div className="flex-1 h-px bg-white/10" />
+            <span style={{ color: "var(--kadi-gold)" }}>●</span>
+            <div className="flex-1 h-px bg-white/10" />
+            <span>ENVÍO</span>
+            <div className="flex-1 h-px bg-white/10" />
+            <span style={{ color: "var(--kadi-gold)" }}>●</span>
+            <div className="flex-1 h-px bg-white/10" />
+            <span>ENTREGA</span>
+          </div>
+        </div>
+        
+        <div className="pt-4 space-y-3">
+          {[
+            "✅ Envío gratis a todo México",
+            "✅ Seguro incluido contra daños",
+            "✅ Rastreo en tiempo real",
+            "✅ Garantía de satisfacción"
+          ].map((beneficio, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 + i * 0.1 }}
+              className="flex items-center space-x-3 text-sm text-white/40"
+            >
+              <span>{beneficio}</span>
+            </motion.div>
+          ))}
+        </div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1 }}
+          className="pt-6"
+        >
+          <button 
+            className="group relative px-8 py-4 bg-transparent transition-all w-full lg:w-auto"
+            style={{
+              border: "1px solid rgba(212, 175, 55, 0.3)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "rgba(212, 175, 55, 0.6)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "rgba(212, 175, 55, 0.3)";
+            }}
+          >
+            <span 
+              className="text-sm tracking-widest transition-all"
+              style={{ color: "var(--kadi-gold)" }}
+            >
+              VER ZONAS DE COBERTURA
+            </span>
+            <div 
+              className="absolute -top-[2px] -left-[2px] -right-[2px] -bottom-[2px] transition-all pointer-events-none"
+              style={{ border: "1px solid rgba(212, 175, 55, 0.1)" }}
+            />
+          </button>
+        </motion.div>
+      </motion.div>
+    </div>
+  </div>
+</section>
 
       <PaymentSection />
 

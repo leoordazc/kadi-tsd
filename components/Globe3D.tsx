@@ -4,17 +4,19 @@ import { useRef, useEffect, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
-// Colores neón/pastel
+// ============================================
+// PALETA KADI (basada en el logo)
+// ============================================
 const colors = {
-  neonGreen: "#4ade80",
-  neonBlue: "#60a5fa",
-  neonPink: "#f472b6",
-  neonPurple: "#c084fc",
-  pastelGreen: "#86efac",
-  pastelBlue: "#93c5fd",
+  kadiGold: "#D4AF37",        // Dorado principal
+  kadiGoldBright: "#e5c158",  // Dorado brillante
+  kadiBlue: "#1e4a8c",        // Azul metálico
+  kadiBlueBright: "#2a5ca8",  // Azul acero
+  kadiBlueDark: "#0f2b5c",    // Azul noche
   white: "#ffffff",
+  grayLight: "#a1a8b0",       // Gris claro del logo
 };
 
 // Componente del globo hecho de partículas
@@ -44,13 +46,14 @@ function ParticleGlobe() {
     positions[i * 3 + 1] = y;
     positions[i * 3 + 2] = z;
     
+    // ===== PALETA KADI: dorado + azul metálico + gris claro =====
     const colorOptions = [
-      colors.neonGreen,
-      colors.neonBlue,
-      colors.neonPink,
-      colors.neonPurple,
-      colors.pastelGreen,
-      colors.pastelBlue,
+      colors.kadiGold,
+      colors.kadiGoldBright,
+      colors.kadiBlue,
+      colors.kadiBlueBright,
+      colors.kadiBlueDark,
+      colors.grayLight,
       colors.white,
     ];
     
@@ -78,7 +81,7 @@ function ParticleGlobe() {
   );
 }
 
-// ✨ PARTÍCULA ORBITAL SUTIL
+// ✨ PARTÍCULA ORBITAL SUTIL (dorada)
 function OrbitalParticle() {
   const particleRef = useRef<THREE.Mesh>(null);
   
@@ -101,9 +104,9 @@ function OrbitalParticle() {
     <mesh ref={particleRef}>
       <sphereGeometry args={[0.15, 16, 16]} />
       <meshStandardMaterial 
-        color={colors.neonGreen} 
-        emissive={colors.neonGreen}
-        emissiveIntensity={0.8}
+        color={colors.kadiGold} 
+        emissive={colors.kadiGold}
+        emissiveIntensity={0.9}
         transparent
         opacity={0.9}
       />
@@ -111,14 +114,13 @@ function OrbitalParticle() {
   );
 }
 
-// Estela de la partícula
+// Estela de la partícula (azul metálico)
 function ParticleTrail() {
   const trailRef = useRef<THREE.Points>(null);
-  const positions = useRef<Float32Array>(new Float32Array(30 * 3));
   
   useFrame(() => {
     if (trailRef.current && trailRef.current.parent) {
-      const trailPositions = trailRef.current.geometry.attributes.position.array;
+      const trailPositions = trailRef.current.geometry.attributes.position.array as Float32Array;
       
       for (let i = trailPositions.length - 3; i >= 3; i -= 3) {
         trailPositions[i] = trailPositions[i - 3];
@@ -147,17 +149,17 @@ function ParticleTrail() {
   return (
     <points ref={trailRef} geometry={geometry}>
       <pointsMaterial 
-        color={colors.neonBlue} 
+        color={colors.kadiBlueBright} 
         size={0.03} 
         transparent 
-        opacity={0.15}
+        opacity={0.2}
         blending={THREE.AdditiveBlending}
       />
     </points>
   );
 }
 
-// Anillos orbitales
+// Anillos orbitales (dorado + azul)
 function OrbitalRings() {
   const ring1Ref = useRef<THREE.LineSegments>(null);
   const ring2Ref = useRef<THREE.LineSegments>(null);
@@ -183,10 +185,10 @@ function OrbitalRings() {
   return (
     <group>
       <lineSegments ref={ring1Ref} geometry={createRing(6)}>
-        <lineBasicMaterial color={colors.neonGreen} opacity={0.08} transparent />
+        <lineBasicMaterial color={colors.kadiGold} opacity={0.12} transparent />
       </lineSegments>
       <lineSegments ref={ring2Ref} geometry={createRing(6.3)}>
-        <lineBasicMaterial color={colors.neonBlue} opacity={0.05} transparent />
+        <lineBasicMaterial color={colors.kadiBlue} opacity={0.1} transparent />
       </lineSegments>
     </group>
   );
@@ -206,7 +208,6 @@ export default function Globe3D() {
   ];
 
   useEffect(() => {
-    // Simular carga del componente 3D
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 500);
@@ -223,9 +224,15 @@ export default function Globe3D() {
 
   if (isLoading) {
     return (
-      <div className="w-full h-[600px] bg-black rounded-xl flex items-center justify-center border border-white/5">
+      <div 
+        className="w-full h-[400px] rounded-xl flex items-center justify-center border border-white/5"
+        style={{ backgroundColor: "var(--bg-secondary)" }}
+      >
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-2 border-[#4ade80] border-t-transparent rounded-full animate-spin" />
+          <div 
+            className="w-12 h-12 border-2 border-t-transparent rounded-full animate-spin" 
+            style={{ borderColor: "var(--kadi-gold)", borderTopColor: "transparent" }}
+          />
           <div className="text-white/30 text-sm">Cargando visualización 3D...</div>
         </div>
       </div>
@@ -237,12 +244,12 @@ export default function Globe3D() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="relative w-full h-[600px] bg-transparent"
+      className="relative w-full h-[400px] sm:h-[450px] lg:h-[500px] bg-transparent"
       role="img"
       aria-label="Mapa interactivo de la red de distribución de KADI en México con puntos en CDMX, Monterrey, Guadalajara y más"
     >
-      <Canvas camera={{ position: [0, 2, 16], fov: 45 }}>
-        {/* Luces mejoradas */}
+      <Canvas camera={{ position: [0, 2, 18], fov: 40 }}>
+        {/* Luces */}
         <ambientLight intensity={0.3} />
         <pointLight position={[10, 10, 10]} intensity={0.8} />
         <pointLight position={[-10, -10, -10]} intensity={0.3} />
@@ -269,53 +276,61 @@ export default function Globe3D() {
       </Canvas>
 
       {/* Mensaje principal */}
-      <motion.div
-        key={mensaje}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.5 }}
-        className="absolute top-12 left-1/2 transform -translate-x-1/2 text-center"
-      >
-        <div className="text-4xl font-light tracking-wider text-white/90">
-          {mensajes[mensaje].principal}
-        </div>
-        <div className="text-sm text-white/30 mt-2 tracking-widest">
-          {mensajes[mensaje].secundario}
-        </div>
-      </motion.div>
+      <div className="absolute top-8 left-1/2 transform -translate-x-1/2 text-center pointer-events-none">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={mensaje}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="text-3xl md:text-4xl font-light tracking-wider text-white/90">
+              {mensajes[mensaje].principal}
+            </div>
+            <div className="text-xs md:text-sm text-white/40 mt-2 tracking-widest">
+              {mensajes[mensaje].secundario}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-      {/* Estadísticas */}
+      {/* Estadísticas (izquierda) */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="absolute bottom-8 left-8 space-y-4"
+        className="absolute bottom-6 left-6 space-y-3 pointer-events-none"
       >
-        <div className="border-l-2 border-[#4ade80] pl-4">
-          <div className="text-2xl font-light text-white/90">32</div>
-          <div className="text-xs text-white/30 tracking-wider">ESTADOS</div>
+        <div className="pl-3" style={{ borderLeft: "2px solid var(--kadi-gold)" }}>
+          <div className="text-xl md:text-2xl font-light text-white/90">32</div>
+          <div className="text-[10px] text-white/40 tracking-wider">ESTADOS</div>
         </div>
-        <div className="border-l-2 border-[#60a5fa] pl-4">
-          <div className="text-2xl font-light text-white/90">24h</div>
-          <div className="text-xs text-white/30 tracking-wider">ENTREGA</div>
+        <div className="pl-3" style={{ borderLeft: "2px solid var(--kadi-blue-bright)" }}>
+          <div className="text-xl md:text-2xl font-light text-white/90">24h</div>
+          <div className="text-[10px] text-white/40 tracking-wider">ENTREGA</div>
         </div>
       </motion.div>
 
-      {/* Beneficio */}
+      {/* Beneficio (derecha) */}
       <motion.div
         animate={{ y: [0, -5, 0] }}
         transition={{ repeat: Infinity, duration: 3 }}
-        className="absolute bottom-8 right-8 text-right"
+        className="absolute bottom-6 right-6 text-right pointer-events-none"
       >
-        <div className="text-xs text-white/30 tracking-widest mb-1">BENEFICIO</div>
-        <div className="text-2xl font-light text-[#4ade80]">ENVÍO GRATIS</div>
-        <div className="text-xs text-white/20 mt-1">en todas las compras</div>
+        <div className="text-[10px] text-white/40 tracking-widest mb-1">BENEFICIO</div>
+        <div 
+          className="text-xl md:text-2xl font-light"
+          style={{ color: "var(--kadi-gold)" }}
+        >
+          ENVÍO GRATIS
+        </div>
+        <div className="text-[10px] text-white/30 mt-1">en todas las compras</div>
       </motion.div>
 
-      {/* Indicador */}
-      <div className="absolute top-8 right-8 text-right opacity-30">
-        <div className="text-[10px] text-white/20 tracking-widest">RED</div>
-        <div className="text-xs text-white/30">2K PUNTOS</div>
+      {/* Indicador (arriba derecha) */}
+      <div className="absolute top-6 right-6 text-right opacity-40 pointer-events-none">
+        <div className="text-[10px] text-white/30 tracking-widest">RED</div>
+        <div className="text-xs text-white/40">2K PUNTOS</div>
       </div>
     </motion.div>
   );
