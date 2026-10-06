@@ -27,14 +27,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://kadi-smart.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL!),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'KADI | Transmisiones Automotrices con IA',
     description: 'La primera asesoría de transmisiones con inteligencia artificial en México',
-    url: 'https://kadi-smart.vercel.app',
+    url: process.env.NEXT_PUBLIC_APP_URL,
     siteName: 'KADI TS&D',
     images: [
       {
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: 'tu-codigo-de-verificacion',
+    google: 'google-site-verification=1GbbQKTTn5BxpQGpQEzUTHDfsbk7U-j1ptLma4j-72k',
   },
   category: 'automotive',
   icons: {
