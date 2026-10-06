@@ -59,7 +59,6 @@ export default function PerfilPage() {
     direccion: ""
   });
 
-  // Estado para reclamaciones
   const [reclamaciones, setReclamaciones] = useState<Reclamacion[]>([]);
   const [mostrandoFormulario, setMostrandoFormulario] = useState(false);
   const [nuevaReclamacion, setNuevaReclamacion] = useState({
@@ -205,10 +204,6 @@ export default function PerfilPage() {
     return new Date(fechaFin) >= new Date();
   };
 
-  // ============================================
-  // CREAR RECLAMACIÓN
-  // ============================================
-
   const crearReclamacion = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -267,9 +262,15 @@ export default function PerfilPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div 
+        className="min-h-screen text-white flex items-center justify-center"
+        style={{ backgroundColor: "var(--bg-primary)" }}
+      >
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-2 border-[#ef4444] border-t-transparent rounded-full animate-spin" />
+          <div 
+            className="w-12 h-12 border-2 border-t-transparent rounded-full animate-spin" 
+            style={{ borderColor: "var(--kadi-gold)", borderTopColor: "transparent" }}
+          />
           <p className="text-white/40 text-sm">Cargando...</p>
         </div>
       </div>
@@ -277,21 +278,32 @@ export default function PerfilPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/75 border-b border-white/5">
-        <div className="max-w-6xl mx-auto px-6 py-4">
+    <main 
+      className="min-h-screen text-white"
+      style={{ backgroundColor: "var(--bg-primary)" }}
+    >
+      {/* ===== HEADER MINIMALISTA (estilo catálogo) ===== */}
+      <header 
+        className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5"
+        style={{ backgroundColor: "rgba(15, 18, 21, 0.75)" }}
+      >
+        <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 group">
-              <motion.span className="text-[#ef4444] text-xl group-hover:-translate-x-1 transition-transform">
-                ←
-              </motion.span>
-              <span className="text-white/70 group-hover:text-white text-sm">Volver al inicio</span>
+            {/* Solo flecha de regreso */}
+            <Link 
+              href="/" 
+              className="text-white/60 hover:text-white transition-colors flex-shrink-0"
+              title="Volver al inicio"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
             </Link>
-            <h1 className="text-2xl font-light">Mi <span className="text-[#ef4444]">Perfil</span></h1>
+
+            {/* Cerrar sesión */}
             <button
               onClick={cerrarSesion}
-              className="text-white/70 hover:text-red-400 transition-colors text-sm"
+              className="text-white/60 hover:text-red-400 transition-colors text-sm"
             >
               Cerrar sesión
             </button>
@@ -308,9 +320,18 @@ export default function PerfilPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 p-6 text-center"
+              className="rounded-2xl border border-white/5 p-6 text-center"
+              style={{
+                background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)",
+              }}
             >
-              <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-[#0f2b5c] to-[#1e4a8c] flex items-center justify-center mb-4 shadow-lg shadow-[#0f2b5c]/30">
+              <div 
+                className="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-4"
+                style={{
+                  background: "linear-gradient(135deg, #1e4a8c 0%, #2a5ca8 100%)",
+                  boxShadow: "0 8px 24px rgba(30, 74, 140, 0.35)",
+                }}
+              >
                 <span className="text-white text-3xl font-light">
                   {perfil?.nombre?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                 </span>
@@ -335,7 +356,10 @@ export default function PerfilPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 p-2"
+              className="rounded-2xl border border-white/5 p-2"
+              style={{
+                background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)",
+              }}
             >
               {[
                 { id: 'info', icon: '👤', label: 'Información personal' },
@@ -346,11 +370,15 @@ export default function PerfilPage() {
                 <button
                   key={item.id}
                   onClick={() => setSeccionActiva(item.id as SeccionActiva)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm border ${
                     seccionActiva === item.id
-                      ? 'bg-[#ef4444]/10 text-white border border-[#ef4444]/30'
-                      : 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent'
+                      ? 'text-white'
+                      : 'text-white/70 hover:text-white hover:bg-white/5 border-transparent'
                   }`}
+                  style={seccionActiva === item.id ? {
+                    backgroundColor: "rgba(212, 175, 55, 0.1)",
+                    borderColor: "rgba(212, 175, 55, 0.3)",
+                  } : {}}
                 >
                   <span className="text-lg">{item.icon}</span>
                   <span>{item.label}</span>
@@ -372,7 +400,10 @@ export default function PerfilPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 overflow-hidden"
+                  className="rounded-2xl border border-white/5 overflow-hidden"
+                  style={{
+                    background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)",
+                  }}
                 >
                   <div className="p-6 border-b border-white/5">
                     <h2 className="text-xl font-light text-white/90">Información personal</h2>
@@ -392,7 +423,7 @@ export default function PerfilPage() {
                           <p className="text-white/80 text-sm">{user?.email}</p>
                         </div>
                       </div>
-                      <span className="text-[#4ade80] text-xs">✓ Verificado</span>
+                      <span className="text-xs" style={{ color: "var(--kadi-gold)" }}>✓ Verificado</span>
                     </div>
 
                     <div className="flex items-center justify-between p-5">
@@ -409,7 +440,11 @@ export default function PerfilPage() {
                             onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                             onBlur={() => actualizarPerfil('nombre', formData.nombre)}
                             autoFocus
-                            className="flex-1 bg-black/60 border border-white/20 rounded-lg px-3 py-2 text-white/90 text-sm focus:outline-none focus:border-[#ef4444]"
+                            className="flex-1 rounded-lg px-3 py-2 text-white/90 text-sm focus:outline-none transition"
+                            style={{
+                              backgroundColor: "rgba(15, 18, 21, 0.6)",
+                              border: "1px solid var(--kadi-gold)",
+                            }}
                           />
                         ) : (
                           <div>
@@ -421,7 +456,8 @@ export default function PerfilPage() {
                       {editando !== 'nombre' && (
                         <button
                           onClick={() => setEditando('nombre')}
-                          className="text-[#ef4444] text-xs hover:text-white transition"
+                          className="text-xs transition-colors hover:opacity-80"
+                          style={{ color: "var(--kadi-gold)" }}
                         >
                           Editar
                         </button>
@@ -442,7 +478,11 @@ export default function PerfilPage() {
                             onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
                             onBlur={() => actualizarPerfil('telefono', formData.telefono)}
                             autoFocus
-                            className="flex-1 bg-black/60 border border-white/20 rounded-lg px-3 py-2 text-white/90 text-sm focus:outline-none focus:border-[#ef4444]"
+                            className="flex-1 rounded-lg px-3 py-2 text-white/90 text-sm focus:outline-none transition"
+                            style={{
+                              backgroundColor: "rgba(15, 18, 21, 0.6)",
+                              border: "1px solid var(--kadi-gold)",
+                            }}
                           />
                         ) : (
                           <div>
@@ -454,7 +494,8 @@ export default function PerfilPage() {
                       {editando !== 'telefono' && (
                         <button
                           onClick={() => setEditando('telefono')}
-                          className="text-[#ef4444] text-xs hover:text-white transition"
+                          className="text-xs transition-colors hover:opacity-80"
+                          style={{ color: "var(--kadi-gold)" }}
                         >
                           Editar
                         </button>
@@ -476,7 +517,11 @@ export default function PerfilPage() {
                             onBlur={() => actualizarPerfil('direccion', formData.direccion)}
                             autoFocus
                             rows={2}
-                            className="flex-1 bg-black/60 border border-white/20 rounded-lg px-3 py-2 text-white/90 text-sm focus:outline-none focus:border-[#ef4444]"
+                            className="flex-1 rounded-lg px-3 py-2 text-white/90 text-sm focus:outline-none transition"
+                            style={{
+                              backgroundColor: "rgba(15, 18, 21, 0.6)",
+                              border: "1px solid var(--kadi-gold)",
+                            }}
                           />
                         ) : (
                           <div>
@@ -488,7 +533,8 @@ export default function PerfilPage() {
                       {editando !== 'direccion' && (
                         <button
                           onClick={() => setEditando('direccion')}
-                          className="text-[#ef4444] text-xs hover:text-white transition"
+                          className="text-xs transition-colors hover:opacity-80"
+                          style={{ color: "var(--kadi-gold)" }}
                         >
                           Editar
                         </button>
@@ -508,7 +554,12 @@ export default function PerfilPage() {
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
-                  <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 overflow-hidden">
+                  <div 
+                    className="rounded-2xl border border-white/5 overflow-hidden"
+                    style={{
+                      background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)",
+                    }}
+                  >
                     <div className="p-6 border-b border-white/5">
                       <h2 className="text-xl font-light text-white/90">Estado de la cuenta</h2>
                       <p className="text-white/40 text-xs mt-1">Tu cuenta está protegida</p>
@@ -517,8 +568,11 @@ export default function PerfilPage() {
                     <div className="divide-y divide-white/5">
                       <div className="flex items-center justify-between p-5">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-full bg-[#4ade80]/10 flex items-center justify-center">
-                            <svg className="w-5 h-5 text-[#4ade80]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div 
+                            className="w-10 h-10 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: "rgba(212, 175, 55, 0.15)" }}
+                          >
+                            <svg className="w-5 h-5" style={{ color: "var(--kadi-gold)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
                           </div>
@@ -527,13 +581,16 @@ export default function PerfilPage() {
                             <p className="text-white/40 text-xs">Todos tus datos están protegidos</p>
                           </div>
                         </div>
-                        <span className="text-[#4ade80] text-xs">Activo</span>
+                        <span className="text-xs" style={{ color: "var(--kadi-gold)" }}>Activo</span>
                       </div>
 
                       <div className="flex items-center justify-between p-5">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-full bg-[#4ade80]/10 flex items-center justify-center">
-                            <svg className="w-5 h-5 text-[#4ade80]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div 
+                            className="w-10 h-10 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: "rgba(212, 175, 55, 0.15)" }}
+                          >
+                            <svg className="w-5 h-5" style={{ color: "var(--kadi-gold)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
@@ -542,7 +599,7 @@ export default function PerfilPage() {
                             <p className="text-white/40 text-xs">{user?.email}</p>
                           </div>
                         </div>
-                        <span className="text-[#4ade80] text-xs">Verificado</span>
+                        <span className="text-xs" style={{ color: "var(--kadi-gold)" }}>Verificado</span>
                       </div>
 
                       <div className="flex items-center justify-between p-5">
@@ -557,14 +614,22 @@ export default function PerfilPage() {
                             <p className="text-white/40 text-xs">Se recomienda cambiarla cada 6 meses</p>
                           </div>
                         </div>
-                        <button className="text-[#ef4444] text-xs hover:text-white transition">
+                        <button 
+                          className="text-xs transition-colors hover:opacity-80"
+                          style={{ color: "var(--kadi-gold)" }}
+                        >
                           Cambiar
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 overflow-hidden">
+                  <div 
+                    className="rounded-2xl border border-white/5 overflow-hidden"
+                    style={{
+                      background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)",
+                    }}
+                  >
                     <div className="p-6 border-b border-white/5">
                       <h2 className="text-xl font-light text-white/90">Sesiones activas</h2>
                       <p className="text-white/40 text-xs mt-1">Dispositivos conectados a tu cuenta</p>
@@ -579,7 +644,7 @@ export default function PerfilPage() {
                             <p className="text-white/40 text-xs">Última sesión: ahora mismo</p>
                           </div>
                         </div>
-                        <span className="text-[#4ade80] text-xs">Activa</span>
+                        <span className="text-xs" style={{ color: "var(--kadi-gold)" }}>Activa</span>
                       </div>
                     </div>
                   </div>
@@ -594,7 +659,10 @@ export default function PerfilPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 overflow-hidden"
+                  className="rounded-2xl border border-white/5 overflow-hidden"
+                  style={{
+                    background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)",
+                  }}
                 >
                   <div className="p-6 border-b border-white/5 flex items-center justify-between">
                     <div>
@@ -609,7 +677,10 @@ export default function PerfilPage() {
                       <p className="text-white/40 mb-4">Aún no tienes pedidos</p>
                       <Link
                         href="/catalogo"
-                        className="inline-block px-6 py-2 bg-[#ef4444] text-white rounded-lg hover:bg-[#ef4444]/90 transition text-sm"
+                        className="inline-block px-6 py-2 rounded-lg transition text-sm text-white"
+                        style={{
+                          background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
+                        }}
                       >
                         Explorar catálogo
                       </Link>
@@ -669,7 +740,8 @@ export default function PerfilPage() {
                                   initial={{ height: 0, opacity: 0 }}
                                   animate={{ height: "auto", opacity: 1 }}
                                   exit={{ height: 0, opacity: 0 }}
-                                  className="bg-black/40 overflow-hidden"
+                                  className="overflow-hidden"
+                                  style={{ backgroundColor: "rgba(15, 18, 21, 0.4)" }}
                                 >
                                   <div className="p-5 space-y-4">
                                     <div className="flex items-center justify-between text-sm">
@@ -720,7 +792,12 @@ export default function PerfilPage() {
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
-                  <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 overflow-hidden">
+                  <div 
+                    className="rounded-2xl border border-white/5 overflow-hidden"
+                    style={{
+                      background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)",
+                    }}
+                  >
                     <div className="p-6 border-b border-white/5">
                       <h2 className="text-xl font-light text-white/90">Garantías KADI</h2>
                       <p className="text-white/40 text-xs mt-1">Información sobre nuestras políticas</p>
@@ -732,22 +809,17 @@ export default function PerfilPage() {
                           <span>🔧</span> Garantía de productos
                         </h3>
                         <div className="space-y-2">
-                          <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
-                            <span className="text-white/70 text-sm">Transmisiones nuevas</span>
-                            <span className="text-[#4ade80] text-sm font-medium">3 meses</span>
-                          </div>
-                          <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
-                            <span className="text-white/70 text-sm">Transmisiones reconstruidas</span>
-                            <span className="text-[#4ade80] text-sm font-medium">3 meses</span>
-                          </div>
-                          <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
-                            <span className="text-white/70 text-sm">Transmisiones usadas</span>
-                            <span className="text-[#4ade80] text-sm font-medium">1 mes</span>
-                          </div>
-                          <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
-                            <span className="text-white/70 text-sm">Diferenciales</span>
-                            <span className="text-[#4ade80] text-sm font-medium">3 meses</span>
-                          </div>
+                          {[
+                            { nombre: "Transmisiones nuevas", tiempo: "3 meses" },
+                            { nombre: "Transmisiones reconstruidas", tiempo: "3 meses" },
+                            { nombre: "Transmisiones usadas", tiempo: "1 mes" },
+                            { nombre: "Diferenciales", tiempo: "3 meses" },
+                          ].map((item, idx) => (
+                            <div key={idx} className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                              <span className="text-white/70 text-sm">{item.nombre}</span>
+                              <span className="text-sm font-medium" style={{ color: "var(--kadi-gold)" }}>{item.tiempo}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
 
@@ -756,10 +828,11 @@ export default function PerfilPage() {
                           <span>✅</span> ¿Qué cubre la garantía?
                         </h3>
                         <ul className="space-y-2 text-sm text-white/60">
-                          <li className="flex gap-2"><span className="text-[#4ade80]">✓</span> Defectos de fabricación</li>
-                          <li className="flex gap-2"><span className="text-[#4ade80]">✓</span> Fallas mecánicas internas</li>
-                          <li className="flex gap-2"><span className="text-[#4ade80]">✓</span> Reemplazo de piezas defectuosas</li>
-                          <li className="flex gap-2"><span className="text-[#4ade80]">✓</span> Diagnóstico en nuestros talleres</li>
+                          {["Defectos de fabricación", "Fallas mecánicas internas", "Reemplazo de piezas defectuosas", "Diagnóstico en nuestros talleres"].map((item, idx) => (
+                            <li key={idx} className="flex gap-2">
+                              <span style={{ color: "var(--kadi-gold)" }}>✓</span> {item}
+                            </li>
+                          ))}
                         </ul>
                       </div>
 
@@ -768,17 +841,23 @@ export default function PerfilPage() {
                           <span>❌</span> ¿Qué NO cubre la garantía?
                         </h3>
                         <ul className="space-y-2 text-sm text-white/60">
-                          <li className="flex gap-2"><span className="text-red-400">✗</span> Daños por instalación incorrecta</li>
-                          <li className="flex gap-2"><span className="text-red-400">✗</span> Uso inadecuado o sobrecarga</li>
-                          <li className="flex gap-2"><span className="text-red-400">✗</span> Falta de mantenimiento</li>
-                          <li className="flex gap-2"><span className="text-red-400">✗</span> Modificaciones no autorizadas</li>
+                          {["Daños por instalación incorrecta", "Uso inadecuado o sobrecarga", "Falta de mantenimiento", "Modificaciones no autorizadas"].map((item, idx) => (
+                            <li key={idx} className="flex gap-2">
+                              <span className="text-red-400">✗</span> {item}
+                            </li>
+                          ))}
                         </ul>
                       </div>
                     </div>
                   </div>
 
-                  {/* ===== MIS RECLAMACIONES ===== */}
-                  <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 overflow-hidden">
+                  {/* MIS RECLAMACIONES */}
+                  <div 
+                    className="rounded-2xl border border-white/5 overflow-hidden"
+                    style={{
+                      background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)",
+                    }}
+                  >
                     <div className="p-6 border-b border-white/5 flex items-center justify-between">
                       <div>
                         <h2 className="text-xl font-light text-white/90">Mis reclamaciones</h2>
@@ -786,7 +865,10 @@ export default function PerfilPage() {
                       </div>
                       <button
                         onClick={() => setMostrandoFormulario(true)}
-                        className="bg-[#ef4444] text-white px-4 py-2 rounded-lg text-xs hover:bg-[#ef4444]/90 transition"
+                        className="text-white px-4 py-2 rounded-lg text-xs transition"
+                        style={{
+                          background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
+                        }}
                       >
                         + Nueva reclamación
                       </button>
@@ -822,7 +904,7 @@ export default function PerfilPage() {
                                 </div>
                                 <div>
                                   <p className="text-white/30">Vigencia garantía</p>
-                                  <p className={vigente ? 'text-[#4ade80]' : 'text-red-400'}>
+                                  <p style={{ color: vigente ? "var(--kadi-gold)" : "#f87171" }}>
                                     {new Date(rec.fecha_fin_garantia).toLocaleDateString('es-MX')} {vigente ? '(Vigente)' : '(Vencida)'}
                                   </p>
                                 </div>
@@ -833,8 +915,14 @@ export default function PerfilPage() {
                               </div>
 
                               {rec.resolucion && (
-                                <div className="mt-3 p-3 bg-[#4ade80]/10 border border-[#4ade80]/20 rounded-lg">
-                                  <p className="text-[#4ade80] text-xs font-medium mb-1">Resolución:</p>
+                                <div 
+                                  className="mt-3 p-3 rounded-lg"
+                                  style={{
+                                    backgroundColor: "rgba(212, 175, 55, 0.1)",
+                                    border: "1px solid rgba(212, 175, 55, 0.25)",
+                                  }}
+                                >
+                                  <p className="text-xs font-medium mb-1" style={{ color: "var(--kadi-gold)" }}>Resolución:</p>
                                   <p className="text-white/70 text-xs">{rec.resolucion}</p>
                                 </div>
                               )}
@@ -859,14 +947,18 @@ export default function PerfilPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+              className="fixed inset-0 z-50 backdrop-blur-sm"
+              style={{ backgroundColor: "rgba(15, 18, 21, 0.8)" }}
               onClick={() => setMostrandoFormulario(false)}
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-lg bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/10 p-6"
+              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-lg rounded-2xl border border-white/10 p-6"
+              style={{
+                background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)",
+              }}
             >
               <h3 className="text-xl font-light text-white/90 mb-4">Nueva reclamación de garantía</h3>
               
@@ -887,7 +979,11 @@ export default function PerfilPage() {
                       });
                     }}
                     required
-                    className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-white/80 text-sm focus:outline-none focus:border-[#ef4444]"
+                    className="w-full rounded-lg p-3 text-white/80 text-sm focus:outline-none transition"
+                    style={{
+                      backgroundColor: "rgba(15, 18, 21, 0.6)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                    }}
                   >
                     <option value="">Selecciona un pedido</option>
                     {pedidos.map((p) => (
@@ -904,7 +1000,11 @@ export default function PerfilPage() {
                     value={nuevaReclamacion.motivo}
                     onChange={(e) => setNuevaReclamacion({ ...nuevaReclamacion, motivo: e.target.value })}
                     required
-                    className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-white/80 text-sm focus:outline-none focus:border-[#ef4444]"
+                    className="w-full rounded-lg p-3 text-white/80 text-sm focus:outline-none transition"
+                    style={{
+                      backgroundColor: "rgba(15, 18, 21, 0.6)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                    }}
                   >
                     <option value="">Selecciona el motivo</option>
                     <option value="Falla mecánica">Falla mecánica</option>
@@ -922,14 +1022,21 @@ export default function PerfilPage() {
                     required
                     rows={4}
                     placeholder="Describe el problema con el mayor detalle posible..."
-                    className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-white/80 text-sm focus:outline-none focus:border-[#ef4444] resize-none"
+                    className="w-full rounded-lg p-3 text-white/80 text-sm focus:outline-none resize-none transition"
+                    style={{
+                      backgroundColor: "rgba(15, 18, 21, 0.6)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                    }}
                   />
                 </div>
 
                 <div className="flex gap-3 pt-2">
                   <button
                     type="submit"
-                    className="flex-1 bg-[#ef4444] text-white py-3 rounded-lg text-sm hover:bg-[#ef4444]/90 transition"
+                    className="flex-1 text-white py-3 rounded-lg text-sm transition"
+                    style={{
+                      background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
+                    }}
                   >
                     Enviar reclamación
                   </button>
