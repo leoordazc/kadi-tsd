@@ -360,9 +360,7 @@ export default function NIASearchBar({ onSearch }: NIASearchBarProps) {
                             transition={{ duration: 0.3 }}
                             className="text-center mt-3"
                         >
-                            <p className="text-xs text-white/50">
-                                🔧 Diagnóstico gratis · ⚡ Respuesta en segundos · 📦 Envío a todo México
-                            </p>
+                            
                         </motion.div>
                     )}
                 </AnimatePresence>
