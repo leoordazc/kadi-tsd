@@ -8,46 +8,71 @@ interface Novedad {
   titulo: string;
   contenido: string;
   emoji: string;
-  tipo: 'patrio' | 'promo' | 'update';
+  tipo: 'destacada' | 'promo' | 'update';
+  cta?: string;
+  href?: string;
 }
 
 export default function NovedadesKadi() {
   const novedades: Novedad[] = [
     {
       id: "1",
-      fecha: "15 de Septiembre, 2026",
-      titulo: "¡VIVA MÉXICO!",
-      contenido: "En KADI TS&D celebramos con orgullo el Día de la Independencia. Gracias a todos los talleres, mecánicos y familias mexicanas que nos permiten seguir moviendo a nuestro país. ¡Que viva México!",
-      emoji: "🇲🇽",
-      tipo: "patrio",
+      fecha: "Octubre 2026",
+      titulo: "Nuevas cajas de transferencia en catálogo",
+      contenido: "Recién ingresaron cajas de transferencia verificadas para vehículos 4x4. Disponibles para Audi Q3,Q5 , BMW X5, Jaguar, Hyundai y más. Cada unidad pasa por banco de pruebas antes de salir.",
+      emoji: "",
+      tipo: "destacada",
+      cta: "Ver catálogo",
+      href: "/catalogo",
     },
     {
       id: "2",
-      fecha: "10 de Septiembre, 2026",
-      titulo: "Nuevos productos en catálogo",
-      contenido: "Recién subimos nuevas transmisiones estándar y diferenciales verificadas. Pasa a ver las novedades y aprovecha precios de almacén.",
-      emoji: "🔧",
+      fecha: "Octubre 2026",
+      titulo: "Transmisiones estándar reconstruidas",
+      contenido: "Lote nuevo de transmisiones manuales estándar reconstruidas con tolerancias OEM y garantía por escrito.",
+      emoji: "",
       tipo: "update",
     },
     {
       id: "3",
-      fecha: "1 de Septiembre, 2026",
-      titulo: "NIA disponible 24/7",
-      contenido: "Nuestra inteligencia artificial NIA ya está lista para diagnosticar tu transmisión en segundos. Pregúntale lo que necesites, sin costo.",
-      emoji: "🤖",
+      fecha: "Octubre 2026",
+      titulo: "NIA actualizada 2.0",
+      contenido: "Ahora NIA identifica síntomas de cajas de transferencia y te dice exactamente qué refacción pedir.",
+      emoji: "",
       tipo: "update",
     },
   ];
 
   return (
-    <section className="relative z-10 py-20 border-t border-white/5 overflow-hidden">
-      {/* ===== FONDO CON DEGRADADO PATRIO ===== */}
-      <div className="absolute inset-0 bg-gradient-to-br from-green-900/20 via-transparent to-red-900/20" />
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-600 via-white/30 to-red-600" />
+    <section 
+      className="relative z-10 py-20 border-t border-white/5 overflow-hidden"
+      style={{ backgroundColor: "var(--bg-primary)" }}
+    >
+      {/* ===== FONDO CON GRADIENTE KADI ===== */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: "radial-gradient(circle at 20% 30%, rgba(30, 74, 140, 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(212, 175, 55, 0.06) 0%, transparent 50%)",
+        }}
+      />
       
-      {/* Partículas decorativas sutiles */}
-      <div className="absolute top-20 left-1/4 w-64 h-64 bg-green-500/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-red-500/10 rounded-full blur-3xl" />
+      {/* Línea superior con gradiente KADI */}
+      <div 
+        className="absolute top-0 left-0 w-full h-px"
+        style={{
+          background: "linear-gradient(to right, transparent, var(--kadi-blue), var(--kadi-gold), transparent)",
+        }}
+      />
+
+      {/* Glows decorativos */}
+      <div 
+        className="absolute top-20 left-1/4 w-64 h-64 rounded-full blur-3xl" 
+        style={{ backgroundColor: "rgba(30, 74, 140, 0.1)" }}
+      />
+      <div 
+        className="absolute bottom-20 right-1/4 w-96 h-96 rounded-full blur-3xl" 
+        style={{ backgroundColor: "rgba(212, 175, 55, 0.08)" }}
+      />
 
       <div className="max-w-7xl mx-auto px-4 relative z-10">
         
@@ -58,29 +83,42 @@ export default function NovedadesKadi() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-white/10 rounded-full mb-4 bg-black/40 backdrop-blur-sm">
-            <span className="text-xl">🇲🇽</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-white/10 rounded-full mb-4 bg-white/5 backdrop-blur-sm">
+            <span 
+              className="w-2 h-2 rounded-full animate-pulse" 
+              style={{ backgroundColor: "var(--kadi-gold)" }} 
+            />
             <span className="text-white/60 text-xs tracking-[0.2em] uppercase">
-              Septiembre Patrio
+              Novedades del taller
             </span>
-            <span className="text-xl">🇲🇽</span>
           </div>
           
           <h2 className="text-4xl md:text-5xl font-light text-white/90 mb-3">
-            Novedades <span className="text-[#ef4444]">KADI</span>
+            Lo más nuevo en <span 
+              className="text-transparent bg-clip-text"
+              style={{
+                backgroundImage: "linear-gradient(90deg, #1e4a8c, #2a5ca8, #D4AF37)",
+              }}
+            >
+              KADI
+            </span>
           </h2>
           <p className="text-white/40 text-sm">
-            Lo último de nuestro taller y comunidad
+            Productos recién ingresados y actualizaciones del sistema
           </p>
           
-          <div className="w-24 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent mx-auto mt-6" />
+          <div 
+            className="w-24 h-px mx-auto mt-6" 
+            style={{
+              background: "linear-gradient(to right, transparent, var(--kadi-gold), transparent)",
+            }}
+          />
         </motion.div>
 
         {/* ===== GRID DE NOVEDADES ===== */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {novedades.map((novedad, index) => {
-            // Identidad especial para la del día patrio
-            const esPatrio = novedad.tipo === 'patrio';
+            const esDestacada = novedad.tipo === 'destacada';
             
             return (
               <motion.article
@@ -90,53 +128,65 @@ export default function NovedadesKadi() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 whileHover={{ y: -8 }}
                 className={`group relative rounded-2xl overflow-hidden transition-all ${
-                  esPatrio
-                    ? "lg:col-span-2 border-2 border-white/20 shadow-2xl shadow-green-500/10"
+                  esDestacada
+                    ? "lg:col-span-2 border-2 shadow-2xl"
                     : "border border-white/5"
                 }`}
+                style={esDestacada ? {
+                  borderColor: "rgba(212, 175, 55, 0.3)",
+                  boxShadow: "0 20px 40px rgba(30, 74, 140, 0.15)",
+                } : {}}
               >
                 {/* ===== FONDO DE LA TARJETA ===== */}
-                {esPatrio ? (
+                {esDestacada ? (
                   <>
-                    {/* Fondo degradado verde-blanco-rojo */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-green-700/40 via-black/60 to-red-700/40" />
+                    {/* Fondo con gradiente KADI */}
+                    <div 
+                      className="absolute inset-0"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(30, 74, 140, 0.25) 0%, rgba(15, 18, 21, 0.9) 50%, rgba(212, 175, 55, 0.15) 100%)",
+                      }}
+                    />
                     
-                    {/* Franjas de bandera sutiles */}
-                    <div className="absolute inset-0 opacity-[0.08]">
-                      <div className="absolute inset-y-0 left-0 w-1/3 bg-green-500" />
-                      <div className="absolute inset-y-0 left-1/3 w-1/3 bg-white" />
-                      <div className="absolute inset-y-0 right-0 w-1/3 bg-red-500" />
+                    {/* Patrón decorativo sutil */}
+                    <div 
+                      className="absolute inset-0 opacity-[0.03]"
+                      style={{
+                        backgroundImage: "repeating-linear-gradient(45deg, var(--kadi-gold) 0px, var(--kadi-gold) 1px, transparent 1px, transparent 30px)",
+                      }}
+                    />
+                    
+                    {/* Emoji decorativo grande */}
+                    <div className="absolute top-6 right-6 text-7xl opacity-5 select-none">
+                      {novedad.emoji}
                     </div>
-                    
-                    {/* Águila estilizada (decorativa) */}
-                    <div className="absolute top-6 right-6 text-6xl opacity-10 select-none">🇲🇽</div>
                   </>
                 ) : (
-                  <div className={`absolute inset-0 ${
-                    novedad.tipo === 'promo'
-                      ? 'bg-gradient-to-br from-[#ef4444]/10 to-[#f97316]/10'
-                      : 'bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]'
-                  }`} />
+                  <div 
+                    className="absolute inset-0"
+                    style={{ backgroundColor: "var(--bg-card)" }}
+                  />
                 )}
                 
                 {/* ===== BRILLO AL HOVER ===== */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                 {/* ===== CONTENIDO ===== */}
-                <div className={`relative z-10 p-8 ${esPatrio ? 'md:p-12' : ''}`}>
+                <div className={`relative z-10 p-8 ${esDestacada ? 'md:p-12' : ''}`}>
                   
                   {/* Emoji grande */}
-                  <div className={`mb-6 ${esPatrio ? 'text-6xl md:text-7xl' : 'text-4xl'}`}>
+                  <div className={`mb-6 ${esDestacada ? 'text-6xl md:text-7xl' : 'text-4xl'}`}>
                     {novedad.emoji}
                   </div>
 
                   {/* Fecha con punto pulsante */}
                   <div className="flex items-center gap-2 mb-3">
-                    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                      esPatrio ? 'bg-white' : 'bg-[#ef4444]'
-                    }`} />
+                    <span 
+                      className="w-1.5 h-1.5 rounded-full animate-pulse" 
+                      style={{ backgroundColor: "var(--kadi-gold)" }}
+                    />
                     <span className={`text-xs tracking-wider uppercase ${
-                      esPatrio ? 'text-white/70' : 'text-white/40'
+                      esDestacada ? 'text-white/70' : 'text-white/40'
                     }`}>
                       {novedad.fecha}
                     </span>
@@ -144,7 +194,7 @@ export default function NovedadesKadi() {
 
                   {/* Título */}
                   <h3 className={`font-light mb-4 ${
-                    esPatrio 
+                    esDestacada 
                       ? 'text-4xl md:text-5xl text-white' 
                       : 'text-xl text-white/90'
                   }`}>
@@ -153,48 +203,42 @@ export default function NovedadesKadi() {
 
                   {/* Contenido */}
                   <p className={`leading-relaxed ${
-                    esPatrio 
+                    esDestacada 
                       ? 'text-base md:text-lg text-white/80 max-w-2xl' 
                       : 'text-sm text-white/60'
                   }`}>
                     {novedad.contenido}
                   </p>
 
-                  {/* Banderines decorativos (solo en la patria) */}
-                  {esPatrio && (
-                    <div className="mt-8 flex gap-3 items-center">
-                      {["🎉", "🇲🇽", "🎊", "🇲🇽", "🎉"].map((item, i) => (
-                        <motion.span
-                          key={i}
-                          animate={{ 
-                            y: [0, -5, 0],
-                            rotate: [0, 10, -10, 0]
-                          }}
-                          transition={{ 
-                            duration: 2, 
-                            repeat: Infinity, 
-                            delay: i * 0.2,
-                            ease: "easeInOut"
-                          }}
-                          className="text-3xl"
-                        >
-                          {item}
-                        </motion.span>
-                      ))}
-                    </div>
+                  {/* CTA en tarjeta destacada */}
+                  {esDestacada && novedad.cta && novedad.href && (
+                    <motion.a
+                      href={novedad.href}
+                      whileHover={{ x: 5 }}
+                      className="inline-flex items-center gap-2 mt-8 text-sm font-medium transition-colors"
+                      style={{ color: "var(--kadi-gold)" }}
+                    >
+                      {novedad.cta}
+                      <span>→</span>
+                    </motion.a>
                   )}
                 </div>
 
-                {/* Línea inferior decorativa en la tarjeta patria */}
-                {esPatrio && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 via-white to-red-500" />
+                {/* Línea inferior decorativa en la tarjeta destacada */}
+                {esDestacada && (
+                  <div 
+                    className="absolute bottom-0 left-0 right-0 h-1"
+                    style={{
+                      background: "linear-gradient(to right, var(--kadi-blue), var(--kadi-gold))",
+                    }}
+                  />
                 )}
               </motion.article>
             );
           })}
         </div>
 
-        {/* ===== FRASE PATRIA AL PIE ===== */}
+        {/* ===== FRASE AL PIE ===== */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -202,7 +246,7 @@ export default function NovedadesKadi() {
           className="text-center mt-12"
         >
           <p className="text-white/30 text-xs tracking-[0.3em] uppercase">
-            🇲🇽 Hecho en México por mexicanos 🇲🇽
+            Inventario actualizado semanalmente
           </p>
         </motion.div>
       </div>
