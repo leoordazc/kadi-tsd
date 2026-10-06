@@ -27,7 +27,6 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
 
         try {
             if (isLogin) {
-                // INICIAR SESIÓN
                 const { error } = await supabase.auth.signInWithPassword({
                     email,
                     password,
@@ -39,7 +38,6 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
                     if (onLoginSuccess) onLoginSuccess();
                 }, 1500);
             } else {
-                // REGISTRO
                 const { error } = await supabase.auth.signUp({
                     email,
                     password,
@@ -87,19 +85,56 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+                    style={{ backgroundColor: "rgba(15, 18, 21, 0.8)" }}
                     onClick={onClose}
                 >
                     <motion.div
                         initial={{ scale: 0.9, y: 20 }}
                         animate={{ scale: 1, y: 0 }}
                         exit={{ scale: 0.9, y: 20 }}
-                        className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 p-8 max-w-md w-full"
+                        className="rounded-2xl border border-white/5 p-8 max-w-md w-full relative"
+                        style={{
+                            background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)",
+                        }}
                         onClick={(e) => e.stopPropagation()}
                     >
+                        {/* Botón cerrar (X) arriba a la derecha */}
+                        <button
+                            onClick={onClose}
+                            className="absolute top-4 right-4 text-white/40 hover:text-white/70 transition-colors"
+                            aria-label="Cerrar"
+                        >
+                            ✕
+                        </button>
+
                         {/* Título */}
                         <h2 className="text-2xl font-light text-white/90 mb-6">
-                            {isLogin ? "Ingresar a KADI" : "Crear cuenta"}
+                            {isLogin ? (
+                                <>
+                                    Ingresar a{" "}
+                                    <span
+                                        className="text-transparent bg-clip-text"
+                                        style={{
+                                            backgroundImage: "linear-gradient(90deg, #1e4a8c, #2a5ca8, #D4AF37)",
+                                        }}
+                                    >
+                                        KADI
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    Crear{" "}
+                                    <span
+                                        className="text-transparent bg-clip-text"
+                                        style={{
+                                            backgroundImage: "linear-gradient(90deg, #1e4a8c, #2a5ca8, #D4AF37)",
+                                        }}
+                                    >
+                                        cuenta
+                                    </span>
+                                </>
+                            )}
                         </h2>
 
                         {/* Mensajes de error o éxito */}
@@ -109,7 +144,14 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
                             </div>
                         )}
                         {success && (
-                            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-sm">
+                            <div 
+                                className="mb-4 p-3 rounded-lg text-sm"
+                                style={{
+                                    backgroundColor: "rgba(212, 175, 55, 0.1)",
+                                    border: "1px solid rgba(212, 175, 55, 0.3)",
+                                    color: "var(--kadi-gold)",
+                                }}
+                            >
                                 {success}
                             </div>
                         )}
@@ -122,7 +164,17 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
                                     placeholder="Nombre completo"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-white/90 placeholder-white/30 focus:outline-none focus:border-[#ef4444]/50"
+                                    className="w-full rounded-lg p-3 text-white/90 placeholder-white/30 focus:outline-none transition"
+                                    style={{
+                                        backgroundColor: "rgba(15, 18, 21, 0.6)",
+                                        border: "1px solid rgba(255,255,255,0.1)",
+                                    }}
+                                    onFocus={(e) => {
+                                        e.currentTarget.style.borderColor = "var(--kadi-gold)";
+                                    }}
+                                    onBlur={(e) => {
+                                        e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+                                    }}
                                     required
                                 />
                             )}
@@ -132,7 +184,17 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
                                 placeholder="Correo electrónico"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-white/90 placeholder-white/30 focus:outline-none focus:border-[#ef4444]/50"
+                                className="w-full rounded-lg p-3 text-white/90 placeholder-white/30 focus:outline-none transition"
+                                style={{
+                                    backgroundColor: "rgba(15, 18, 21, 0.6)",
+                                    border: "1px solid rgba(255,255,255,0.1)",
+                                }}
+                                onFocus={(e) => {
+                                    e.currentTarget.style.borderColor = "var(--kadi-gold)";
+                                }}
+                                onBlur={(e) => {
+                                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+                                }}
                                 required
                             />
                             
@@ -141,14 +203,28 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
                                 placeholder="Contraseña"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-white/90 placeholder-white/30 focus:outline-none focus:border-[#ef4444]/50"
+                                className="w-full rounded-lg p-3 text-white/90 placeholder-white/30 focus:outline-none transition"
+                                style={{
+                                    backgroundColor: "rgba(15, 18, 21, 0.6)",
+                                    border: "1px solid rgba(255,255,255,0.1)",
+                                }}
+                                onFocus={(e) => {
+                                    e.currentTarget.style.borderColor = "var(--kadi-gold)";
+                                }}
+                                onBlur={(e) => {
+                                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+                                }}
                                 required
                             />
 
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-[#ef4444] text-white py-3 rounded-lg hover:bg-[#ef4444]/90 transition-colors disabled:opacity-50"
+                                className="w-full text-white py-3 rounded-lg transition-all disabled:opacity-50 font-medium"
+                                style={{
+                                    background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
+                                    boxShadow: "0 8px 20px rgba(30, 74, 140, 0.3)",
+                                }}
                             >
                                 {loading ? "Procesando..." : (isLogin ? "Ingresar" : "Registrarse")}
                             </button>
@@ -160,7 +236,12 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
                                 <div className="w-full border-t border-white/10"></div>
                             </div>
                             <div className="relative flex justify-center text-xs">
-                                <span className="bg-[#1a1a1a] px-2 text-white/30">O continúa con</span>
+                                <span 
+                                    className="px-3 text-white/40"
+                                    style={{ backgroundColor: "var(--bg-card)" }}
+                                >
+                                    O continúa con
+                                </span>
                             </div>
                         </div>
 
@@ -168,7 +249,15 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
                         <button
                             onClick={handleGoogleLogin}
                             disabled={loading}
-                            className="w-full bg-white/5 border border-white/10 rounded-lg py-3 text-white/70 hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg py-3 text-white/70 transition-colors flex items-center justify-center gap-2"
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = "rgba(212, 175, 55, 0.4)";
+                                e.currentTarget.style.backgroundColor = "rgba(212, 175, 55, 0.08)";
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+                                e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)";
+                            }}
                         >
                             <svg className="w-5 h-5" viewBox="0 0 24 24">
                                 <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -188,19 +277,12 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
                                     setError(null);
                                     setSuccess(null);
                                 }}
-                                className="text-[#ef4444] hover:underline"
+                                className="hover:underline transition-colors"
+                                style={{ color: "var(--kadi-gold)" }}
                             >
                                 {isLogin ? "Regístrate" : "Inicia sesión"}
                             </button>
                         </p>
-
-                        {/* Cerrar */}
-                        <button
-                            onClick={onClose}
-                            className="absolute top-4 right-4 text-white/40 hover:text-white/60"
-                        >
-                            ✕
-                        </button>
                     </motion.div>
                 </motion.div>
             )}
