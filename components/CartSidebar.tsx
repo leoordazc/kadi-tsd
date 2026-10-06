@@ -13,8 +13,8 @@ interface CartSidebarProps {
   removeFromCart: (id: string) => void;
   totalPrice: number;
   user?: any;
-  onLoginRequired?: () => void; // Abre login desde el carrito
-  onOpenLegal?: () => void;     // Abre el modal legal (términos y condiciones)
+  onLoginRequired?: () => void;
+  onOpenLegal?: () => void;
 }
 
 export default function CartSidebar({
@@ -28,16 +28,14 @@ export default function CartSidebar({
   onLoginRequired,
   onOpenLegal,
 }: CartSidebarProps) {
-  const [paymentMethod, setPaymentMethod] = useState("transferencia");
+  // 👇 CAMBIO: método por defecto = tarjeta
+  const [paymentMethod, setPaymentMethod] = useState("tarjeta");
   const [showBankModal, setShowBankModal] = useState(false);
   const [pedidoId, setPedidoId] = useState<string | null>(null);
   const [folio, setFolio] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
 
-  // ============================================
-  // CREAR O OBTENER EL PEDIDO (SOLO UNA VEZ)
-  // ============================================
   const crearObtenerPedido = async (): Promise<{ id: string; folio: string } | null> => {
     if (pedidoId && folio) {
       console.log('📦 Usando pedido existente:', { id: pedidoId, folio });
@@ -54,7 +52,7 @@ export default function CartSidebar({
       }
 
       const nuevoFolio = data.folio_completo;
-      console.log('📝 Nuevo folio generado:', nuevoFolio);
+      console.log(' Nuevo folio generado:', nuevoFolio);
 
       const pedido = {
         user_id: user?.id || null,
@@ -71,7 +69,7 @@ export default function CartSidebar({
         folio: nuevoFolio,
         metodo_pago: paymentMethod,
         status: 'pendiente_pago',
-        acepta_terminos: aceptaTerminos, // 👈 Guardamos la aceptación
+        acepta_terminos: aceptaTerminos,
         created_at: new Date().toISOString()
       };
 
@@ -91,44 +89,37 @@ export default function CartSidebar({
       setFolio(pedidoCreado.folio);
       console.log('✅ Pedido creado:', pedidoCreado);
 
-      // ============================================
-// ============================================
-// ============================================
-// 🔥 EVENTO DE COMPRA PARA META ADS
-// ============================================
-try {
-  const uniqueEventId = `order_${nuevoFolio}`;
+      try {
+        const uniqueEventId = `order_${nuevoFolio}`;
+        const customerEmail = user?.email || user?.user_metadata?.email || 'contacto@kaditsd.com.mx';
+        const customerPhone = user?.user_metadata?.phone || user?.phone || '5500000000';
 
-  // Extraemos el correo de forma segura de cualquier propiedad de Supabase Auth
-  const customerEmail = user?.email || user?.user_metadata?.email || 'contacto@kaditsd.com.mx';
-  const customerPhone = user?.user_metadata?.phone || user?.phone || '5500000000';
-
-  await fetch('/api/fb-events', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      eventName: 'Purchase',
-      eventId: uniqueEventId,
-      eventSourceUrl: 'https://www.kaditsd.com.mx/checkout',
-      eventData: {
-        value: Number(totalPrice),
-        currency: 'MXN',
-        content_ids: cartItems.map(item => item.codigo_caja || item.id),
-        content_type: 'product',
-        num_items: cartItems.length,
-        order_id: nuevoFolio
-      },
-      userData: {
-        email: customerEmail, // 👈 Obligatorio para que Meta acepte el evento
-        phone: customerPhone,
-        external_id: user?.id || null
+        await fetch('/api/fb-events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventName: 'Purchase',
+            eventId: uniqueEventId,
+            eventSourceUrl: 'https://www.kaditsd.com.mx/checkout',
+            eventData: {
+              value: Number(totalPrice),
+              currency: 'MXN',
+              content_ids: cartItems.map(item => item.codigo_caja || item.id),
+              content_type: 'product',
+              num_items: cartItems.length,
+              order_id: nuevoFolio
+            },
+            userData: {
+              email: customerEmail,
+              phone: customerPhone,
+              external_id: user?.id || null
+            }
+          })
+        });
+        console.log('📊 Evento Purchase enviado exitosamente a Meta con Folio:', uniqueEventId);
+      } catch (err) {
+        console.error('⚠️ Error enviando evento a Meta:', err);
       }
-    })
-  });
-  console.log('📊 Evento Purchase enviado exitosamente a Meta con Folio:', uniqueEventId);
-} catch (err) {
-  console.error('⚠️ Error enviando evento a Meta:', err);
-}
       
       return { id: pedidoCreado.id, folio: pedidoCreado.folio };
 
@@ -139,9 +130,6 @@ try {
     }
   };
 
-  // ============================================
-  // ACTUALIZAR MÉTODO DE PAGO DEL PEDIDO
-  // ============================================
   const actualizarMetodoPago = async (nuevoMetodo: string) => {
     if (!pedidoId) return false;
 
@@ -159,9 +147,6 @@ try {
     return true;
   };
 
-  // ============================================
-  // MANEJAR PAGO CON TRANSFERENCIA
-  // ============================================
   const handleTransferencia = async () => {
     setGuardando(true);
     
@@ -179,9 +164,6 @@ try {
     setGuardando(false);
   };
 
-  // ============================================
-  // MANEJAR PAGO CON TARJETA
-  // ============================================
   const handleCardPayment = async () => {
     setGuardando(true);
     
@@ -225,9 +207,6 @@ try {
     }
   };
 
-  // ============================================
-  // MANEJAR WHATSAPP
-  // ============================================
   const handleWhatsApp = async () => {
     setGuardando(true);
     
@@ -248,9 +227,9 @@ try {
     const mensaje = encodeURIComponent(
       `Hola, quiero realizar un pedido en KADI TS&D.%0A%0A` +
       `📦 **PRODUCTOS:**%0A${productosResumen}%0A%0A` +
-      `💰 **TOTAL:** $${totalPrice.toLocaleString()}%0A%0A` +
-      `📋 **FOLIO:** ${pedido.folio}%0A%0A` +
-      `📋 **DATOS DEL CLIENTE:**%0A` +
+      ` **TOTAL:** $${totalPrice.toLocaleString()}%0A%0A` +
+      ` **FOLIO:** ${pedido.folio}%0A%0A` +
+      ` **DATOS DEL CLIENTE:**%0A` +
       `Nombre: ${user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Cliente'}%0A` +
       `Email: ${user?.email || 'No especificado'}`
     );
@@ -260,24 +239,18 @@ try {
     onClose();
   };
 
-  // ============================================
-  // CHECKOUT PRINCIPAL
-  // ============================================
   const handleCheckout = async () => {
-    // 1. Verificar login
     if (!user) {
       onClose();
       onLoginRequired?.();
       return;
     }
 
-    // 2. Verificar aceptación de términos
     if (!aceptaTerminos) {
       alert('Debes aceptar los términos y condiciones para continuar');
       return;
     }
 
-    // 3. Continuar con el pago
     if (paymentMethod === "transferencia") {
       await handleTransferencia();
     } else if (paymentMethod === "tarjeta") {
@@ -287,7 +260,6 @@ try {
     }
   };
 
-  // Limpiar estado cuando se cierra el carrito
   const handleClose = () => {
     setPedidoId(null);
     setFolio(null);
@@ -303,7 +275,8 @@ try {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 backdrop-blur-sm"
+            style={{ backgroundColor: "rgba(15, 18, 21, 0.6)" }}
             onClick={handleClose}
           />
           <motion.div
@@ -311,7 +284,10 @@ try {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30 }}
-            className="fixed right-0 top-0 z-50 h-full w-full max-w-md bg-gradient-to-b from-[#1a1a1a] to-[#2a2a2a] border-l border-white/5 shadow-2xl flex flex-col"
+            className="fixed right-0 top-0 z-50 h-full w-full max-w-md border-l border-white/5 shadow-2xl flex flex-col"
+            style={{
+              background: "linear-gradient(to bottom, var(--bg-card) 0%, var(--bg-card-hover) 100%)",
+            }}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-white/5">
@@ -321,13 +297,17 @@ try {
               </button>
             </div>
 
-            {/* Contenido (lista de productos) */}
+            {/* Contenido */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {cartItems.length === 0 ? (
                 <div className="text-center text-white/40 mt-20">
                   <p className="text-6xl mb-4">🛒</p>
                   <p>Tu carrito está vacío</p>
-                  <button onClick={handleClose} className="mt-4 text-[#ef4444] hover:underline">
+                  <button 
+                    onClick={handleClose} 
+                    className="mt-4 hover:underline transition-colors"
+                    style={{ color: "var(--kadi-gold)" }}
+                  >
                     Ver catálogo
                   </button>
                 </div>
@@ -369,14 +349,19 @@ try {
               )}
             </div>
 
-            {/* ===== SECCIÓN DE PAGO ===== */}
+            {/* SECCIÓN DE PAGO */}
             {cartItems.length > 0 && (
               <div className="border-t border-white/5 p-6">
-                {/* Banner de registro (solo si no hay usuario) */}
                 {!user && (
-                  <div className="mb-3 p-3 bg-[#ef4444]/10 border border-[#ef4444]/20 rounded-lg">
+                  <div 
+                    className="mb-3 p-3 rounded-lg"
+                    style={{
+                      backgroundColor: "rgba(212, 175, 55, 0.08)",
+                      border: "1px solid rgba(212, 175, 55, 0.25)",
+                    }}
+                  >
                     <div className="flex items-start gap-2">
-                      <span className="text-[#ef4444] text-sm">🔒</span>
+                      <span className="text-sm" style={{ color: "var(--kadi-gold)" }}>🔒</span>
                       <div>
                         <p className="text-white/70 text-xs font-medium">
                           Regístrate o inicia sesión para comprar
@@ -386,7 +371,8 @@ try {
                             onClose();
                             onLoginRequired?.();
                           }}
-                          className="text-[#ef4444] text-xs hover:underline"
+                          className="text-xs hover:underline transition-colors"
+                          style={{ color: "var(--kadi-gold)" }}
                         >
                           Crear cuenta →
                         </button>
@@ -405,15 +391,19 @@ try {
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full bg-black/60 border border-white/10 rounded-lg p-2 text-white/80 text-sm"
+                    className="w-full border border-white/10 rounded-lg p-2 text-white/80 text-sm focus:outline-none transition"
+                    style={{
+                      backgroundColor: "rgba(15, 18, 21, 0.6)",
+                      borderColor: "rgba(212, 175, 55, 0.2)",
+                    }}
                   >
-                    <option value="transferencia">🏦 Transferencia BBVA</option>
-                    <option value="tarjeta">💳 Tarjeta de crédito/débito</option>
-                    <option value="whatsapp">📱 Coordinar por WhatsApp</option>
+                    <option value="tarjeta"> Tarjeta de crédito/débito</option>
+                    <option value="transferencia"> Transferencia BBVA</option>
+                    <option value="whatsapp"> Coordinar por WhatsApp</option>
                   </select>
                 </div>
 
-                {/* ===== CASILLA DE TÉRMINOS Y CONDICIONES ===== */}
+                {/* CASILLA DE TÉRMINOS */}
                 <div className="mb-4">
                   <label className="flex items-start gap-3 cursor-pointer group">
                     <div className="relative flex items-center mt-0.5">
@@ -421,10 +411,15 @@ try {
                         type="checkbox"
                         checked={aceptaTerminos}
                         onChange={(e) => setAceptaTerminos(e.target.checked)}
-                        className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md checked:bg-[#ef4444] checked:border-[#ef4444] transition-all cursor-pointer"
+                        className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md transition-all cursor-pointer"
+                        style={{
+                          backgroundColor: aceptaTerminos ? "var(--kadi-gold)" : "transparent",
+                          borderColor: aceptaTerminos ? "var(--kadi-gold)" : "rgba(255,255,255,0.2)",
+                        }}
                       />
                       <svg 
-                        className="absolute w-3 h-3 text-white left-1 top-1 pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity"
+                        className="absolute w-3 h-3 text-white left-1 top-1 pointer-events-none transition-opacity"
+                        style={{ opacity: aceptaTerminos ? 1 : 0 }}
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"
@@ -440,7 +435,8 @@ try {
                           e.stopPropagation();
                           onOpenLegal?.();
                         }}
-                        className="text-[#ef4444] hover:text-[#f97316] underline transition-colors"
+                        className="hover:underline transition-colors"
+                        style={{ color: "var(--kadi-gold)" }}
                       >
                         términos y condiciones
                       </button>
@@ -449,15 +445,23 @@ try {
                   </label>
                 </div>
 
-                {/* ===== BOTÓN DE PAGO ===== */}
+                {/* BOTÓN DE PAGO */}
                 <button
                   onClick={handleCheckout}
                   disabled={guardando || !user || !aceptaTerminos}
                   className={`w-full py-3 rounded-lg font-medium transition ${
                     !user || !aceptaTerminos
                       ? 'bg-white/10 text-white/30 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-[#ef4444] to-[#f97316] text-white hover:from-[#ef4444]/90 hover:to-[#f97316]/90'
+                      : 'text-white'
                   }`}
+                  style={
+                    !user || !aceptaTerminos
+                      ? {}
+                      : {
+                          background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
+                          boxShadow: "0 8px 20px rgba(30, 74, 140, 0.3)",
+                        }
+                  }
                 >
                   {!user
                     ? "🔒 Inicia sesión para comprar"
