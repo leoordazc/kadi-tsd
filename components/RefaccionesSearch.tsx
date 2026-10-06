@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-
+import Interactive3DPart from "@/components/Interactive3DPart";
 interface RefaccionesSearchProps {
   onSearch?: (query: string) => void;
   onAddToCart?: (product: any) => void;
@@ -78,65 +78,46 @@ export default function RefaccionesSearch({ onSearch, onAddToCart }: Refacciones
 
                     {/* ===== IMAGEN IZQUIERDA CON EFECTO ===== */}
                     <motion.div
-                        initial={{ opacity: 0, x: -40 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8 }}
-                        className="relative flex justify-center items-center order-2 lg:order-1"
-                    >
-                        {/* Glow dorado + azul metálico detrás del engrane */}
-                        <div
-                            className="absolute w-[420px] h-[420px] rounded-full blur-[100px] opacity-60 pointer-events-none"
-                            style={{
-                                background: "radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, rgba(30, 74, 140, 0.15) 50%, transparent 70%)",
-                            }}
-                        />
+    initial={{ opacity: 0, x: -40 }}
+    whileInView={{ opacity: 1, x: 0 }}
+    transition={{ duration: 0.8 }}
+    className="relative flex justify-center items-center order-2 lg:order-1"
+>
+    {/* Glow dorado detrás */}
+    <div
+        className="absolute w-[420px] h-[420px] rounded-full blur-[100px] opacity-60 pointer-events-none"
+        style={{
+            background: "radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, rgba(30, 74, 140, 0.15) 50%, transparent 70%)",
+        }}
+    />
 
-                        {/* Anillos orbitales animados (dorado + azul) */}
-                        <motion.div
-                            className="absolute rounded-full border pointer-events-none"
-                            style={{
-                                width: "380px",
-                                height: "380px",
-                                borderColor: "rgba(212, 175, 55, 0.2)",
-                            }}
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                        >
-                            <div
-                                className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
-                                style={{ backgroundColor: "var(--kadi-gold)" }}
-                            />
-                        </motion.div>
+    {/* Anillos orbitales */}
+    <motion.div
+        className="absolute rounded-full border pointer-events-none"
+        style={{ width: "380px", height: "380px", borderColor: "rgba(212, 175, 55, 0.2)" }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+    >
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full" style={{ backgroundColor: "var(--kadi-gold)" }} />
+    </motion.div>
 
-                        <motion.div
-                            className="absolute rounded-full border pointer-events-none"
-                            style={{
-                                width: "300px",
-                                height: "300px",
-                                borderColor: "rgba(30, 74, 140, 0.3)",
-                            }}
-                            animate={{ rotate: -360 }}
-                            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                        >
-                            <div
-                                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
-                                style={{ backgroundColor: "var(--kadi-blue-bright)" }}
-                            />
-                        </motion.div>
+    <motion.div
+        className="absolute rounded-full border pointer-events-none"
+        style={{ width: "300px", height: "300px", borderColor: "rgba(30, 74, 140, 0.3)" }}
+        animate={{ rotate: -360 }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+    >
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "var(--kadi-blue-bright)" }} />
+    </motion.div>
 
-                        {/* Engrane con flotación */}
-                        <motion.img
-                            src="/images/sincro.png"
-                            alt="Engrane de transmisión"
-                            className="relative w-full max-w-md h-auto object-contain z-10"
-                            style={{
-                                filter: "contrast(1.1) brightness(1.1) drop-shadow(0 0 40px rgba(212, 175, 55, 0.25))",
-                                mixBlendMode: "screen",
-                            }}
-                            animate={{ y: [0, -15, 0] }}
-                            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                        />
-                    </motion.div>
+    {/* 👇 AQUÍ VA EL COMPONENTE 3D */}
+    <Interactive3DPart
+        src="/images/sincro.png"
+        alt="Engrane de transmisión"
+        maxRotation={15}
+        className="relative z-10 w-full max-w-md"
+    />
+</motion.div>
 
                     {/* ===== CONTENIDO DERECHA ===== */}
                     <motion.div
