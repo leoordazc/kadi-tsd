@@ -46,8 +46,6 @@ export default function ProductoDetallePage() {
     useEffect(() => {
         const fetchProducto = async () => {
             try {
-                console.log("🔍 Buscando producto con código:", params.slug);
-                
                 const { data, error } = await supabase
                     .from('productos')
                     .select('*')
@@ -92,9 +90,15 @@ export default function ProductoDetallePage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-black text-white flex items-center justify-center">
+            <div 
+                className="min-h-screen text-white flex items-center justify-center"
+                style={{ backgroundColor: "var(--bg-primary)" }}
+            >
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-2 border-[#ef4444] border-t-transparent rounded-full animate-spin" />
+                    <div 
+                        className="w-12 h-12 border-2 border-t-transparent rounded-full animate-spin" 
+                        style={{ borderColor: "var(--kadi-gold)", borderTopColor: "transparent" }}
+                    />
                     <p className="text-white/40 text-sm">Cargando producto...</p>
                 </div>
             </div>
@@ -103,11 +107,18 @@ export default function ProductoDetallePage() {
 
     if (error || !producto) {
         return (
-            <div className="min-h-screen bg-black text-white flex items-center justify-center">
+            <div 
+                className="min-h-screen text-white flex items-center justify-center"
+                style={{ backgroundColor: "var(--bg-primary)" }}
+            >
                 <div className="text-center">
                     <p className="text-red-400 mb-4">{error || "Producto no encontrado"}</p>
                     <p className="text-white/30 text-xs mb-4">Código buscado: {params.slug}</p>
-                    <Link href="/catalogo" className="text-[#ef4444] hover:underline">
+                    <Link 
+                        href="/catalogo" 
+                        className="hover:underline transition-colors"
+                        style={{ color: "var(--kadi-gold)" }}
+                    >
                         Volver al catálogo
                     </Link>
                 </div>
@@ -116,18 +127,37 @@ export default function ProductoDetallePage() {
     }
 
     return (
-        <main className="min-h-screen bg-black text-white">
+        <main 
+            className="min-h-screen text-white"
+            style={{ backgroundColor: "var(--bg-primary)" }}
+        >
             {/* Header */}
-            <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/75 border-b border-white/5">
+            <header 
+                className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5"
+                style={{ backgroundColor: "rgba(15, 18, 21, 0.75)" }}
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
                     <div className="flex items-center justify-between">
                         <Link href="/catalogo" className="flex items-center gap-2 group">
-                            <motion.span className="text-[#ef4444] text-xl group-hover:-translate-x-1 transition-transform">
+                            <motion.span 
+                                className="text-xl group-hover:-translate-x-1 transition-transform"
+                                style={{ color: "var(--kadi-gold)" }}
+                            >
                                 ←
                             </motion.span>
                             <span className="text-white/70 group-hover:text-white text-sm sm:text-base">Volver al catálogo</span>
                         </Link>
-                        <h1 className="text-base sm:text-2xl font-light">Detalle del <span className="text-[#ef4444]">producto</span></h1>
+                        <h1 className="text-base sm:text-2xl font-light">
+                            Detalle del{" "}
+                            <span 
+                                className="text-transparent bg-clip-text"
+                                style={{
+                                    backgroundImage: "linear-gradient(90deg, #1e4a8c, #2a5ca8, #D4AF37)",
+                                }}
+                            >
+                                producto
+                            </span>
+                        </h1>
                     </div>
                 </div>
             </header>
@@ -137,76 +167,92 @@ export default function ProductoDetallePage() {
                 <div className="grid md:grid-cols-2 gap-6 sm:gap-12">
                     
                     {/* COLUMNA IZQUIERDA: IMAGEN CON CARRUSEL */}
-<div className="space-y-3 sm:space-y-4">
-    {/* Imagen principal - Tamaño ajustado para móvil */}
-    <div className="relative w-full aspect-square max-h-[350px] sm:max-h-[500px] md:max-h-none rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
-        {selectedImage ? (
-            <>
-                <Image
-                    src={selectedImage}
-                    alt={producto.nombre}
-                    fill
-                    className="object-contain p-2 sm:p-4"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    priority
-                />
-                
-                {allImages.length > 1 && (
-                    <>
-                        <button
-                            onClick={prevImage}
-                            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white/80 hover:text-white rounded-full w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center transition-all backdrop-blur-sm text-xs sm:text-base"
+                    <div className="space-y-3 sm:space-y-4">
+                        <div 
+                            className="relative w-full aspect-square max-h-[350px] sm:max-h-[500px] md:max-h-none rounded-2xl overflow-hidden border border-white/10"
+                            style={{
+                                background: `linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)`,
+                            }}
                         >
-                            ◀
-                        </button>
-                        <button
-                            onClick={nextImage}
-                            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white/80 hover:text-white rounded-full w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center transition-all backdrop-blur-sm text-xs sm:text-base"
-                        >
-                            ▶
-                        </button>
-                        <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-full">
-                            {currentImageIndex + 1} / {allImages.length}
+                            {selectedImage ? (
+                                <>
+                                    <Image
+                                        src={selectedImage}
+                                        alt={producto.nombre}
+                                        fill
+                                        className="object-contain p-2 sm:p-4"
+                                        sizes="(max-width: 768px) 100vw, 50vw"
+                                        priority
+                                    />
+                                    
+                                    {allImages.length > 1 && (
+                                        <>
+                                            <button
+                                                onClick={prevImage}
+                                                className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 rounded-full w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center transition-all backdrop-blur-sm text-xs sm:text-base text-white/80 hover:text-white"
+                                                style={{ backgroundColor: "rgba(15, 18, 21, 0.6)" }}
+                                            >
+                                                ◀
+                                            </button>
+                                            <button
+                                                onClick={nextImage}
+                                                className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 rounded-full w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center transition-all backdrop-blur-sm text-xs sm:text-base text-white/80 hover:text-white"
+                                                style={{ backgroundColor: "rgba(15, 18, 21, 0.6)" }}
+                                            >
+                                                ▶
+                                            </button>
+                                            <div 
+                                                className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 backdrop-blur-sm text-white/80 text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-full"
+                                                style={{ backgroundColor: "rgba(15, 18, 21, 0.6)" }}
+                                            >
+                                                {currentImageIndex + 1} / {allImages.length}
+                                            </div>
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-6xl">🔧</span>
+                                </div>
+                            )}
                         </div>
-                    </>
-                )}
-            </>
-        ) : (
-            <div className="w-full h-full flex items-center justify-center">
-                <span className="text-6xl">🔧</span>
-            </div>
-        )}
-    </div>
 
-    {/* Miniaturas - Con CSS custom forzado */}
-{allImages.length > 1 && (
-    <div className="miniaturas-scroll">
-        <div className="miniaturas-track">
-            {allImages.map((img, idx) => (
-                <button
-                    key={idx}
-                    onClick={() => {
-                        setSelectedImage(img);
-                        setCurrentImageIndex(idx);
-                    }}
-                    className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                        selectedImage === img 
-                            ? 'border-[#ef4444] shadow-lg shadow-[#ef4444]/20' 
-                            : 'border-white/20 hover:border-white/50'
-                    }`}
-                >
-                    <Image
-                        src={img}
-                        alt={`Vista ${idx + 1}`}
-                        fill
-                        className="object-cover"
-                    />
-                </button>
-            ))}
-        </div>
-    </div>
-)}
-</div>
+                        {allImages.length > 1 && (
+                            <div className="miniaturas-scroll">
+                                <div className="miniaturas-track">
+                                    {allImages.map((img, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => {
+                                                setSelectedImage(img);
+                                                setCurrentImageIndex(idx);
+                                            }}
+                                            className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                                                selectedImage === img 
+                                                    ? '' 
+                                                    : 'border-white/20 hover:border-white/50'
+                                            }`}
+                                            style={
+                                                selectedImage === img 
+                                                    ? { 
+                                                        borderColor: "var(--kadi-gold)", 
+                                                        boxShadow: "0 0 12px rgba(212, 175, 55, 0.3)" 
+                                                    } 
+                                                    : {}
+                                            }
+                                        >
+                                            <Image
+                                                src={img}
+                                                alt={`Vista ${idx + 1}`}
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     {/* COLUMNA DERECHA: INFORMACIÓN */}
                     <div>
@@ -214,11 +260,19 @@ export default function ProductoDetallePage() {
                         <p className="text-white/40 text-xs sm:text-sm mb-4">Código: {producto.codigo_caja}</p>
 
                         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                            <span className={`text-[10px] sm:text-xs px-2 sm:px-3 py-0.5 sm:py-1 rounded-full ${
-                                producto.tipo === "Reconstruida" ? "bg-green-500/20 text-green-400" :
-                                producto.tipo === "Nueva" ? "bg-blue-500/20 text-blue-400" :
-                                "bg-yellow-500/20 text-yellow-400"
-                            }`}>
+                            <span 
+                                className="text-[10px] sm:text-xs px-2 sm:px-3 py-0.5 sm:py-1 rounded-full"
+                                style={{
+                                    backgroundColor: 
+                                        producto.tipo === "Reconstruida" ? "rgba(212, 175, 55, 0.15)" :
+                                        producto.tipo === "Nueva" ? "rgba(30, 74, 140, 0.25)" :
+                                        "rgba(161, 168, 176, 0.15)",
+                                    color:
+                                        producto.tipo === "Reconstruida" ? "var(--kadi-gold)" :
+                                        producto.tipo === "Nueva" ? "var(--kadi-blue-bright)" :
+                                        "var(--text-secondary)",
+                                }}
+                            >
                                 {producto.tipo}
                             </span>
                             <span className="text-[10px] sm:text-xs text-white/30">
@@ -281,7 +335,11 @@ export default function ProductoDetallePage() {
                                         setToast({ message: `${producto.nombre} agregado al carrito`, type: "success" });
                                         setTimeout(() => setToast(null), 2500);
                                     }}
-                                    className="w-full sm:w-auto bg-gradient-to-r from-[#ef4444] to-[#f97316] text-white py-2.5 px-6 sm:px-8 rounded-lg font-medium hover:from-[#ef4444]/90 hover:to-[#f97316]/90 transition-all active:scale-95 shadow-lg shadow-[#ef4444]/20 relative overflow-hidden group"
+                                    className="w-full sm:w-auto text-white py-2.5 px-6 sm:px-8 rounded-lg font-medium transition-all active:scale-95 relative overflow-hidden group"
+                                    style={{
+                                        background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
+                                        boxShadow: "0 8px 20px rgba(30, 74, 140, 0.3)",
+                                    }}
                                 >
                                     <span className="relative z-10 flex items-center justify-center gap-2 text-sm sm:text-base">
                                         🛒 Agregar
@@ -301,7 +359,7 @@ export default function ProductoDetallePage() {
                                 }}
                                 className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 sm:py-3 text-white/70 hover:bg-white/10 transition text-xs sm:text-sm"
                             >
-                                 Consultar con un experto
+                                Consultar con un experto
                             </button>
                         </div>
                     </div>

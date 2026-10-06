@@ -120,9 +120,15 @@ export default function CatalogoPage() {
 
     if (loading) {
         return (
-            <main className="min-h-screen bg-black text-white flex items-center justify-center">
+            <main 
+                className="min-h-screen text-white flex items-center justify-center"
+                style={{ backgroundColor: "var(--bg-primary)" }}
+            >
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-2 border-[#ef4444] border-t-transparent rounded-full animate-spin" />
+                    <div 
+                        className="w-12 h-12 border-2 border-t-transparent rounded-full animate-spin" 
+                        style={{ borderColor: "var(--kadi-gold)", borderTopColor: "transparent" }}
+                    />
                     <p className="text-white/40 text-sm">Cargando catálogo...</p>
                 </div>
             </main>
@@ -131,22 +137,36 @@ export default function CatalogoPage() {
 
     if (error) {
         return (
-            <main className="min-h-screen bg-black text-white flex items-center justify-center">
+            <main 
+                className="min-h-screen text-white flex items-center justify-center"
+                style={{ backgroundColor: "var(--bg-primary)" }}
+            >
                 <div className="text-center">
                     <p className="text-red-400 mb-4">Error: {error}</p>
-                    <Link href="/" className="text-[#ef4444] hover:underline">Volver al inicio</Link>
+                    <Link 
+                        href="/" 
+                        className="hover:underline transition-colors"
+                        style={{ color: "var(--kadi-gold)" }}
+                    >
+                        Volver al inicio
+                    </Link>
                 </div>
             </main>
         );
     }
 
     return (
-        <main className="min-h-screen bg-black text-white">
+        <main 
+            className="min-h-screen text-white"
+            style={{ backgroundColor: "var(--bg-primary)" }}
+        >
             {/* ===== HEADER MINIMALISTA ===== */}
-            <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/75 border-b border-white/5">
+            <header 
+                className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5"
+                style={{ backgroundColor: "rgba(15, 18, 21, 0.75)" }}
+            >
                 <div className="max-w-7xl mx-auto px-4 py-3">
                     <div className="flex items-center gap-3">
-                        {/* Flecha de regreso */}
                         <Link 
                             href="/" 
                             className="text-white/60 hover:text-white transition-colors flex-shrink-0"
@@ -157,19 +177,20 @@ export default function CatalogoPage() {
                             </svg>
                         </Link>
 
-                        {/* Título */}
                         <h1 className="text-lg sm:text-xl font-light text-white/90 flex-shrink-0">
                             Catálogo
                         </h1>
 
-                        {/* Buscador */}
                         <div className="relative flex-1 max-w-md ml-auto">
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Buscar..."
-                                className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pl-9 text-sm text-white/80 placeholder-white/30 focus:outline-none focus:border-[#ef4444]/50 transition"
+                                className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pl-9 text-sm text-white/80 placeholder-white/30 focus:outline-none transition"
+                                style={{
+                                    borderColor: searchQuery ? "rgba(212, 175, 55, 0.5)" : "rgba(255,255,255,0.1)",
+                                }}
                             />
                             <svg 
                                 className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" 
@@ -186,7 +207,7 @@ export default function CatalogoPage() {
 
             <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
                 
-                {/* ===== FILTRO DE MARCAS COMPACTO CON BOTÓN ===== */}
+                {/* ===== FILTRO DE MARCAS ===== */}
                 {marcas.length > 0 && (
                     <div className="mb-4 sm:mb-6">
                         <div className="flex gap-2">
@@ -194,9 +215,12 @@ export default function CatalogoPage() {
                                 onClick={() => setShowBrands(!showBrands)}
                                 className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white/70 hover:bg-white/10 transition text-sm"
                             >
-                                <span> Filtrar</span>
+                                <span>Filtrar</span>
                                 {selectedMarca && (
-                                    <span className="bg-[#ef4444] text-white text-[10px] px-1.5 rounded-full">
+                                    <span 
+                                        className="text-white text-[10px] px-1.5 rounded-full"
+                                        style={{ backgroundColor: "var(--kadi-gold)", color: "#0f1215" }}
+                                    >
                                         1
                                     </span>
                                 )}
@@ -205,7 +229,6 @@ export default function CatalogoPage() {
                                 </svg>
                             </button>
 
-                            {/* Chips de filtros activos */}
                             {selectedMarca && (
                                 <button
                                     onClick={() => {
@@ -213,7 +236,12 @@ export default function CatalogoPage() {
                                         setSelectedModelo(null);
                                         setCurrentPage(1);
                                     }}
-                                    className="flex items-center gap-1.5 px-3 py-2 bg-[#ef4444]/10 border border-[#ef4444]/30 rounded-lg text-[#ef4444] text-xs hover:bg-[#ef4444]/20 transition"
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs transition"
+                                    style={{
+                                        backgroundColor: "rgba(212, 175, 55, 0.15)",
+                                        border: "1px solid rgba(212, 175, 55, 0.4)",
+                                        color: "var(--kadi-gold)",
+                                    }}
                                 >
                                     {selectedMarca}
                                     <span>✕</span>
@@ -222,7 +250,10 @@ export default function CatalogoPage() {
                         </div>
 
                         {showBrands && (
-                            <div className="mt-3 p-3 sm:p-4 bg-black/60 backdrop-blur-sm border border-white/10 rounded-xl">
+                            <div 
+                                className="mt-3 p-3 sm:p-4 backdrop-blur-sm border border-white/10 rounded-xl"
+                                style={{ backgroundColor: "rgba(15, 18, 21, 0.6)" }}
+                            >
                                 <div className="flex justify-between items-center mb-3">
                                     <span className="text-white/40 text-xs">Selecciona una marca</span>
                                 </div>
@@ -236,9 +267,10 @@ export default function CatalogoPage() {
                                         }}
                                         className={`px-3 py-2 rounded-lg text-sm transition-all text-left ${
                                             !selectedMarca 
-                                                ? 'bg-[#ef4444] text-white' 
+                                                ? 'text-white' 
                                                 : 'bg-white/5 text-white/60 hover:bg-white/10'
                                         }`}
+                                        style={!selectedMarca ? { backgroundColor: "var(--kadi-blue)" } : {}}
                                     >
                                         Todas
                                     </button>
@@ -253,9 +285,10 @@ export default function CatalogoPage() {
                                             }}
                                             className={`px-3 py-2 rounded-lg text-sm transition-all text-left ${
                                                 selectedMarca === marca.id 
-                                                    ? 'bg-[#ef4444] text-white' 
+                                                    ? 'text-white' 
                                                     : 'bg-white/5 text-white/60 hover:bg-white/10'
                                             }`}
+                                            style={selectedMarca === marca.id ? { backgroundColor: "var(--kadi-blue)" } : {}}
                                         >
                                             <span className="mr-2">{marca.icono}</span>
                                             {marca.nombre}
@@ -267,15 +300,22 @@ export default function CatalogoPage() {
                     </div>
                 )}
 
-                {/* Filtro de modelos (solo si hay marca seleccionada) */}
+                {/* Filtro de modelos */}
                 {selectedMarca && modelos.length > 0 && (
                     <div className="mb-4 sm:mb-6">
                         <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={() => setSelectedModelo(null)}
-                                className={`px-3 py-1 rounded-full text-xs border ${
-                                    !selectedModelo ? 'bg-[#ef4444]/20 border-[#ef4444] text-white' : 'border-white/10 text-white/40'
+                                className={`px-3 py-1 rounded-full text-xs border transition ${
+                                    !selectedModelo 
+                                        ? '' 
+                                        : 'border-white/10 text-white/40'
                                 }`}
+                                style={!selectedModelo ? {
+                                    backgroundColor: "rgba(212, 175, 55, 0.15)",
+                                    borderColor: "var(--kadi-gold)",
+                                    color: "white",
+                                } : {}}
                             >
                                 Todos
                             </button>
@@ -283,9 +323,16 @@ export default function CatalogoPage() {
                                 <button
                                     key={modelo}
                                     onClick={() => setSelectedModelo(modelo)}
-                                    className={`px-3 py-1 rounded-full text-xs border ${
-                                        selectedModelo === modelo ? 'bg-[#ef4444]/20 border-[#ef4444] text-white' : 'border-white/10 text-white/40'
+                                    className={`px-3 py-1 rounded-full text-xs border transition ${
+                                        selectedModelo === modelo 
+                                            ? '' 
+                                            : 'border-white/10 text-white/40'
                                     }`}
+                                    style={selectedModelo === modelo ? {
+                                        backgroundColor: "rgba(212, 175, 55, 0.15)",
+                                        borderColor: "var(--kadi-gold)",
+                                        color: "white",
+                                    } : {}}
                                 >
                                     {modelo.toUpperCase()}
                                 </button>
@@ -294,15 +341,24 @@ export default function CatalogoPage() {
                     </div>
                 )}
 
-                {/* ===== GRID DE PRODUCTOS ESTILO MERCADO LIBRE ===== */}
+                {/* ===== GRID DE PRODUCTOS ===== */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                     {paginatedProductos.map((producto) => (
                         <Link
                             key={producto.id}
                             href={`/catalogo/${producto.codigo_caja}`}
-                            className="group bg-[#1a1a1a] rounded-lg border border-white/5 overflow-hidden hover:border-[#ef4444]/30 hover:shadow-lg hover:shadow-[#ef4444]/5 transition-all flex flex-col"
+                            className="group rounded-lg border border-white/5 overflow-hidden transition-all flex flex-col"
+                            style={{ backgroundColor: "var(--bg-card)" }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = "rgba(212, 175, 55, 0.3)";
+                                e.currentTarget.style.boxShadow = "0 8px 25px rgba(212, 175, 55, 0.08)";
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = "rgba(255,255,255,0.05)";
+                                e.currentTarget.style.boxShadow = "none";
+                            }}
                         >
-                            {/* Imagen - Cuadrada como en ML */}
+                            {/* Imagen */}
                             <div className="relative w-full aspect-square overflow-hidden bg-white">
                                 {producto.imagen_url ? (
                                     <Image
@@ -321,44 +377,54 @@ export default function CatalogoPage() {
                                 )}
 
                                 {/* Etiqueta de tipo */}
-                                <span className={`absolute top-2 left-2 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded font-medium ${
-                                    producto.tipo === 'Reconstruida' ? 'bg-green-500 text-white' :
-                                    producto.tipo === 'Nueva' ? 'bg-blue-500 text-white' : 'bg-yellow-500 text-black'
-                                }`}>
+                                <span 
+                                    className="absolute top-2 left-2 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded font-medium"
+                                    style={{
+                                        backgroundColor: 
+                                            producto.tipo === 'Reconstruida' ? 'var(--kadi-gold)' :
+                                            producto.tipo === 'Nueva' ? 'var(--kadi-blue)' : 
+                                            'var(--text-secondary)',
+                                        color: 
+                                            producto.tipo === 'Usada' ? '#0f1215' : 
+                                            producto.tipo === 'Reconstruida' ? '#0f1215' : 
+                                            'white',
+                                    }}
+                                >
                                     {producto.tipo}
                                 </span>
                             </div>
 
                             {/* Info del producto */}
                             <div className="p-2.5 sm:p-3 flex flex-col flex-1">
-                                {/* Precio (destacado como en ML) */}
                                 <div className="mb-1">
                                     <span className="text-white font-bold text-lg sm:text-xl">
                                         ${producto.precio.toLocaleString()}
                                     </span>
                                 </div>
 
-                                {/* Envío gratis (badge como ML) */}
                                 <div className="mb-1.5">
-                                    <span className="text-green-400 text-[10px] sm:text-xs font-medium">
+                                    <span 
+                                        className="text-[10px] sm:text-xs font-medium"
+                                        style={{ color: "var(--kadi-gold)" }}
+                                    >
                                         Envío gratis
                                     </span>
                                 </div>
 
-                                {/* Nombre */}
-                                <h3 className="text-white/80 text-xs sm:text-sm leading-tight line-clamp-2 mb-1 group-hover:text-[#ef4444] transition">
+                                <h3 className="text-white/80 text-xs sm:text-sm leading-tight line-clamp-2 mb-1 transition-colors">
                                     {producto.nombre}
                                 </h3>
 
-                                {/* Código */}
                                 <p className="text-white/30 text-[10px] mt-auto">
                                     Código: {producto.codigo_caja}
                                 </p>
 
-                                {/* Stock */}
-                                <p className={`text-[10px] mt-0.5 ${
-                                    producto.stock > 2 ? 'text-green-400' : 'text-yellow-400'
-                                }`}>
+                                <p 
+                                    className={`text-[10px] mt-0.5`}
+                                    style={{ 
+                                        color: producto.stock > 2 ? "var(--kadi-blue-bright)" : "var(--kadi-gold)" 
+                                    }}
+                                >
                                     {producto.stock > 2 ? '✓ Stock disponible' : `⚠️ Quedan ${producto.stock}`}
                                 </p>
                             </div>
@@ -395,7 +461,6 @@ export default function CatalogoPage() {
                     </div>
                 )}
 
-                {/* Toast de notificación */}
                 {toast && (
                     <Toast
                         message={toast.message}
