@@ -126,7 +126,7 @@ export default function RefaccionesSearch({ onSearch, onAddToCart }: Refacciones
 
                         {/* Engrane con flotación */}
                         <motion.img
-                            src="/images/engrane-hero.jpg"
+                            src="/images/sincro.png"
                             alt="Engrane de transmisión"
                             className="relative w-full max-w-md h-auto object-contain z-10"
                             style={{
