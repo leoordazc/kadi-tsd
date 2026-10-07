@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -21,6 +21,17 @@ interface Producto {
     imagen_url?: string;
 }
 
+// ===== PRIORIDAD DE BÚSQUEDA: productos más pedidos primero =====
+// Los que aparecen aquí se ordenan primero (en ese orden exacto)
+const PRIORIDAD_BUSQUEDA: string[] = [
+    "spark classic",
+    "chevrolet beat",
+    "grand i10",
+    "tsuru",
+    "nissan 2.4",
+    "aveo ng",
+];
+
 export default function CatalogoPage() {
     const { addToCart } = useCart();
     const [selectedMarca, setSelectedMarca] = useState<string | null>(null);
@@ -34,6 +45,9 @@ export default function CatalogoPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
 
+    // Ref para hacer scroll al inicio del grid
+    const gridRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         const fetchProductos = async () => {
             try {
@@ -44,7 +58,7 @@ export default function CatalogoPage() {
                     .eq('activo', true)
                     .gt('stock', 0)
                     .order('nombre')
-                    .limit(50);
+                    .limit(100); // Subimos el límite para tener más productos y ordenar bien
 
                 if (error) throw error;
                 setProductos(data || []);
@@ -58,6 +72,46 @@ export default function CatalogoPage() {
 
         fetchProductos();
     }, []);
+
+    // ===== ORDENAR PRODUCTOS: prioridad primero, luego el resto alfabético =====
+    const productosOrdenados = useMemo(() => {
+        if (productos.length === 0) return [];
+
+        const prioritarios: Producto[] = [];
+        const resto: Producto[] = [];
+
+        productos.forEach((producto) => {
+            const nombreLower = producto.nombre.toLowerCase();
+            const modeloStr = (producto.modelo_vehiculo || []).join(" ").toLowerCase();
+            const marcaStr = (producto.marca_vehiculo || []).join(" ").toLowerCase();
+
+            // Buscar si el producto coincide con algún término prioritario
+            const esPrioritario = PRIORIDAD_BUSQUEDA.some((termino) =>
+                nombreLower.includes(termino) ||
+                modeloStr.includes(termino) ||
+                marcaStr.includes(termino)
+            );
+
+            if (esPrioritario) {
+                prioritarios.push(producto);
+            } else {
+                resto.push(producto);
+            }
+        });
+
+        // Ordenar los prioritarios según el orden exacto de PRIORIDAD_BUSQUEDA
+        prioritarios.sort((a, b) => {
+            const nombreA = `${a.nombre} ${(a.modelo_vehiculo || []).join(" ")} ${(a.marca_vehiculo || []).join(" ")}`.toLowerCase();
+            const nombreB = `${b.nombre} ${(b.modelo_vehiculo || []).join(" ")} ${(b.marca_vehiculo || []).join(" ")}`.toLowerCase();
+
+            const indexA = PRIORIDAD_BUSQUEDA.findIndex((t) => nombreA.includes(t));
+            const indexB = PRIORIDAD_BUSQUEDA.findIndex((t) => nombreB.includes(t));
+
+            return indexA - indexB;
+        });
+
+        return [...prioritarios, ...resto];
+    }, [productos]);
 
     const marcas = useMemo(() => {
         const marcasSet = new Set<string>();
@@ -83,8 +137,8 @@ export default function CatalogoPage() {
     }, [productos, selectedMarca]);
 
     const filteredProductos = useMemo(() => {
-        let result = productos;
-        
+        let result = productosOrdenados;
+
         if (selectedMarca) {
             result = result.filter(p => p.marca_vehiculo?.includes(selectedMarca));
         }
@@ -93,14 +147,14 @@ export default function CatalogoPage() {
         }
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
-            result = result.filter(p => 
+            result = result.filter(p =>
                 p.nombre.toLowerCase().includes(query) ||
                 p.codigo_caja.toLowerCase().includes(query)
             );
         }
-        
+
         return result;
-    }, [productos, selectedMarca, selectedModelo, searchQuery]);
+    }, [productosOrdenados, selectedMarca, selectedModelo, searchQuery]);
 
     const totalPages = Math.ceil(filteredProductos.length / itemsPerPage);
     const paginatedProductos = filteredProductos.slice(
@@ -108,25 +162,34 @@ export default function CatalogoPage() {
         currentPage * itemsPerPage
     );
 
+    // ===== SCROLL AL INICIO DEL GRID AL CAMBIAR PÁGINA =====
+    useEffect(() => {
+        if (gridRef.current && !loading) {
+            const yOffset = -80; // Compensa el header sticky
+            const y = gridRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+            window.scrollTo({ top: y, behavior: "smooth" });
+        }
+    }, [currentPage]);
+
     function getMarcaIcono(marca: string): string {
         const iconos: Record<string, string> = {
-            nissan: "", toyota: "", ford: "", chevrolet: "",
-            volkswagen: "", renault: "", mitsubishi: "",
-            seat: "", honda: "", mazda: "", fiat: "",
-            audi: "", mercedes: "", hyundai: "", suzuki: ""
+            nissan: "🇯🇵", toyota: "🇯🇵", ford: "🇺🇸", chevrolet: "🇺🇸",
+            volkswagen: "🇩🇪", renault: "🇫🇷", mitsubishi: "🇯🇵",
+            seat: "🇪🇸", honda: "🇯🇵", mazda: "🇯🇵", fiat: "🇮🇹",
+            audi: "🇩🇪", mercedes: "🇩🇪", hyundai: "🇰🇷", suzuki: "🇯🇵"
         };
-        return iconos[marca.toLowerCase()] || "";
+        return iconos[marca.toLowerCase()] || "🚗";
     }
 
     if (loading) {
         return (
-            <main 
+            <main
                 className="min-h-screen text-white flex items-center justify-center"
                 style={{ backgroundColor: "var(--bg-primary)" }}
             >
                 <div className="flex flex-col items-center gap-4">
-                    <div 
-                        className="w-12 h-12 border-2 border-t-transparent rounded-full animate-spin" 
+                    <div
+                        className="w-12 h-12 border-2 border-t-transparent rounded-full animate-spin"
                         style={{ borderColor: "var(--kadi-gold)", borderTopColor: "transparent" }}
                     />
                     <p className="text-white/40 text-sm">Cargando catálogo...</p>
@@ -137,14 +200,14 @@ export default function CatalogoPage() {
 
     if (error) {
         return (
-            <main 
+            <main
                 className="min-h-screen text-white flex items-center justify-center"
                 style={{ backgroundColor: "var(--bg-primary)" }}
             >
                 <div className="text-center">
                     <p className="text-red-400 mb-4">Error: {error}</p>
-                    <Link 
-                        href="/" 
+                    <Link
+                        href="/"
                         className="hover:underline transition-colors"
                         style={{ color: "var(--kadi-gold)" }}
                     >
@@ -156,19 +219,19 @@ export default function CatalogoPage() {
     }
 
     return (
-        <main 
+        <main
             className="min-h-screen text-white"
             style={{ backgroundColor: "var(--bg-primary)" }}
         >
             {/* ===== HEADER MINIMALISTA ===== */}
-            <header 
+            <header
                 className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5"
                 style={{ backgroundColor: "rgba(15, 18, 21, 0.75)" }}
             >
                 <div className="max-w-7xl mx-auto px-4 py-3">
                     <div className="flex items-center gap-3">
-                        <Link 
-                            href="/" 
+                        <Link
+                            href="/"
                             className="text-white/60 hover:text-white transition-colors flex-shrink-0"
                             title="Volver al inicio"
                         >
@@ -185,17 +248,20 @@ export default function CatalogoPage() {
                             <input
                                 type="text"
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setCurrentPage(1); // Reset a página 1 al buscar
+                                }}
                                 placeholder="Buscar..."
                                 className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pl-9 text-sm text-white/80 placeholder-white/30 focus:outline-none transition"
                                 style={{
                                     borderColor: searchQuery ? "rgba(212, 175, 55, 0.5)" : "rgba(255,255,255,0.1)",
                                 }}
                             />
-                            <svg 
-                                className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" 
-                                fill="none" 
-                                stroke="currentColor" 
+                            <svg
+                                className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2"
+                                fill="none"
+                                stroke="currentColor"
                                 viewBox="0 0 24 24"
                             >
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -206,7 +272,7 @@ export default function CatalogoPage() {
             </header>
 
             <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
-                
+
                 {/* ===== FILTRO DE MARCAS ===== */}
                 {marcas.length > 0 && (
                     <div className="mb-4 sm:mb-6">
@@ -217,7 +283,7 @@ export default function CatalogoPage() {
                             >
                                 <span>Filtrar</span>
                                 {selectedMarca && (
-                                    <span 
+                                    <span
                                         className="text-white text-[10px] px-1.5 rounded-full"
                                         style={{ backgroundColor: "var(--kadi-gold)", color: "#0f1215" }}
                                     >
@@ -250,7 +316,7 @@ export default function CatalogoPage() {
                         </div>
 
                         {showBrands && (
-                            <div 
+                            <div
                                 className="mt-3 p-3 sm:p-4 backdrop-blur-sm border border-white/10 rounded-xl"
                                 style={{ backgroundColor: "rgba(15, 18, 21, 0.6)" }}
                             >
@@ -266,8 +332,8 @@ export default function CatalogoPage() {
                                             setShowBrands(false);
                                         }}
                                         className={`px-3 py-2 rounded-lg text-sm transition-all text-left ${
-                                            !selectedMarca 
-                                                ? 'text-white' 
+                                            !selectedMarca
+                                                ? 'text-white'
                                                 : 'bg-white/5 text-white/60 hover:bg-white/10'
                                         }`}
                                         style={!selectedMarca ? { backgroundColor: "var(--kadi-blue)" } : {}}
@@ -284,8 +350,8 @@ export default function CatalogoPage() {
                                                 setShowBrands(false);
                                             }}
                                             className={`px-3 py-2 rounded-lg text-sm transition-all text-left ${
-                                                selectedMarca === marca.id 
-                                                    ? 'text-white' 
+                                                selectedMarca === marca.id
+                                                    ? 'text-white'
                                                     : 'bg-white/5 text-white/60 hover:bg-white/10'
                                             }`}
                                             style={selectedMarca === marca.id ? { backgroundColor: "var(--kadi-blue)" } : {}}
@@ -305,10 +371,13 @@ export default function CatalogoPage() {
                     <div className="mb-4 sm:mb-6">
                         <div className="flex flex-wrap gap-2">
                             <button
-                                onClick={() => setSelectedModelo(null)}
+                                onClick={() => {
+                                    setSelectedModelo(null);
+                                    setCurrentPage(1);
+                                }}
                                 className={`px-3 py-1 rounded-full text-xs border transition ${
-                                    !selectedModelo 
-                                        ? '' 
+                                    !selectedModelo
+                                        ? ''
                                         : 'border-white/10 text-white/40'
                                 }`}
                                 style={!selectedModelo ? {
@@ -322,10 +391,13 @@ export default function CatalogoPage() {
                             {modelos.map((modelo) => (
                                 <button
                                     key={modelo}
-                                    onClick={() => setSelectedModelo(modelo)}
+                                    onClick={() => {
+                                        setSelectedModelo(modelo);
+                                        setCurrentPage(1);
+                                    }}
                                     className={`px-3 py-1 rounded-full text-xs border transition ${
-                                        selectedModelo === modelo 
-                                            ? '' 
+                                        selectedModelo === modelo
+                                            ? ''
                                             : 'border-white/10 text-white/40'
                                     }`}
                                     style={selectedModelo === modelo ? {
@@ -342,7 +414,7 @@ export default function CatalogoPage() {
                 )}
 
                 {/* ===== GRID DE PRODUCTOS ===== */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                     {paginatedProductos.map((producto) => (
                         <Link
                             key={producto.id}
@@ -377,16 +449,16 @@ export default function CatalogoPage() {
                                 )}
 
                                 {/* Etiqueta de tipo */}
-                                <span 
+                                <span
                                     className="absolute top-2 left-2 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded font-medium"
                                     style={{
-                                        backgroundColor: 
+                                        backgroundColor:
                                             producto.tipo === 'Reconstruida' ? 'var(--kadi-gold)' :
-                                            producto.tipo === 'Nueva' ? 'var(--kadi-blue)' : 
+                                            producto.tipo === 'Nueva' ? 'var(--kadi-blue)' :
                                             'var(--text-secondary)',
-                                        color: 
-                                            producto.tipo === 'Usada' ? '#0f1215' : 
-                                            producto.tipo === 'Reconstruida' ? '#0f1215' : 
+                                        color:
+                                            producto.tipo === 'Usada' ? '#0f1215' :
+                                            producto.tipo === 'Reconstruida' ? '#0f1215' :
                                             'white',
                                     }}
                                 >
@@ -403,7 +475,7 @@ export default function CatalogoPage() {
                                 </div>
 
                                 <div className="mb-1.5">
-                                    <span 
+                                    <span
                                         className="text-[10px] sm:text-xs font-medium"
                                         style={{ color: "var(--kadi-gold)" }}
                                     >
@@ -419,10 +491,10 @@ export default function CatalogoPage() {
                                     Código: {producto.codigo_caja}
                                 </p>
 
-                                <p 
+                                <p
                                     className={`text-[10px] mt-0.5`}
-                                    style={{ 
-                                        color: producto.stock > 2 ? "var(--kadi-blue-bright)" : "var(--kadi-gold)" 
+                                    style={{
+                                        color: producto.stock > 2 ? "var(--kadi-blue-bright)" : "var(--kadi-gold)"
                                     }}
                                 >
                                     {producto.stock > 2 ? '✓ Stock disponible' : `⚠️ Quedan ${producto.stock}`}
