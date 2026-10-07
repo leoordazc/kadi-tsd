@@ -8,13 +8,51 @@ interface HeroKadiStyleProps {
   onConoceKadi: () => void;
 }
 
+// ===== COMPONENTE AISLADO PARA LAS PARTÍCULAS =====
+// Math.random() solo se ejecuta en cliente, después de montar
+function ParticulasHero() {
+  const [particulas, setParticulas] = useState<Array<{
+    left: number;
+    top: number;
+    duration: number;
+    delay: number;
+  }>>([]);
+
+  useEffect(() => {
+    const generadas = [...Array(8)].map(() => ({
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      duration: 8 + Math.random() * 6,
+      delay: Math.random() * 5,
+    }));
+    setParticulas(generadas);
+  }, []);
+
+  if (particulas.length === 0) return null;
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particulas.map((p, i) => (
+        <div
+          key={i}
+          className="absolute w-1 h-1 rounded-full"
+          style={{
+            left: `${p.left}%`,
+            top: `${p.top}%`,
+            backgroundColor: "rgba(212, 175, 55, 0.4)",
+            animation: `floatUp ${p.duration}s linear infinite`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
-  const [mounted, setMounted] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    setMounted(true);
-
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 20,
@@ -26,26 +64,24 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  if (!mounted) return null;
-
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden text-white pt-[140px] pb-20">
       
       {/* ===== IMAGEN DE FONDO ===== */}
-<div 
-  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-  style={{ 
-    backgroundImage: "url('/transmision-hero-bg.jpg')",
-  }}
-/>
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: "url('/transmision-hero-bg.jpg')",
+        }}
+      />
 
-{/* ===== OVERLAY OSCURO PARA QUE EL TEXTO SE LEA ===== */}
-<div 
-  className="absolute inset-0"
-  style={{ 
-    background: "linear-gradient(to bottom, rgba(15, 18, 21, 0.85) 0%, rgba(15, 18, 21, 0.7) 50%, rgba(15, 18, 21, 0.95) 100%)",
-  }}
-/>
+      {/* ===== OVERLAY OSCURO PARA QUE EL TEXTO SE LEA ===== */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: "linear-gradient(to bottom, rgba(15, 18, 21, 0.85) 0%, rgba(15, 18, 21, 0.7) 50%, rgba(15, 18, 21, 0.95) 100%)",
+        }}
+      />
 
       {/* Glow dinámico (dorado + azul metálico) */}
       <motion.div
@@ -63,22 +99,8 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
         }}
       />
 
-      {/* Partículas sutiles (optimizadas: solo 8) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(8)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              backgroundColor: "rgba(212, 175, 55, 0.4)",
-              animation: `floatUp ${8 + Math.random() * 6}s linear infinite`,
-              animationDelay: `${Math.random() * 5}s`,
-            }}
-          />
-        ))}
-      </div>
+      {/* Partículas aisladas (sin romper SSR) */}
+      <ParticulasHero />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
         <div className="flex flex-col items-center text-center">
@@ -96,7 +118,7 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
             </span>
           </motion.div>
 
-          {/* Título */}
+          {/* ===== H1 PRINCIPAL (SEO) ===== */}
           <motion.h1
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -109,14 +131,15 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
             </span>
           </motion.h1>
 
-          {/* Subtítulo */}
+          {/* Subtítulo con keyword secundaria */}
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-xl md:text-2xl text-white/60 max-w-2xl mb-10 font-light"
           >
-            Encuentra o diagnostica en <span className="font-medium" style={{ color: "var(--kadi-gold)" }}>segundos</span>.
+            Compra y diagnóstico de <strong className="font-medium text-white/80">transmisiones manuales y diferenciales</strong> en{" "}
+            <span className="font-medium" style={{ color: "var(--kadi-gold)" }}>segundos</span>.
           </motion.p>
 
           {/* Botón principal (mantiene rojo por ser CTA urgente) */}
