@@ -114,14 +114,18 @@ export default function ProductoDetallePage() {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [toast, setToast] = useState<{ message: string; type?: "success" | "error" | "info" } | null>(null);
 
+    // ===== ESTADOS REALES DESDE SUPABASE =====
+    const [user, setUser] = useState<any>(null);
     const [liked, setLiked] = useState(false);
     const [saved, setSaved] = useState(false);
-    const [likesCount, setLikesCount] = useState(47);
+    const [likesCount, setLikesCount] = useState(0);
+    const [comentarios, setComentarios] = useState<Comentario[]>([]);
+    const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
     const [showPreguntaInput, setShowPreguntaInput] = useState(false);
     const [nuevaPregunta, setNuevaPregunta] = useState("");
-    const [preguntas, setPreguntas] = useState<Pregunta[]>(PREGUNTAS_EJEMPLO);
-    const [comentarios] = useState<Comentario[]>(COMENTARIOS_EJEMPLO);
-
+    const [showComentarioInput, setShowComentarioInput] = useState(false);
+    const [nuevoComentario, setNuevoComentario] = useState({ rating: 5, texto: "" });
+    const [cargandoInteracciones, setCargandoInteracciones] = useState(true);
     const promedioRating = comentarios.length > 0
         ? comentarios.reduce((acc, c) => acc + c.rating, 0) / comentarios.length
         : 0;
