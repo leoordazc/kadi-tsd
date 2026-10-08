@@ -166,6 +166,104 @@ export default function ProductoDetallePage() {
         }
     }, [params.slug]);
 
+        // ===== CARGAR USUARIO ACTUAL =====
+    useEffect(() => {
+        const getUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+        };
+        getUser();
+
+        const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user || null);
+        });
+
+        return () => {
+            listener?.subscription.unsubscribe();
+        };
+    }, []);
+
+    // ===== CARGAR INTERACCIONES (likes, comentarios, preguntas) =====
+    useEffect(() => {
+        if (!producto?.codigo_caja) return;
+
+        const cargarInteracciones = async () => {
+            setCargandoInteracciones(true);
+            const codigo = producto.codigo_caja;
+
+            // Likes totales
+            const { count: likesTotal } = await supabase
+                .from('producto_interacciones')
+                .select('*', { count: 'exact', head: true })
+                .eq('producto_codigo', codigo)
+                .eq('tipo', 'like');
+
+            setLikesCount(likesTotal || 0);
+
+            // ¿Yo le di like?
+            if (user) {
+                const { data: miLike } = await supabase
+                    .from('producto_interacciones')
+                    .select('id')
+                    .eq('producto_codigo', codigo)
+                    .eq('user_id', user.id)
+                    .eq('tipo', 'like')
+                    .maybeSingle();
+                setLiked(!!miLike);
+
+                const { data: miFav } = await supabase
+                    .from('producto_interacciones')
+                    .select('id')
+                    .eq('producto_codigo', codigo)
+                    .eq('user_id', user.id)
+                    .eq('tipo', 'favorito')
+                    .maybeSingle();
+                setSaved(!!miFav);
+            }
+
+            // Comentarios
+            const { data: comentariosData } = await supabase
+                .from('producto_comentarios')
+                .select('*')
+                .eq('producto_codigo', codigo)
+                .order('created_at', { ascending: false });
+
+            if (comentariosData) {
+                setComentarios(comentariosData.map(c => ({
+                    id: c.id,
+                    nombre: c.nombre_cliente,
+                    avatar: c.avatar_inicial,
+                    fecha: new Date(c.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }),
+                    rating: c.rating,
+                    texto: c.texto,
+                    verificado: c.verificado,
+                })));
+            }
+
+            // Preguntas
+            const { data: preguntasData } = await supabase
+                .from('producto_preguntas')
+                .select('*')
+                .eq('producto_codigo', codigo)
+                .order('created_at', { ascending: false });
+
+            if (preguntasData) {
+                setPreguntas(preguntasData.map(p => ({
+                    id: p.id,
+                    nombre: p.nombre_cliente,
+                    fecha: new Date(p.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }),
+                    pregunta: p.pregunta,
+                    respuesta: p.respuesta || undefined,
+                    respondidoPor: p.respondido_por || undefined,
+                })));
+            }
+
+            setCargandoInteracciones(false);
+        };
+
+        cargarInteracciones();
+    }, [producto?.codigo_caja, user]);
+
     const nextImage = () => {
         if (allImages.length === 0) return;
         const nextIndex = (currentImageIndex + 1) % allImages.length;
@@ -199,27 +297,175 @@ export default function ProductoDetallePage() {
         }
     };
 
-    const handleSave = () => {
-        setSaved(!saved);
-        setToast({
-            message: saved ? "Eliminado de guardados" : "Guardado en tus favoritos",
-            type: "success"
-        });
+    // ===== TOGGLE LIKE =====
+    const handleLike = async () => {
+        if (!user) {
+            setToast({ message: "Inicia sesión para dar like", type: "info" });
+            setTimeout(() => setToast(null), 2500);
+            return;
+        }
+        if (!producto) return;
+
+        if (liked) {
+            await supabase
+                .from('producto_interacciones')
+                .delete()
+                .eq('user_id', user.id)
+                .eq('producto_codigo', producto.codigo_caja)
+                .eq('tipo', 'like');
+            setLiked(false);
+            setLikesCount(prev => Math.max(0, prev - 1));
+        } else {
+            await supabase.from('producto_interacciones').insert({
+                user_id: user.id,
+                producto_codigo: producto.codigo_caja,
+                tipo: 'like',
+            });
+            setLiked(true);
+            setLikesCount(prev => prev + 1);
+        }
+    };
+
+    // ===== TOGGLE GUARDAR (favoritos) =====
+    const handleSave = async () => {
+        if (!user) {
+            setToast({ message: "Inicia sesión para guardar en favoritos", type: "info" });
+            setTimeout(() => setToast(null), 2500);
+            return;
+        }
+        if (!producto) return;
+
+        if (saved) {
+            await supabase
+                .from('producto_interacciones')
+                .delete()
+                .eq('user_id', user.id)
+                .eq('producto_codigo', producto.codigo_caja)
+                .eq('tipo', 'favorito');
+            setSaved(false);
+            setToast({ message: "Eliminado de guardados", type: "success" });
+        } else {
+            await supabase.from('producto_interacciones').insert({
+                user_id: user.id,
+                producto_codigo: producto.codigo_caja,
+                tipo: 'favorito',
+            });
+            setSaved(true);
+            setToast({ message: "Guardado en tus favoritos", type: "success" });
+        }
         setTimeout(() => setToast(null), 2000);
     };
 
-    const handleEnviarPregunta = () => {
-        if (!nuevaPregunta.trim()) return;
-        const nueva: Pregunta = {
-            id: Date.now().toString(),
-            nombre: "Tú",
-            fecha: "Ahora",
+    // ===== ENVIAR PREGUNTA =====
+    const handleEnviarPregunta = async () => {
+        if (!nuevaPregunta.trim() || !producto) return;
+
+        if (!user) {
+            setToast({ message: "Inicia sesión para preguntar", type: "info" });
+            setTimeout(() => setToast(null), 2500);
+            return;
+        }
+
+        const nombreCliente = user.user_metadata?.full_name || user.email?.split('@')[0] || "Cliente";
+
+        const { error } = await supabase.from('producto_preguntas').insert({
+            user_id: user.id,
+            producto_codigo: producto.codigo_caja,
+            nombre_cliente: nombreCliente,
             pregunta: nuevaPregunta,
-        };
-        setPreguntas([nueva, ...preguntas]);
+        });
+
+        if (error) {
+            setToast({ message: "Error al enviar pregunta", type: "error" });
+            setTimeout(() => setToast(null), 2500);
+            return;
+        }
+
+        // Refrescar preguntas
+        const { data: preguntasData } = await supabase
+            .from('producto_preguntas')
+            .select('*')
+            .eq('producto_codigo', producto.codigo_caja)
+            .order('created_at', { ascending: false });
+
+        if (preguntasData) {
+            setPreguntas(preguntasData.map(p => ({
+                id: p.id,
+                nombre: p.nombre_cliente,
+                fecha: new Date(p.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }),
+                pregunta: p.pregunta,
+                respuesta: p.respuesta || undefined,
+                respondidoPor: p.respondido_por || undefined,
+            })));
+        }
+
         setNuevaPregunta("");
         setShowPreguntaInput(false);
         setToast({ message: "Pregunta enviada. Te responderemos pronto.", type: "success" });
+        setTimeout(() => setToast(null), 2500);
+    };
+
+    // ===== ENVIAR COMENTARIO =====
+    const handleEnviarComentario = async () => {
+        if (!nuevoComentario.texto.trim() || !producto) return;
+
+        if (!user) {
+            setToast({ message: "Inicia sesión para comentar", type: "info" });
+            setTimeout(() => setToast(null), 2500);
+            return;
+        }
+
+        const nombreCliente = user.user_metadata?.full_name || user.email?.split('@')[0] || "Cliente";
+        const inicial = nombreCliente.charAt(0).toUpperCase();
+
+        // Verificar si el usuario compró este producto
+        const { data: pedidoVerificado } = await supabase
+            .from('pedidos')
+            .select('id, items')
+            .eq('user_id', user.id);
+
+        const comproProducto = pedidoVerificado?.some(p =>
+            p.items?.some((item: any) => item.codigo_caja === producto.codigo_caja)
+        );
+
+        const { error } = await supabase.from('producto_comentarios').insert({
+            user_id: user.id,
+            producto_codigo: producto.codigo_caja,
+            nombre_cliente: nombreCliente,
+            avatar_inicial: inicial,
+            rating: nuevoComentario.rating,
+            texto: nuevoComentario.texto,
+            verificado: comproProducto || false,
+        });
+
+        if (error) {
+            setToast({ message: "Error al enviar comentario", type: "error" });
+            setTimeout(() => setToast(null), 2500);
+            return;
+        }
+
+        // Refrescar comentarios
+        const { data: comentariosData } = await supabase
+            .from('producto_comentarios')
+            .select('*')
+            .eq('producto_codigo', producto.codigo_caja)
+            .order('created_at', { ascending: false });
+
+        if (comentariosData) {
+            setComentarios(comentariosData.map(c => ({
+                id: c.id,
+                nombre: c.nombre_cliente,
+                avatar: c.avatar_inicial,
+                fecha: new Date(c.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }),
+                rating: c.rating,
+                texto: c.texto,
+                verificado: c.verificado,
+            })));
+        }
+
+        setNuevoComentario({ rating: 5, texto: "" });
+        setShowComentarioInput(false);
+        setToast({ message: "¡Gracias por tu comentario!", type: "success" });
         setTimeout(() => setToast(null), 2500);
     };
 
@@ -580,11 +826,7 @@ export default function ProductoDetallePage() {
 
                         {/* BOTONES DE INTERACCIÓN SOCIAL */}
                         <div className="flex gap-2 sm:gap-3">
-                            <button
-                                onClick={() => {
-                                    setLiked(!liked);
-                                    setLikesCount(liked ? likesCount - 1 : likesCount + 1);
-                                }}
+                            <button onClick={handleLike}
                                 className="flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl border transition-all text-sm"
                                 style={{
                                     backgroundColor: liked ? "rgba(212, 175, 55, 0.15)" : "rgba(255, 255, 255, 0.03)",
@@ -681,11 +923,61 @@ export default function ProductoDetallePage() {
                                 borderColor: "rgba(255, 255, 255, 0.08)",
                             }}
                         >
-                            <div className="p-4 border-b border-white/5">
-                                <h3 className="text-sm font-medium text-white/90">
-                                    Comentarios ({comentarios.length})
-                                </h3>
-                            </div>
+                            <AnimatePresence>
+    {showComentarioInput && (
+        <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden border-b border-white/5"
+        >
+            <div className="p-4 space-y-3">
+                {/* Selector de estrellas */}
+                <div className="flex items-center gap-2">
+                    <span className="text-xs text-white/50">Calificación:</span>
+                    <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                                key={star}
+                                onClick={() => setNuevoComentario({ ...nuevoComentario, rating: star })}
+                                className="text-2xl transition-transform hover:scale-110"
+                                style={{
+                                    color: star <= nuevoComentario.rating
+                                        ? "var(--kadi-gold)"
+                                        : "rgba(255,255,255,0.15)"
+                                }}
+                            >
+                                ★
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <textarea
+                    value={nuevoComentario.texto}
+                    onChange={(e) => setNuevoComentario({ ...nuevoComentario, texto: e.target.value })}
+                    placeholder="Cuéntanos tu experiencia con este producto..."
+                    rows={3}
+                    className="w-full rounded-lg p-3 text-sm text-white/90 placeholder-white/30 focus:outline-none resize-none transition"
+                    style={{
+                        backgroundColor: "rgba(15, 18, 21, 0.6)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                    }}
+                />
+                <button
+                    onClick={handleEnviarComentario}
+                    disabled={!nuevoComentario.texto.trim()}
+                    className="w-full py-2 rounded-lg text-sm font-medium text-white transition disabled:opacity-30"
+                    style={{
+                        background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
+                    }}
+                >
+                    Publicar comentario
+                </button>
+            </div>
+        </motion.div>
+    )}
+</AnimatePresence>
                             <div className="divide-y divide-white/5">
                                 {comentarios.map((c) => (
                                     <div key={c.id} className="p-4">
