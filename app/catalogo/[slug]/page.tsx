@@ -27,13 +27,12 @@ interface Producto {
     notas_instalacion?: string;
 }
 
-// ===== TIPOS PARA COMENTARIOS Y PREGUNTAS =====
 interface Comentario {
     id: string;
     nombre: string;
-    avatar: string; // inicial del nombre
+    avatar: string;
     fecha: string;
-    rating: number; // 1-5
+    rating: number;
     texto: string;
     verificado: boolean;
 }
@@ -47,7 +46,6 @@ interface Pregunta {
     respondidoPor?: string;
 }
 
-// ===== COMENTARIOS DE EJEMPLO (BOT) =====
 const COMENTARIOS_EJEMPLO: Comentario[] = [
     {
         id: "1",
@@ -78,7 +76,6 @@ const COMENTARIOS_EJEMPLO: Comentario[] = [
     },
 ];
 
-// ===== PREGUNTAS DE EJEMPLO (BOT) =====
 const PREGUNTAS_EJEMPLO: Pregunta[] = [
     {
         id: "1",
@@ -117,16 +114,14 @@ export default function ProductoDetallePage() {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [toast, setToast] = useState<{ message: string; type?: "success" | "error" | "info" } | null>(null);
 
-    // ===== ESTADOS PARA INTERACCIÓN SOCIAL =====
     const [liked, setLiked] = useState(false);
     const [saved, setSaved] = useState(false);
-    const [likesCount, setLikesCount] = useState(47); // Número simulado
+    const [likesCount, setLikesCount] = useState(47);
     const [showPreguntaInput, setShowPreguntaInput] = useState(false);
     const [nuevaPregunta, setNuevaPregunta] = useState("");
     const [preguntas, setPreguntas] = useState<Pregunta[]>(PREGUNTAS_EJEMPLO);
     const [comentarios] = useState<Comentario[]>(COMENTARIOS_EJEMPLO);
 
-    // Calcular promedio de estrellas
     const promedioRating = comentarios.length > 0
         ? comentarios.reduce((acc, c) => acc + c.rating, 0) / comentarios.length
         : 0;
@@ -181,7 +176,6 @@ export default function ProductoDetallePage() {
         setSelectedImage(allImages[prevIndex] || "");
     };
 
-    // ===== COMPARTIR =====
     const handleShare = async () => {
         const url = window.location.href;
         const shareData = {
@@ -193,18 +187,14 @@ export default function ProductoDetallePage() {
         if (navigator.share) {
             try {
                 await navigator.share(shareData);
-            } catch (err) {
-                // Usuario canceló
-            }
+            } catch (err) {}
         } else {
-            // Fallback: copiar al portapapeles
             await navigator.clipboard.writeText(url);
             setToast({ message: "Enlace copiado al portapapeles", type: "success" });
             setTimeout(() => setToast(null), 2500);
         }
     };
 
-    // ===== GUARDAR (favoritos) =====
     const handleSave = () => {
         setSaved(!saved);
         setToast({
@@ -214,7 +204,6 @@ export default function ProductoDetallePage() {
         setTimeout(() => setToast(null), 2000);
     };
 
-    // ===== ENVIAR PREGUNTA =====
     const handleEnviarPregunta = () => {
         if (!nuevaPregunta.trim()) return;
         const nueva: Pregunta = {
@@ -304,12 +293,46 @@ export default function ProductoDetallePage() {
                 </div>
             </header>
 
-            {/* Contenido */}
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
-                <div className="grid md:grid-cols-2 gap-6 sm:gap-12">
 
-                    {/* ===== COLUMNA IZQUIERDA: IMAGEN + INTERACCIÓN ===== */}
-                    <div className="space-y-3 sm:space-y-4 order-2 md:order-1">
+                {/* ============================================ */}
+                {/* 1. TÍTULO DEL PRODUCTO (arriba de todo)      */}
+                {/* ============================================ */}
+                <div className="mb-6 sm:mb-8">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-light mb-2">
+                        {producto.nombre}
+                    </h1>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <span className="text-white/40 text-xs sm:text-sm">
+                            Código: {producto.codigo_caja}
+                        </span>
+                        <span
+                            className="text-[10px] sm:text-xs px-2 sm:px-3 py-0.5 sm:py-1 rounded-full"
+                            style={{
+                                backgroundColor:
+                                    producto.tipo === "Reconstruida" ? "rgba(212, 175, 55, 0.15)" :
+                                    producto.tipo === "Nueva" ? "rgba(30, 74, 140, 0.25)" :
+                                    "rgba(161, 168, 176, 0.15)",
+                                color:
+                                    producto.tipo === "Reconstruida" ? "var(--kadi-gold)" :
+                                    producto.tipo === "Nueva" ? "var(--kadi-blue-bright)" :
+                                    "var(--text-secondary)",
+                            }}
+                        >
+                            {producto.tipo}
+                        </span>
+                        <span className="text-[10px] sm:text-xs text-white/40">
+                            Stock: {producto.stock} {producto.stock === 1 ? "unidad" : "unidades"}
+                        </span>
+                    </div>
+                </div>
+
+                {/* ============================================ */}
+                {/* 2. FILA 1: IMAGEN (izq) + PRECIO Y AGREGAR (der) */}
+                {/* ============================================ */}
+                <div className="grid md:grid-cols-2 gap-6 sm:gap-12 mb-8 sm:mb-12">
+                    {/* IMAGEN + CARRUSEL */}
+                    <div className="space-y-3 sm:space-y-4">
                         <div
                             className="relative w-full aspect-square max-h-[350px] sm:max-h-[500px] md:max-h-none rounded-2xl overflow-hidden border border-white/10"
                             style={{
@@ -395,10 +418,70 @@ export default function ProductoDetallePage() {
                                 </div>
                             </div>
                         )}
+                    </div>
 
-                        {/* ===== BOTONES DE INTERACCIÓN SOCIAL ===== */}
+                    {/* PRECIO + BOTÓN AGREGAR */}
+                    <div className="flex flex-col justify-center">
+                        <div
+                            className="rounded-2xl border p-6 sm:p-8"
+                            style={{
+                                backgroundColor: "rgba(255, 255, 255, 0.02)",
+                                borderColor: "rgba(255, 255, 255, 0.08)",
+                            }}
+                        >
+                            <p className="text-white/40 text-sm mb-1">Precio</p>
+                            <p className="text-4xl sm:text-5xl font-light mb-2">
+                                ${producto.precio.toLocaleString()}
+                            </p>
+                            <p className="text-white/30 text-xs mb-6">IVA INCLUIDO</p>
+
+                            <button
+                                onClick={() => {
+                                    addToCart(producto);
+                                    setToast({ message: `${producto.nombre} agregado al carrito`, type: "success" });
+                                    setTimeout(() => setToast(null), 2500);
+                                }}
+                                className="btn-agregar w-full text-white py-4 px-6 rounded-lg font-medium transition-all active:scale-95 relative overflow-hidden group"
+                                style={{
+                                    background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
+                                    boxShadow: "0 8px 20px rgba(30, 74, 140, 0.3)",
+                                }}
+                            >
+                                <span className="btn-line btn-line-top"></span>
+                                <span className="btn-line btn-line-right"></span>
+                                <span className="btn-line btn-line-bottom"></span>
+                                <span className="btn-line btn-line-left"></span>
+                                <span className="relative z-10 flex items-center justify-center gap-2 text-base">
+                                    🛒 Agregar al carrito
+                                </span>
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    const message = encodeURIComponent(
+                                        `Hola, tengo una consulta sobre ${producto.nombre} (Código: ${producto.codigo_caja})`
+                                    );
+                                    window.open(`https://wa.me/5573382923?text=${message}`, "_blank");
+                                }}
+                                className="w-full mt-3 bg-white/5 border border-white/10 rounded-lg py-3 text-white/70 hover:bg-white/10 transition text-sm"
+                            >
+                                💬 Consultar con un experto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ============================================ */}
+                {/* 3. FILA 2: INTERACCIÓN (izq) + ESPECIFICACIONES (der) */}
+                {/* ============================================ */}
+                <div className="grid md:grid-cols-2 gap-6 sm:gap-12">
+
+                    {/* ===== COLUMNA IZQUIERDA: INTERACCIÓN SOCIAL ===== */}
+                    {/* En móvil va al final (order-2), en desktop va izquierda (order-1) */}
+                    <div className="space-y-4 order-2 md:order-1">
+
+                        {/* BOTONES DE INTERACCIÓN SOCIAL */}
                         <div className="flex gap-2 sm:gap-3">
-                            {/* LIKE */}
                             <button
                                 onClick={() => {
                                     setLiked(!liked);
@@ -415,7 +498,6 @@ export default function ProductoDetallePage() {
                                 <span className="font-medium">{likesCount}</span>
                             </button>
 
-                            {/* COMPARTIR */}
                             <button
                                 onClick={handleShare}
                                 className="flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl border transition-all text-sm text-white/60 hover:text-white"
@@ -438,7 +520,6 @@ export default function ProductoDetallePage() {
                                 <span className="font-medium">Compartir</span>
                             </button>
 
-                            {/* GUARDAR */}
                             <button
                                 onClick={handleSave}
                                 className="flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl border transition-all text-sm"
@@ -455,7 +536,7 @@ export default function ProductoDetallePage() {
                             </button>
                         </div>
 
-                        {/* ===== CALIFICACIÓN CON ESTRELLAS ===== */}
+                        {/* CALIFICACIÓN */}
                         <div
                             className="rounded-xl border p-4 sm:p-5"
                             style={{
@@ -494,7 +575,7 @@ export default function ProductoDetallePage() {
                             </div>
                         </div>
 
-                        {/* ===== SECCIÓN DE COMENTARIOS ===== */}
+                        {/* COMENTARIOS */}
                         <div
                             className="rounded-xl border overflow-hidden"
                             style={{
@@ -561,7 +642,7 @@ export default function ProductoDetallePage() {
                             </div>
                         </div>
 
-                        {/* ===== SECCIÓN DE PREGUNTAS ===== */}
+                        {/* PREGUNTAS */}
                         <div
                             className="rounded-xl border overflow-hidden"
                             style={{
@@ -582,7 +663,6 @@ export default function ProductoDetallePage() {
                                 </button>
                             </div>
 
-                            {/* Input para nueva pregunta */}
                             <AnimatePresence>
                                 {showPreguntaInput && (
                                     <motion.div
@@ -660,61 +740,38 @@ export default function ProductoDetallePage() {
                         </div>
                     </div>
 
-                    {/* ===== COLUMNA DERECHA: INFORMACIÓN (sin cambios) ===== */}
-                   <div className="order-1 md:order-2">
-    <h1 className="text-2xl sm:text-3xl font-light mb-2">{producto.nombre}</h1>
-                        <p className="text-white/40 text-xs sm:text-sm mb-4">Código: {producto.codigo_caja}</p>
-
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                            <span
-                                className="text-[10px] sm:text-xs px-2 sm:px-3 py-0.5 sm:py-1 rounded-full"
-                                style={{
-                                    backgroundColor:
-                                        producto.tipo === "Reconstruida" ? "rgba(212, 175, 55, 0.15)" :
-                                        producto.tipo === "Nueva" ? "rgba(30, 74, 140, 0.25)" :
-                                        "rgba(161, 168, 176, 0.15)",
-                                    color:
-                                        producto.tipo === "Reconstruida" ? "var(--kadi-gold)" :
-                                        producto.tipo === "Nueva" ? "var(--kadi-blue-bright)" :
-                                        "var(--text-secondary)",
-                                }}
-                            >
-                                {producto.tipo}
-                            </span>
-                            <span className="text-[10px] sm:text-xs text-white/30">
-                                Stock: {producto.stock} {producto.stock === 1 ? "unidad" : "unidades"}
-                            </span>
-                        </div>
-
+                    {/* ===== COLUMNA DERECHA: ESPECIFICACIONES ===== */}
+                    {/* En móvil va primero (order-1), en desktop va derecha (order-2) */}
+                    <div className="order-1 md:order-2">
                         {producto.descripcion && (
-                            <p className="text-white/60 text-sm sm:text-base leading-relaxed mb-4 sm:mb-6">
+                            <p className="text-white/60 text-sm sm:text-base leading-relaxed mb-6">
                                 {producto.descripcion}
                             </p>
                         )}
 
                         {(producto.marca_vehiculo && producto.marca_vehiculo.length > 0) ||
                          (producto.modelo_vehiculo && producto.modelo_vehiculo.length > 0) ? (
-                            <div className="border-t border-white/10 pt-3 sm:pt-4 mb-3 sm:mb-4">
-                                <h3 className="text-xs sm:text-sm font-medium text-white/70 mb-1 sm:mb-2">📌 Compatibilidad</h3>
+                            <div className="border-t border-white/10 pt-4 mb-6">
+                                <h3 className="text-sm font-medium text-white/70 mb-3">📌 Compatibilidad</h3>
                                 {producto.marca_vehiculo && producto.marca_vehiculo.length > 0 && (
-                                    <p className="text-xs sm:text-sm text-white/40">Marcas: {producto.marca_vehiculo.join(", ")}</p>
+                                    <p className="text-sm text-white/50 mb-1">Marcas: {producto.marca_vehiculo.join(", ")}</p>
                                 )}
                                 {producto.modelo_vehiculo && producto.modelo_vehiculo.length > 0 && (
-                                    <p className="text-xs sm:text-sm text-white/40">Modelos: {producto.modelo_vehiculo.join(", ")}</p>
+                                    <p className="text-sm text-white/50 mb-1">Modelos: {producto.modelo_vehiculo.join(", ")}</p>
                                 )}
                                 {(producto.año_inicio || producto.año_fin) && (
-                                    <p className="text-xs sm:text-sm text-white/40">Años: {producto.año_inicio} - {producto.año_fin}</p>
+                                    <p className="text-sm text-white/50">Años: {producto.año_inicio} - {producto.año_fin}</p>
                                 )}
                             </div>
                         ) : null}
 
                         {producto.especificaciones && Object.keys(producto.especificaciones).length > 0 && (
-                            <div className="border-t border-white/10 pt-3 sm:pt-4 mb-3 sm:mb-4">
-                                <h3 className="text-xs sm:text-sm font-medium text-white/70 mb-1 sm:mb-2">⚙️ Especificaciones técnicas</h3>
-                                <ul className="space-y-0.5 sm:space-y-1">
+                            <div className="border-t border-white/10 pt-4 mb-6">
+                                <h3 className="text-sm font-medium text-white/70 mb-3">⚙️ Especificaciones técnicas</h3>
+                                <ul className="space-y-1.5">
                                     {Object.entries(producto.especificaciones).map(([key, value]) => (
-                                        <li key={key} className="text-xs sm:text-sm text-white/40">
-                                            <span className="text-white/60 capitalize">{key.replace(/_/g, " ")}:</span> {String(value)}
+                                        <li key={key} className="text-sm text-white/50">
+                                            <span className="text-white/70 capitalize">{key.replace(/_/g, " ")}:</span> {String(value)}
                                         </li>
                                     ))}
                                 </ul>
@@ -722,64 +779,56 @@ export default function ProductoDetallePage() {
                         )}
 
                         {producto.notas_instalacion && (
-                            <div className="border-t border-white/10 pt-3 sm:pt-4 mb-4 sm:mb-6">
-                                <h3 className="text-xs sm:text-sm font-medium text-white/70 mb-1 sm:mb-2">🔧 Notas de instalación</h3>
-                                <p className="text-xs sm:text-sm text-white/40">{producto.notas_instalacion}</p>
+                            <div className="border-t border-white/10 pt-4">
+                                <h3 className="text-sm font-medium text-white/70 mb-3">🔧 Notas de instalación</h3>
+                                <p className="text-sm text-white/50 leading-relaxed">{producto.notas_instalacion}</p>
                             </div>
                         )}
-
-                        <div className="border-t border-white/10 pt-4 sm:pt-6">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 sm:gap-6 mb-4 sm:mb-6">
-                                <div>
-                                    <p className="text-white/30 text-xs sm:text-sm">Precio</p>
-                                    <p className="text-2xl sm:text-4xl font-light">${producto.precio.toLocaleString()}</p>
-                                    <p className="text-white/20 text-[10px] sm:text-xs mt-0.5 sm:mt-1">IVA INCLUIDO</p>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        addToCart(producto);
-                                        setToast({ message: `${producto.nombre} agregado al carrito`, type: "success" });
-                                        setTimeout(() => setToast(null), 2500);
-                                    }}
-                                    className="btn-agregar w-full sm:w-auto text-white py-3 px-6 sm:px-8 rounded-lg font-medium transition-all active:scale-95 relative overflow-hidden group"
-                                    style={{
-                                        background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
-                                        boxShadow: "0 8px 20px rgba(30, 74, 140, 0.3)",
-                                    }}
-                                >
-                                    <span className="btn-line btn-line-top"></span>
-                                    <span className="btn-line btn-line-right"></span>
-                                    <span className="btn-line btn-line-bottom"></span>
-                                    <span className="btn-line btn-line-left"></span>
-                                    <span className="relative z-10 flex items-center justify-center gap-2 text-sm sm:text-base">
-                                        🛒 Agregar
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="mt-2 sm:mt-4">
-                            <button
-                                onClick={() => {
-                                    const message = encodeURIComponent(
-                                        `Hola, tengo una consulta sobre ${producto.nombre} (Código: ${producto.codigo_caja})`
-                                    );
-                                    window.open(`https://wa.me/5573382923?text=${message}`, "_blank");
-                                }}
-                                className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 sm:py-3 text-white/70 hover:bg-white/10 transition text-xs sm:text-sm"
-                            >
-                                Consultar con un experto
-                            </button>
-                        </div>
                     </div>
                 </div>
-                {toast && (
-                    <Toast
-                        message={toast.message}
-                        type={toast.type}
-                        onClose={() => setToast(null)}
-                    />
-                )}
+            </div>
+
+           {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
+
+            {/* ===== BARRA STICKY EN MÓVIL ===== */}
+            <div
+                className="fixed bottom-0 left-0 right-0 z-40 md:hidden px-4 py-3 border-t backdrop-blur-xl flex items-center gap-3"
+                style={{
+                    backgroundColor: "rgba(15, 18, 21, 0.95)",
+                    borderColor: "rgba(212, 175, 55, 0.2)",
+                }}
+            >
+                <div className="flex-shrink-0">
+                    <p className="text-[10px] text-white/40 uppercase tracking-wider">Precio</p>
+                    <p className="text-lg font-light text-white">${producto.precio.toLocaleString()}</p>
+                </div>
+
+                <button
+                    onClick={() => {
+                        addToCart(producto);
+                        setToast({ message: `${producto.nombre} agregado al carrito`, type: "success" });
+                        setTimeout(() => setToast(null), 2500);
+                    }}
+                    className="btn-agregar flex-1 text-white py-3 px-4 rounded-lg font-medium transition-all active:scale-95 relative overflow-hidden"
+                    style={{
+                        background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
+                        boxShadow: "0 8px 20px rgba(30, 74, 140, 0.4)",
+                    }}
+                >
+                    <span className="btn-line btn-line-top"></span>
+                    <span className="btn-line btn-line-right"></span>
+                    <span className="btn-line btn-line-bottom"></span>
+                    <span className="btn-line btn-line-left"></span>
+                    <span className="relative z-10 flex items-center justify-center gap-2 text-sm font-semibold">
+                        🛒 Agregar
+                    </span>
+                </button>
             </div>
 
             {/* ===== ESTILOS PARA EL BOTÓN CON BORDE NEÓN ANIMADO ===== */}
