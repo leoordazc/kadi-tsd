@@ -330,22 +330,27 @@ export default function ProductoDetallePage() {
                                     <p className="text-white/20 text-[10px] sm:text-xs mt-0.5 sm:mt-1">IVA INCLUIDO</p>
                                 </div>
                                 <button
-                                    onClick={() => {
-                                        addToCart(producto);
-                                        setToast({ message: `${producto.nombre} agregado al carrito`, type: "success" });
-                                        setTimeout(() => setToast(null), 2500);
-                                    }}
-                                    className="w-full sm:w-auto text-white py-2.5 px-6 sm:px-8 rounded-lg font-medium transition-all active:scale-95 relative overflow-hidden group"
-                                    style={{
-                                        background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
-                                        boxShadow: "0 8px 20px rgba(30, 74, 140, 0.3)",
-                                    }}
-                                >
-                                    <span className="relative z-10 flex items-center justify-center gap-2 text-sm sm:text-base">
-                                        🛒 Agregar
-                                    </span>
-                                    <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-active:translate-x-0 transition-transform duration-300 ease-out" />
-                                </button>
+    onClick={() => {
+        addToCart(producto);
+        setToast({ message: `${producto.nombre} agregado al carrito`, type: "success" });
+        setTimeout(() => setToast(null), 2500);
+    }}
+    className="btn-agregar w-full sm:w-auto text-white py-3 px-6 sm:px-8 rounded-lg font-medium transition-all active:scale-95 relative overflow-hidden group"
+    style={{
+        background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
+        boxShadow: "0 8px 20px rgba(30, 74, 140, 0.3)",
+    }}
+>
+    {/* 4 líneas animadas del borde */}
+    <span className="btn-line btn-line-top"></span>
+    <span className="btn-line btn-line-right"></span>
+    <span className="btn-line btn-line-bottom"></span>
+    <span className="btn-line btn-line-left"></span>
+
+    <span className="relative z-10 flex items-center justify-center gap-2 text-sm sm:text-base">
+        🛒 Agregar
+    </span>
+</button>
                             </div>
                         </div>
 
@@ -371,6 +376,92 @@ export default function ProductoDetallePage() {
                         onClose={() => setToast(null)}
                     />
                 )}
+                <style jsx>{`
+    /* ===== BOTÓN CON BORDE NEÓN ANIMADO (paleta KADI) ===== */
+    .btn-agregar {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-line {
+        position: absolute;
+        display: block;
+        pointer-events: none;
+    }
+
+    /* Línea superior: izquierda → derecha */
+    .btn-line-top {
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+        animation: btnAnimate1 2s linear infinite;
+    }
+
+    /* Línea derecha: arriba → abajo */
+    .btn-line-right {
+        top: -100%;
+        right: 0;
+        width: 2px;
+        height: 100%;
+        background: linear-gradient(180deg, transparent, #D4AF37, transparent);
+        animation: btnAnimate2 2s linear infinite;
+        animation-delay: 0.5s;
+    }
+
+    /* Línea inferior: derecha → izquierda */
+    .btn-line-bottom {
+        bottom: 0;
+        right: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(270deg, transparent, #D4AF37, transparent);
+        animation: btnAnimate3 2s linear infinite;
+        animation-delay: 1s;
+    }
+
+    /* Línea izquierda: abajo → arriba */
+    .btn-line-left {
+        bottom: -100%;
+        left: 0;
+        width: 2px;
+        height: 100%;
+        background: linear-gradient(360deg, transparent, #D4AF37, transparent);
+        animation: btnAnimate4 2s linear infinite;
+        animation-delay: 1.5s;
+    }
+
+    @keyframes btnAnimate1 {
+        0% { left: -100%; }
+        50%, 100% { left: 100%; }
+    }
+    @keyframes btnAnimate2 {
+        0% { top: -100%; }
+        50%, 100% { top: 100%; }
+    }
+    @keyframes btnAnimate3 {
+        0% { right: -100%; }
+        50%, 100% { right: 100%; }
+    }
+    @keyframes btnAnimate4 {
+        0% { bottom: -100%; }
+        50%, 100% { bottom: 100%; }
+    }
+
+    /* Hover: ilumina el borde completo y aumenta la sombra */
+    .btn-agregar:hover {
+        box-shadow: 
+            0 8px 20px rgba(30, 74, 140, 0.4),
+            0 0 20px rgba(212, 175, 55, 0.4),
+            0 0 40px rgba(212, 175, 55, 0.2);
+    }
+
+    /* Efecto extra al presionar */
+    .btn-agregar:active {
+        transform: scale(0.96);
+    }
+`}</style>
             </div>
         </main>
     );
