@@ -309,7 +309,7 @@ export default function ProductoDetallePage() {
                 <div className="grid md:grid-cols-2 gap-6 sm:gap-12">
 
                     {/* ===== COLUMNA IZQUIERDA: IMAGEN + INTERACCIÓN ===== */}
-                    <div className="space-y-3 sm:space-y-4">
+                    <div className="space-y-3 sm:space-y-4 order-2 md:order-1">
                         <div
                             className="relative w-full aspect-square max-h-[350px] sm:max-h-[500px] md:max-h-none rounded-2xl overflow-hidden border border-white/10"
                             style={{
@@ -661,8 +661,8 @@ export default function ProductoDetallePage() {
                     </div>
 
                     {/* ===== COLUMNA DERECHA: INFORMACIÓN (sin cambios) ===== */}
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-light mb-2">{producto.nombre}</h1>
+                   <div className="order-1 md:order-2">
+    <h1 className="text-2xl sm:text-3xl font-light mb-2">{producto.nombre}</h1>
                         <p className="text-white/40 text-xs sm:text-sm mb-4">Código: {producto.codigo_caja}</p>
 
                         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
