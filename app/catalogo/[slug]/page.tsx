@@ -420,7 +420,7 @@ export default function ProductoDetallePage() {
                         )}
                     </div>
 
-                    {/* PRECIO + BOTÓN AGREGAR */}
+                                        {/* PRECIO + BOTÓN AGREGAR + MÉTODOS DE PAGO */}
                     <div className="flex flex-col justify-center">
                         <div
                             className="rounded-2xl border p-6 sm:p-8"
@@ -434,6 +434,25 @@ export default function ProductoDetallePage() {
                                 ${producto.precio.toLocaleString()}
                             </p>
                             <p className="text-white/30 text-xs mb-6">IVA INCLUIDO</p>
+
+                            {/* ===== MENSAJE MSI ===== */}
+                            <div
+                                className="rounded-xl p-4 mb-5 flex items-start gap-3"
+                                style={{
+                                    backgroundColor: "rgba(212, 175, 55, 0.08)",
+                                    border: "1px solid rgba(212, 175, 55, 0.25)",
+                                }}
+                            >
+                                <span className="text-2xl flex-shrink-0">💳</span>
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium text-white/90 mb-1">
+                                        ¡Paga en hasta <span style={{ color: "var(--kadi-gold)" }}>24 cuotas sin interés</span>!
+                                    </p>
+                                    <p className="text-xs text-white/50 leading-relaxed">
+                                        Disponible con tarjetas de crédito participantes. Consulta plazos al finalizar la compra.
+                                    </p>
+                                </div>
+                            </div>
 
                             <button
                                 onClick={() => {
@@ -467,9 +486,84 @@ export default function ProductoDetallePage() {
                             >
                                 💬 Consultar con un experto
                             </button>
+
+                            {/* ===== MÉTODOS DE PAGO ACEPTADOS ===== */}
+                            <div className="mt-6 pt-5 border-t border-white/10">
+                                <p className="text-xs text-white/40 uppercase tracking-wider mb-4">
+                                    Métodos de pago aceptados
+                                </p>
+
+                                {/* Meses sin Tarjeta (Mercado Crédito) */}
+                                <div className="mb-4">
+                                    <p className="text-xs text-white/50 mb-2">Meses sin Tarjeta</p>
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            className="h-7 px-3 rounded-md flex items-center text-[10px] font-semibold"
+                                            style={{
+                                                backgroundColor: "rgba(0, 158, 227, 0.15)",
+                                                border: "1px solid rgba(0, 158, 227, 0.3)",
+                                                color: "#009ee3",
+                                            }}
+                                        >
+                                            Mercado Pago
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Tarjetas de crédito */}
+                                <div className="mb-4">
+                                    <p className="text-xs text-white/50 mb-2">Tarjetas de crédito</p>
+                                    <div className="flex items-center gap-3">
+                                        {/* Mastercard */}
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-7 h-4 rounded-sm bg-gradient-to-r from-red-500 to-yellow-500"></div>
+                                            <span className="text-[10px] text-white/50">Mastercard</span>
+                                        </div>
+                                        {/* American Express */}
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-7 h-4 rounded-sm bg-blue-600 flex items-center justify-center">
+                                                <span className="text-[6px] text-white font-bold">AMEX</span>
+                                            </div>
+                                        </div>
+                                        {/* Visa */}
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-7 h-4 rounded-sm bg-blue-800 flex items-center justify-center">
+                                                <span className="text-[6px] text-white font-bold">VISA</span>
+                                                                           </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                                {/* Tarjetas de débito */}
+                                <div>
+                                    <p className="text-xs text-white/50 mb-2">Tarjetas de débito</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-7 h-4 rounded-sm bg-gradient-to-r from-red-500 to-yellow-500"></div>
+                                            <span className="text-[10px] text-white/50">Mastercard</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-7 h-4 rounded-sm bg-blue-800 flex items-center justify-center">
+                                                <span className="text-[6px] text-white font-bold">VISA</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="text-[10px] text-white/30 mt-2">
+                                        Aceptamos débito Visa y Mastercard de cualquier banco.
+                                    </p>
+                                </div>
+
+                                {/* Badge de seguridad */}
+                                <div className="mt-5 pt-4 border-t border-white/5 flex items-center gap-2">
+                                    <span className="text-xs">🔒</span>
+                                    <span className="text-[10px] text-white/30">
+                                        Procesado de forma segura por Mercado Pago
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 {/* ============================================ */}
                 {/* 3. FILA 2: INTERACCIÓN (izq) + ESPECIFICACIONES (der) */}
