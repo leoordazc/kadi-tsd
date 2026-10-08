@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -46,66 +46,8 @@ interface Pregunta {
     respondidoPor?: string;
 }
 
-const COMENTARIOS_EJEMPLO: Comentario[] = [
-    {
-        id: "1",
-        nombre: "Carlos M.",
-        avatar: "C",
-        fecha: "Hace 2 semanas",
-        rating: 5,
-        texto: "Excelente calidad, llegó bien empacada y funcionó perfecto en mi Beat 2019. El envío fue rápido y el folio me sirvió para dar seguimiento.",
-        verificado: true,
-    },
-    {
-        id: "2",
-        nombre: "Roberto H.",
-        avatar: "R",
-        fecha: "Hace 1 mes",
-        rating: 5,
-        texto: "Ya llevo 3 compras con KADI y siempre buena atención. La transmisión quedó como nueva, 100% recomendado.",
-        verificado: true,
-    },
-    {
-        id: "3",
-        nombre: "Luis Fernando",
-        avatar: "L",
-        fecha: "Hace 1 mes",
-        rating: 4,
-        texto: "Buena pieza, aunque tardó un día más de lo esperado. La calidad es indiscutible y el precio muy justo.",
-        verificado: true,
-    },
-];
-
-const PREGUNTAS_EJEMPLO: Pregunta[] = [
-    {
-        id: "1",
-        nombre: "Miguel A.",
-        fecha: "Hace 3 días",
-        pregunta: "¿Esta transmisión le queda a un Spark Classic 2015 motor 1.2?",
-        respuesta: "Sí, es compatible directamente con Spark Classic 2011-2017 motor 1.2L. Cualquier duda adicional puedes consultarnos por WhatsApp.",
-        respondidoPor: "KADI TS&D",
-    },
-    {
-        id: "2",
-        nombre: "Alejandra R.",
-        fecha: "Hace 1 semana",
-        pregunta: "¿Manejan envío a Monterrey? ¿Cuánto tarda?",
-        respuesta: "Sí, enviamos a todo México. A Monterrey llega en 2-3 días hábiles con guía rastreable.",
-        respondidoPor: "KADI TS&D",
-    },
-    {
-        id: "3",
-        nombre: "Diego",
-        fecha: "Hace 2 semanas",
-        pregunta: "¿Qué incluye el paquete? ¿Viene con aceite?",
-        respuesta: "La transmisión va sin aceite por cuestiones de logística. Recomendamos aceite 75W-85 GL-4 sintético como indica la cláusula de garantía.",
-        respondidoPor: "KADI TS&D",
-    },
-];
-
 export default function ProductoDetallePage() {
     const params = useParams();
-    const router = useRouter();
     const { addToCart } = useCart();
     const [producto, setProducto] = useState<Producto | null>(null);
     const [loading, setLoading] = useState(true);
@@ -125,7 +67,7 @@ export default function ProductoDetallePage() {
     const [nuevaPregunta, setNuevaPregunta] = useState("");
     const [showComentarioInput, setShowComentarioInput] = useState(false);
     const [nuevoComentario, setNuevoComentario] = useState({ rating: 5, texto: "" });
-    const [cargandoInteracciones, setCargandoInteracciones] = useState(true);
+
     const promedioRating = comentarios.length > 0
         ? comentarios.reduce((acc, c) => acc + c.rating, 0) / comentarios.length
         : 0;
@@ -135,6 +77,7 @@ export default function ProductoDetallePage() {
         ...(producto.imagenes_extra || [])
     ].filter((img): img is string => Boolean(img) && typeof img === 'string') : [];
 
+    // ===== CARGAR PRODUCTO =====
     useEffect(() => {
         const fetchProducto = async () => {
             try {
@@ -166,7 +109,7 @@ export default function ProductoDetallePage() {
         }
     }, [params.slug]);
 
-        // ===== CARGAR USUARIO ACTUAL =====
+    // ===== CARGAR USUARIO ACTUAL =====
     useEffect(() => {
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
@@ -183,15 +126,13 @@ export default function ProductoDetallePage() {
         };
     }, []);
 
-    // ===== CARGAR INTERACCIONES (likes, comentarios, preguntas) =====
+    // ===== CARGAR INTERACCIONES =====
     useEffect(() => {
         if (!producto?.codigo_caja) return;
 
         const cargarInteracciones = async () => {
-            setCargandoInteracciones(true);
             const codigo = producto.codigo_caja;
 
-            // Likes totales
             const { count: likesTotal } = await supabase
                 .from('producto_interacciones')
                 .select('*', { count: 'exact', head: true })
@@ -200,7 +141,6 @@ export default function ProductoDetallePage() {
 
             setLikesCount(likesTotal || 0);
 
-            // ¿Yo le di like?
             if (user) {
                 const { data: miLike } = await supabase
                     .from('producto_interacciones')
@@ -221,7 +161,6 @@ export default function ProductoDetallePage() {
                 setSaved(!!miFav);
             }
 
-            // Comentarios
             const { data: comentariosData } = await supabase
                 .from('producto_comentarios')
                 .select('*')
@@ -240,7 +179,6 @@ export default function ProductoDetallePage() {
                 })));
             }
 
-            // Preguntas
             const { data: preguntasData } = await supabase
                 .from('producto_preguntas')
                 .select('*')
@@ -257,8 +195,6 @@ export default function ProductoDetallePage() {
                     respondidoPor: p.respondido_por || undefined,
                 })));
             }
-
-            setCargandoInteracciones(false);
         };
 
         cargarInteracciones();
@@ -297,7 +233,6 @@ export default function ProductoDetallePage() {
         }
     };
 
-    // ===== TOGGLE LIKE =====
     const handleLike = async () => {
         if (!user) {
             setToast({ message: "Inicia sesión para dar like", type: "info" });
@@ -326,7 +261,6 @@ export default function ProductoDetallePage() {
         }
     };
 
-    // ===== TOGGLE GUARDAR (favoritos) =====
     const handleSave = async () => {
         if (!user) {
             setToast({ message: "Inicia sesión para guardar en favoritos", type: "info" });
@@ -356,7 +290,6 @@ export default function ProductoDetallePage() {
         setTimeout(() => setToast(null), 2000);
     };
 
-    // ===== ENVIAR PREGUNTA =====
     const handleEnviarPregunta = async () => {
         if (!nuevaPregunta.trim() || !producto) return;
 
@@ -381,7 +314,6 @@ export default function ProductoDetallePage() {
             return;
         }
 
-        // Refrescar preguntas
         const { data: preguntasData } = await supabase
             .from('producto_preguntas')
             .select('*')
@@ -405,7 +337,6 @@ export default function ProductoDetallePage() {
         setTimeout(() => setToast(null), 2500);
     };
 
-    // ===== ENVIAR COMENTARIO =====
     const handleEnviarComentario = async () => {
         if (!nuevoComentario.texto.trim() || !producto) return;
 
@@ -418,7 +349,6 @@ export default function ProductoDetallePage() {
         const nombreCliente = user.user_metadata?.full_name || user.email?.split('@')[0] || "Cliente";
         const inicial = nombreCliente.charAt(0).toUpperCase();
 
-        // Verificar si el usuario compró este producto
         const { data: pedidoVerificado } = await supabase
             .from('pedidos')
             .select('id, items')
@@ -444,7 +374,6 @@ export default function ProductoDetallePage() {
             return;
         }
 
-        // Refrescar comentarios
         const { data: comentariosData } = await supabase
             .from('producto_comentarios')
             .select('*')
@@ -509,7 +438,7 @@ export default function ProductoDetallePage() {
 
     return (
         <main
-            className="min-h-screen text-white"
+            className="min-h-screen text-white pb-40 md:pb-0"
             style={{ backgroundColor: "var(--bg-primary)" }}
         >
             {/* Header */}
@@ -545,9 +474,7 @@ export default function ProductoDetallePage() {
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
 
-                {/* ============================================ */}
-                {/* 1. TÍTULO DEL PRODUCTO (arriba de todo)      */}
-                {/* ============================================ */}
+                {/* 1. TÍTULO */}
                 <div className="mb-6 sm:mb-8">
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-light mb-2">
                         {producto.nombre}
@@ -577,11 +504,10 @@ export default function ProductoDetallePage() {
                     </div>
                 </div>
 
-                {/* ============================================ */}
-                {/* 2. FILA 1: IMAGEN (izq) + PRECIO Y AGREGAR (der) */}
-                {/* ============================================ */}
+                {/* 2. FILA 1: IMAGEN + PRECIO/AGREGAR */}
                 <div className="grid md:grid-cols-2 gap-6 sm:gap-12 mb-8 sm:mb-12">
-                    {/* IMAGEN + CARRUSEL */}
+
+                    {/* Imagen + carrusel */}
                     <div className="space-y-3 sm:space-y-4">
                         <div
                             className="relative w-full aspect-square max-h-[350px] sm:max-h-[500px] md:max-h-none rounded-2xl overflow-hidden border border-white/10"
@@ -632,7 +558,6 @@ export default function ProductoDetallePage() {
                             )}
                         </div>
 
-                        {/* Miniaturas */}
                         {allImages.length > 1 && (
                             <div className="miniaturas-scroll">
                                 <div className="miniaturas-track">
@@ -670,7 +595,7 @@ export default function ProductoDetallePage() {
                         )}
                     </div>
 
-                                        {/* PRECIO + BOTÓN AGREGAR + MÉTODOS DE PAGO */}
+                    {/* Precio + botón + métodos de pago */}
                     <div className="flex flex-col justify-center">
                         <div
                             className="rounded-2xl border p-6 sm:p-8"
@@ -685,7 +610,7 @@ export default function ProductoDetallePage() {
                             </p>
                             <p className="text-white/30 text-xs mb-6">IVA INCLUIDO</p>
 
-                            {/* ===== MENSAJE MSI ===== */}
+                            {/* MSI */}
                             <div
                                 className="rounded-xl p-4 mb-5 flex items-start gap-3"
                                 style={{
@@ -737,13 +662,12 @@ export default function ProductoDetallePage() {
                                 💬 Consultar con un experto
                             </button>
 
-                            {/* ===== MÉTODOS DE PAGO ACEPTADOS ===== */}
+                            {/* Métodos de pago */}
                             <div className="mt-6 pt-5 border-t border-white/10">
                                 <p className="text-xs text-white/40 uppercase tracking-wider mb-4">
                                     Métodos de pago aceptados
                                 </p>
 
-                                {/* Meses sin Tarjeta (Mercado Crédito) */}
                                 <div className="mb-4">
                                     <p className="text-xs text-white/50 mb-2">Meses sin Tarjeta</p>
                                     <div className="flex items-center gap-2">
@@ -760,32 +684,26 @@ export default function ProductoDetallePage() {
                                     </div>
                                 </div>
 
-                                {/* Tarjetas de crédito */}
                                 <div className="mb-4">
                                     <p className="text-xs text-white/50 mb-2">Tarjetas de crédito</p>
                                     <div className="flex items-center gap-3">
-                                        {/* Mastercard */}
                                         <div className="flex items-center gap-1.5">
                                             <div className="w-7 h-4 rounded-sm bg-gradient-to-r from-red-500 to-yellow-500"></div>
                                             <span className="text-[10px] text-white/50">Mastercard</span>
                                         </div>
-                                        {/* American Express */}
                                         <div className="flex items-center gap-1.5">
                                             <div className="w-7 h-4 rounded-sm bg-blue-600 flex items-center justify-center">
                                                 <span className="text-[6px] text-white font-bold">AMEX</span>
                                             </div>
                                         </div>
-                                        {/* Visa */}
                                         <div className="flex items-center gap-1.5">
                                             <div className="w-7 h-4 rounded-sm bg-blue-800 flex items-center justify-center">
                                                 <span className="text-[6px] text-white font-bold">VISA</span>
-                                                                           </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                {/* Tarjetas de débito */}
                                 <div>
                                     <p className="text-xs text-white/50 mb-2">Tarjetas de débito</p>
                                     <div className="flex items-center gap-3">
@@ -804,7 +722,6 @@ export default function ProductoDetallePage() {
                                     </p>
                                 </div>
 
-                                {/* Badge de seguridad */}
                                 <div className="mt-5 pt-4 border-t border-white/5 flex items-center gap-2">
                                     <span className="text-xs">🔒</span>
                                     <span className="text-[10px] text-white/30">
@@ -814,19 +731,18 @@ export default function ProductoDetallePage() {
                             </div>
                         </div>
                     </div>
+                </div>
 
-                {/* ============================================ */}
-                {/* 3. FILA 2: INTERACCIÓN (izq) + ESPECIFICACIONES (der) */}
-                {/* ============================================ */}
+                {/* 3. FILA 2: INTERACCIÓN + ESPECIFICACIONES */}
                 <div className="grid md:grid-cols-2 gap-6 sm:gap-12">
 
-                    {/* ===== COLUMNA IZQUIERDA: INTERACCIÓN SOCIAL ===== */}
-                    {/* En móvil va al final (order-2), en desktop va izquierda (order-1) */}
+                    {/* Columna izquierda: interacción social (en móvil va al final) */}
                     <div className="space-y-4 order-2 md:order-1">
 
-                        {/* BOTONES DE INTERACCIÓN SOCIAL */}
+                        {/* Botones de interacción */}
                         <div className="flex gap-2 sm:gap-3">
-                            <button onClick={handleLike}
+                            <button
+                                onClick={handleLike}
                                 className="flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl border transition-all text-sm"
                                 style={{
                                     backgroundColor: liked ? "rgba(212, 175, 55, 0.15)" : "rgba(255, 255, 255, 0.03)",
@@ -876,7 +792,7 @@ export default function ProductoDetallePage() {
                             </button>
                         </div>
 
-                        {/* CALIFICACIÓN */}
+                        {/* Calificación */}
                         <div
                             className="rounded-xl border p-4 sm:p-5"
                             style={{
@@ -915,7 +831,7 @@ export default function ProductoDetallePage() {
                             </div>
                         </div>
 
-                        {/* COMENTARIOS */}
+                        {/* Comentarios */}
                         <div
                             className="rounded-xl border overflow-hidden"
                             style={{
@@ -923,116 +839,136 @@ export default function ProductoDetallePage() {
                                 borderColor: "rgba(255, 255, 255, 0.08)",
                             }}
                         >
-                            <AnimatePresence>
-    {showComentarioInput && (
-        <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-b border-white/5"
-        >
-            <div className="p-4 space-y-3">
-                {/* Selector de estrellas */}
-                <div className="flex items-center gap-2">
-                    <span className="text-xs text-white/50">Calificación:</span>
-                    <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                                key={star}
-                                onClick={() => setNuevoComentario({ ...nuevoComentario, rating: star })}
-                                className="text-2xl transition-transform hover:scale-110"
-                                style={{
-                                    color: star <= nuevoComentario.rating
-                                        ? "var(--kadi-gold)"
-                                        : "rgba(255,255,255,0.15)"
-                                }}
-                            >
-                                ★
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                            <div className="p-4 border-b border-white/5 flex items-center justify-between">
+                                <h3 className="text-sm font-medium text-white/90">
+                                    Comentarios ({comentarios.length})
+                                </h3>
+                                <button
+                                    onClick={() => setShowComentarioInput(!showComentarioInput)}
+                                    className="text-xs font-medium transition-colors hover:opacity-80"
+                                    style={{ color: "var(--kadi-gold)" }}
+                                >
+                                    {showComentarioInput ? "Cancelar" : "+ Escribir"}
+                                </button>
+                            </div>
 
-                <textarea
-                    value={nuevoComentario.texto}
-                    onChange={(e) => setNuevoComentario({ ...nuevoComentario, texto: e.target.value })}
-                    placeholder="Cuéntanos tu experiencia con este producto..."
-                    rows={3}
-                    className="w-full rounded-lg p-3 text-sm text-white/90 placeholder-white/30 focus:outline-none resize-none transition"
-                    style={{
-                        backgroundColor: "rgba(15, 18, 21, 0.6)",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                    }}
-                />
-                <button
-                    onClick={handleEnviarComentario}
-                    disabled={!nuevoComentario.texto.trim()}
-                    className="w-full py-2 rounded-lg text-sm font-medium text-white transition disabled:opacity-30"
-                    style={{
-                        background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
-                    }}
-                >
-                    Publicar comentario
-                </button>
-            </div>
-        </motion.div>
-    )}
-</AnimatePresence>
-                            <div className="divide-y divide-white/5">
-                                {comentarios.map((c) => (
-                                    <div key={c.id} className="p-4">
-                                        <div className="flex items-start gap-3">
-                                            <div
-                                                className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-medium"
-                                                style={{
-                                                    background: "linear-gradient(135deg, #1e4a8c, #2a5ca8)",
-                                                    color: "white",
-                                                }}
-                                            >
-                                                {c.avatar}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                                    <span className="text-sm font-medium text-white/90">{c.nombre}</span>
-                                                    {c.verificado && (
-                                                        <span
-                                                            className="text-[9px] px-1.5 py-0.5 rounded-full"
+                            <AnimatePresence>
+                                {showComentarioInput && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="overflow-hidden border-b border-white/5"
+                                    >
+                                        <div className="p-4 space-y-3">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs text-white/50">Calificación:</span>
+                                                <div className="flex gap-1">
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <button
+                                                            key={star}
+                                                            onClick={() => setNuevoComentario({ ...nuevoComentario, rating: star })}
+                                                            className="text-2xl transition-transform hover:scale-110"
                                                             style={{
-                                                                backgroundColor: "rgba(212, 175, 55, 0.15)",
-                                                                color: "var(--kadi-gold)",
+                                                                color: star <= nuevoComentario.rating
+                                                                    ? "var(--kadi-gold)"
+                                                                    : "rgba(255,255,255,0.15)"
                                                             }}
                                                         >
-                                                            ✓ Compra verificada
-                                                        </span>
-                                                    )}
+                                                            ★
+                                                        </button>
+                                                    ))}
                                                 </div>
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <div className="flex gap-0.5">
-                                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            </div>
+
+                                            <textarea
+                                                value={nuevoComentario.texto}
+                                                onChange={(e) => setNuevoComentario({ ...nuevoComentario, texto: e.target.value })}
+                                                placeholder="Cuéntanos tu experiencia con este producto..."
+                                                rows={3}
+                                                className="w-full rounded-lg p-3 text-sm text-white/90 placeholder-white/30 focus:outline-none resize-none transition"
+                                                style={{
+                                                    backgroundColor: "rgba(15, 18, 21, 0.6)",
+                                                    border: "1px solid rgba(255,255,255,0.1)",
+                                                }}
+                                            />
+                                            <button
+                                                onClick={handleEnviarComentario}
+                                                disabled={!nuevoComentario.texto.trim()}
+                                                className="w-full py-2 rounded-lg text-sm font-medium text-white transition disabled:opacity-30"
+                                                style={{
+                                                    background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
+                                                }}
+                                            >
+                                                Publicar comentario
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <div className="divide-y divide-white/5">
+                                {comentarios.length === 0 ? (
+                                    <div className="p-6 text-center">
+                                        <p className="text-xs text-white/40">Aún no hay comentarios</p>
+                                        <p className="text-[10px] text-white/20 mt-1">Sé el primero en opinar sobre este producto</p>
+                                    </div>
+                                ) : (
+                                    comentarios.map((c) => (
+                                        <div key={c.id} className="p-4">
+                                            <div className="flex items-start gap-3">
+                                                <div
+                                                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-medium"
+                                                    style={{
+                                                        background: "linear-gradient(135deg, #1e4a8c, #2a5ca8)",
+                                                        color: "white",
+                                                    }}
+                                                >
+                                                    {c.avatar}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                                        <span className="text-sm font-medium text-white/90">{c.nombre}</span>
+                                                        {c.verificado && (
                                                             <span
-                                                                key={star}
-                                                                className="text-xs"
+                                                                className="text-[9px] px-1.5 py-0.5 rounded-full"
                                                                 style={{
-                                                                    color: star <= c.rating
-                                                                        ? "var(--kadi-gold)"
-                                                                        : "rgba(255,255,255,0.15)"
+                                                                    backgroundColor: "rgba(212, 175, 55, 0.15)",
+                                                                    color: "var(--kadi-gold)",
                                                                 }}
                                                             >
-                                                                ★
+                                                                ✓ Compra verificada
                                                             </span>
-                                                        ))}
+                                                        )}
                                                     </div>
-                                                    <span className="text-[10px] text-white/30">{c.fecha}</span>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <div className="flex gap-0.5">
+                                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                                <span
+                                                                    key={star}
+                                                                    className="text-xs"
+                                                                    style={{
+                                                                        color: star <= c.rating
+                                                                            ? "var(--kadi-gold)"
+                                                                            : "rgba(255,255,255,0.15)"
+                                                                    }}
+                                                                >
+                                                                    ★
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                        <span className="text-[10px] text-white/30">{c.fecha}</span>
+                                                    </div>
+                                                    <p className="text-xs text-white/60 leading-relaxed">{c.texto}</p>
                                                 </div>
-                                                <p className="text-xs text-white/60 leading-relaxed">{c.texto}</p>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         </div>
 
-                        {/* PREGUNTAS */}
+                        {/* Preguntas */}
                         <div
                             className="rounded-xl border overflow-hidden"
                             style={{
@@ -1095,43 +1031,55 @@ export default function ProductoDetallePage() {
                             </AnimatePresence>
 
                             <div className="divide-y divide-white/5">
-                                {preguntas.map((p) => (
-                                    <div key={p.id} className="p-4 space-y-2">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium text-white/90">{p.nombre}</span>
-                                            <span className="text-[10px] text-white/30">· {p.fecha}</span>
-                                        </div>
-                                        <p className="text-xs text-white/70 leading-relaxed">
-                                            <span className="mr-1" style={{ color: "var(--kadi-gold)" }}>P:</span>
-                                            {p.pregunta}
-                                        </p>
-                                        {p.respuesta && (
-                                            <div
-                                                className="ml-3 pl-3 py-2 rounded-r-lg"
-                                                style={{
-                                                    borderLeft: "2px solid var(--kadi-gold)",
-                                                    backgroundColor: "rgba(212, 175, 55, 0.05)",
-                                                }}
-                                            >
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-[10px] font-medium" style={{ color: "var(--kadi-gold)" }}>
-                                                        {p.respondidoPor}
-                                                    </span>
-                                                    <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ backgroundColor: "rgba(212, 175, 55, 0.15)", color: "var(--kadi-gold)" }}>
-                                                        ✓ Oficial
-                                                    </span>
-                                                </div>
-                                                <p className="text-xs text-white/60 leading-relaxed">{p.respuesta}</p>
-                                            </div>
-                                        )}
+                                {preguntas.length === 0 ? (
+                                    <div className="p-6 text-center">
+                                        <p className="text-xs text-white/40">Aún no hay preguntas</p>
+                                        <p className="text-[10px] text-white/20 mt-1">Haz la primera pregunta sobre este producto</p>
                                     </div>
-                                ))}
+                                ) : (
+                                    preguntas.map((p) => (
+                                        <div key={p.id} className="p-4 space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium text-white/90">{p.nombre}</span>
+                                                <span className="text-[10px] text-white/30">· {p.fecha}</span>
+                                            </div>
+                                            <p className="text-xs text-white/70 leading-relaxed">
+                                                <span className="mr-1" style={{ color: "var(--kadi-gold)" }}>P:</span>
+                                                {p.pregunta}
+                                            </p>
+                                            {p.respuesta && (
+                                                <div
+                                                    className="ml-3 pl-3 py-2 rounded-r-lg"
+                                                    style={{
+                                                        borderLeft: "2px solid var(--kadi-gold)",
+                                                        backgroundColor: "rgba(212, 175, 55, 0.05)",
+                                                    }}
+                                                >
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="text-[10px] font-medium" style={{ color: "var(--kadi-gold)" }}>
+                                                            {p.respondidoPor}
+                                                        </span>
+                                                        <span
+                                                            className="text-[9px] px-1.5 py-0.5 rounded-full"
+                                                            style={{
+                                                                backgroundColor: "rgba(212, 175, 55, 0.15)",
+                                                                color: "var(--kadi-gold)"
+                                                            }}
+                                                        >
+                                                            ✓ Oficial
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-white/60 leading-relaxed">{p.respuesta}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>
 
-                    {/* ===== COLUMNA DERECHA: ESPECIFICACIONES ===== */}
-                    {/* En móvil va primero (order-1), en desktop va derecha (order-2) */}
+                    {/* Columna derecha: especificaciones (en móvil va primero) */}
                     <div className="order-1 md:order-2">
                         {producto.descripcion && (
                             <p className="text-white/60 text-sm sm:text-base leading-relaxed mb-6">
@@ -1178,7 +1126,7 @@ export default function ProductoDetallePage() {
                 </div>
             </div>
 
-           {toast && (
+            {toast && (
                 <Toast
                     message={toast.message}
                     type={toast.type}
@@ -1188,7 +1136,7 @@ export default function ProductoDetallePage() {
 
             {/* ===== BARRA STICKY EN MÓVIL ===== */}
             <div
-                className="fixed bottom-0 left-0 right-0 z-40 md:hidden px-4 py-3 border-t backdrop-blur-xl flex items-center gap-3"
+                className="fixed bottom-0 left-0 right-0 z-30 md:hidden px-4 py-3 border-t backdrop-blur-xl flex items-center gap-3"
                 style={{
                     backgroundColor: "rgba(15, 18, 21, 0.95)",
                     borderColor: "rgba(212, 175, 55, 0.2)",
@@ -1221,7 +1169,7 @@ export default function ProductoDetallePage() {
                 </button>
             </div>
 
-            {/* ===== ESTILOS PARA EL BOTÓN CON BORDE NEÓN ANIMADO ===== */}
+            {/* ===== ESTILOS DEL BOTÓN NEÓN ===== */}
             <style jsx>{`
                 .btn-agregar {
                     position: relative;
