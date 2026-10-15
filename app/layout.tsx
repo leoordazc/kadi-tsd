@@ -4,6 +4,7 @@ import "./globals.css";
 import JsonLd from '@/components/JsonLd';
 import { CartProvider } from "@/context/CartContext";
 import { MetaPixelWrapper } from '@/components/MetaPixel';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -88,6 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <JsonLd />
         </CartProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
