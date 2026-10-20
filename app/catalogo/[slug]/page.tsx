@@ -518,12 +518,13 @@ export default function ProductoDetallePage() {
                             {selectedImage ? (
                                 <>
                                     <Image
-                                        src={selectedImage}
+                                        src={`${selectedImage}?v=3`} // <--- FORZAMOS RECARGA
                                         alt={producto.nombre}
                                         fill
                                         className="object-contain p-2 sm:p-4"
                                         sizes="(max-width: 768px) 100vw, 50vw"
                                         priority
+                                        unoptimized={true} // <--- EVITAMOS CACHÉ DE VERCEL
                                     />
 
                                     {allImages.length > 1 && (
@@ -583,10 +584,11 @@ export default function ProductoDetallePage() {
                                             }
                                         >
                                             <Image
-                                                src={img}
+                                                src={`${img}?v=3`} // <--- FORZAMOS RECARGA
                                                 alt={`Vista ${idx + 1}`}
                                                 fill
                                                 className="object-cover"
+                                                unoptimized={true} // <--- EVITAMOS CACHÉ DE VERCEL
                                             />
                                         </button>
                                     ))}
