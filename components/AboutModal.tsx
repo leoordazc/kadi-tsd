@@ -73,7 +73,7 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
                   <div>
                     <h4 className="text-white/80 text-sm font-medium">Especialización Premium (Solo Estándar y Diferenciales)</h4>
                     <p className="text-white/50 text-sm leading-relaxed">
-                      Hemos decidido ser maestros en nuestro rubro. Nos enfocamos exclusivamente en sistemas de tracción mecánica pura. No trabajamos transmisiones automáticas ni CVT. Ya sea que compres una unidad de nuestro catálogo o nos confíes la reparación de la tuya, cada componente que sale de nuestro banco de trabajo es rigurosamente inspeccionado bajo estrictas tolerancias de equipo original (OEM).
+                      Hemos decidido ser maestros en nuestro rubro. Nos enfocamos en sistemas de tracción mecánica pura. Tambien trabajamos transmisiones automáticas y CVT por encargo especial. Ya sea que compres una unidad de nuestro catálogo o nos confíes la reparación de la tuya, cada componente que sale de nuestro banco de trabajo es rigurosamente inspeccionado bajo estrictas tolerancias de equipo original (OEM).
                     </p>
                   </div>
                   <div>
