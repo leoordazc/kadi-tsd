@@ -94,6 +94,7 @@ export default function PerfilPage() {
         return;
       }
       setUser(user);
+      // Cargamos todo en paralelo para que sea más rápido
       await Promise.all([
         cargarPerfil(user.id),
         cargarPedidos(user.id),
@@ -238,7 +239,7 @@ export default function PerfilPage() {
       <div className="min-h-screen text-white flex items-center justify-center" style={{ backgroundColor: "var(--bg-primary)" }}>
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--kadi-gold)", borderTopColor: "transparent" }} />
-          <p className="text-white/40 text-sm">Cargando...</p>
+          <p className="text-white/40 text-sm">Cargando perfil...</p>
         </div>
       </div>
     );
@@ -295,35 +296,198 @@ export default function PerfilPage() {
               {/* ===== INFO PERSONAL ===== */}
               {seccionActiva === 'info' && (
                 <motion.div key="info" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="rounded-2xl border border-white/5 overflow-hidden" style={{ background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)" }}>
-                  {/* ... (Se mantiene igual que en tu código original, omitido aquí por brevedad para enfocarnos en lo nuevo) ... */}
-                  <div className="p-6 border-b border-white/5"><h2 className="text-xl font-light text-white/90">Información personal</h2></div>
+                  <div className="p-6 border-b border-white/5">
+                    <h2 className="text-xl font-light text-white/90">Información personal</h2>
+                    <p className="text-white/40 text-xs mt-1">Administra tus datos de contacto y envío</p>
+                  </div>
                   <div className="divide-y divide-white/5">
-                    {/* Aquí va tu código original de info personal sin cambios */}
-                    <div className="p-5 text-sm text-white/60">Tus datos se guardan de forma segura.</div>
+                    <div className="flex items-center justify-between p-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                          <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                        </div>
+                        <div>
+                          <p className="text-white/40 text-xs uppercase tracking-wider">Email</p>
+                          <p className="text-white/80 text-sm">{user?.email}</p>
+                        </div>
+                      </div>
+                      <span className="text-xs" style={{ color: "var(--kadi-gold)" }}>✓ Verificado</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-5">
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                          <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                        </div>
+                        {editando === 'nombre' ? (
+                          <input type="text" value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} onBlur={() => actualizarPerfil('nombre', formData.nombre)} autoFocus className="flex-1 rounded-lg px-3 py-2 text-white/90 text-sm focus:outline-none transition" style={{ backgroundColor: "rgba(15, 18, 21, 0.6)", border: "1px solid var(--kadi-gold)" }} />
+                        ) : (
+                          <div><p className="text-white/40 text-xs uppercase tracking-wider">Nombre</p><p className="text-white/80 text-sm">{perfil?.nombre || 'No especificado'}</p></div>
+                        )}
+                      </div>
+                      {editando !== 'nombre' && (<button onClick={() => setEditando('nombre')} className="text-xs transition-colors hover:opacity-80" style={{ color: "var(--kadi-gold)" }}>Editar</button>)}
+                    </div>
+
+                    <div className="flex items-center justify-between p-5">
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                          <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                        </div>
+                        {editando === 'telefono' ? (
+                          <input type="tel" value={formData.telefono} onChange={(e) => setFormData({ ...formData, telefono: e.target.value })} onBlur={() => actualizarPerfil('telefono', formData.telefono)} autoFocus className="flex-1 rounded-lg px-3 py-2 text-white/90 text-sm focus:outline-none transition" style={{ backgroundColor: "rgba(15, 18, 21, 0.6)", border: "1px solid var(--kadi-gold)" }} />
+                        ) : (
+                          <div><p className="text-white/40 text-xs uppercase tracking-wider">Teléfono</p><p className="text-white/80 text-sm">{perfil?.telefono || 'No especificado'}</p></div>
+                        )}
+                      </div>
+                      {editando !== 'telefono' && (<button onClick={() => setEditando('telefono')} className="text-xs transition-colors hover:opacity-80" style={{ color: "var(--kadi-gold)" }}>Editar</button>)}
+                    </div>
+
+                    <div className="flex items-start justify-between p-5">
+                      <div className="flex items-start gap-4 flex-1">
+                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </div>
+                        {editando === 'direccion' ? (
+                          <textarea value={formData.direccion} onChange={(e) => setFormData({ ...formData, direccion: e.target.value })} onBlur={() => actualizarPerfil('direccion', formData.direccion)} autoFocus rows={2} className="flex-1 rounded-lg px-3 py-2 text-white/90 text-sm focus:outline-none transition" style={{ backgroundColor: "rgba(15, 18, 21, 0.6)", border: "1px solid var(--kadi-gold)" }} />
+                        ) : (
+                          <div><p className="text-white/40 text-xs uppercase tracking-wider">Dirección de envío</p><p className="text-white/80 text-sm">{perfil?.direccion || 'No especificada'}</p></div>
+                        )}
+                      </div>
+                      {editando !== 'direccion' && (<button onClick={() => setEditando('direccion')} className="text-xs transition-colors hover:opacity-80" style={{ color: "var(--kadi-gold)" }}>Editar</button>)}
+                    </div>
                   </div>
                 </motion.div>
               )}
 
-              {/* ===== SEGURIDAD (Se mantiene igual) ===== */}
+              {/* ===== SEGURIDAD ===== */}
               {seccionActiva === 'seguridad' && (
-                <motion.div key="seguridad" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="rounded-2xl border border-white/5 p-6" style={{ background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)" }}>
-                   <h2 className="text-xl font-light text-white/90">Seguridad</h2>
-                   <p className="text-sm text-white/40 mt-2">Tu cuenta está protegida con encriptación SSL.</p>
+                <motion.div key="seguridad" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="space-y-6">
+                  <div className="rounded-2xl border border-white/5 overflow-hidden" style={{ background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)" }}>
+                    <div className="p-6 border-b border-white/5">
+                      <h2 className="text-xl font-light text-white/90">Estado de la cuenta</h2>
+                      <p className="text-white/40 text-xs mt-1">Tu cuenta está protegida</p>
+                    </div>
+                    <div className="divide-y divide-white/5">
+                      <div className="flex items-center justify-between p-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(212, 175, 55, 0.15)" }}>
+                            <svg className="w-5 h-5" style={{ color: "var(--kadi-gold)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                          </div>
+                          <div><p className="text-white/80 text-sm font-medium">Encriptación SSL</p><p className="text-white/40 text-xs">Todos tus datos están protegidos</p></div>
+                        </div>
+                        <span className="text-xs" style={{ color: "var(--kadi-gold)" }}>Activo</span>
+                      </div>
+                      <div className="flex items-center justify-between p-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(212, 175, 55, 0.15)" }}>
+                            <svg className="w-5 h-5" style={{ color: "var(--kadi-gold)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                          </div>
+                          <div><p className="text-white/80 text-sm font-medium">Email verificado</p><p className="text-white/40 text-xs">{user?.email}</p></div>
+                        </div>
+                        <span className="text-xs" style={{ color: "var(--kadi-gold)" }}>Verificado</span>
+                      </div>
+                      <div className="flex items-center justify-between p-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                            <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                          </div>
+                          <div><p className="text-white/80 text-sm font-medium">Contraseña</p><p className="text-white/40 text-xs">Se recomienda cambiarla cada 6 meses</p></div>
+                        </div>
+                        <button className="text-xs transition-colors hover:opacity-80" style={{ color: "var(--kadi-gold)" }}>Cambiar</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-white/5 overflow-hidden" style={{ background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)" }}>
+                    <div className="p-6 border-b border-white/5">
+                      <h2 className="text-xl font-light text-white/90">Sesiones activas</h2>
+                      <p className="text-white/40 text-xs mt-1">Dispositivos conectados a tu cuenta</p>
+                    </div>
+                    <div className="p-5">
+                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">💻</span>
+                          <div><p className="text-white/80 text-sm font-medium">Este dispositivo</p><p className="text-white/40 text-xs">Última sesión: ahora mismo</p></div>
+                        </div>
+                        <span className="text-xs" style={{ color: "var(--kadi-gold)" }}>Activa</span>
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
               )}
 
-              {/* ===== PEDIDOS (Se mantiene igual) ===== */}
+              {/* ===== PEDIDOS ===== */}
               {seccionActiva === 'pedidos' && (
-                <motion.div key="pedidos" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="rounded-2xl border border-white/5 p-6" style={{ background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)" }}>
-                   <h2 className="text-xl font-light text-white/90">Historial de pedidos</h2>
-                   <p className="text-sm text-white/40 mt-2">Aquí puedes ver tus compras de refacciones.</p>
+                <motion.div key="pedidos" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="rounded-2xl border border-white/5 overflow-hidden" style={{ background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)" }}>
+                  <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                    <div><h2 className="text-xl font-light text-white/90">Historial de pedidos</h2><p className="text-white/40 text-xs mt-1">{pedidos.length} pedidos realizados</p></div>
+                    <span className="text-3xl">📦</span>
+                  </div>
+                  {pedidos.length === 0 ? (
+                    <div className="text-center py-16">
+                      <p className="text-white/40 mb-4">Aún no tienes pedidos</p>
+                      <Link href="/catalogo" className="inline-block px-6 py-2 rounded-lg transition text-sm text-white" style={{ background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))" }}>Explorar catálogo</Link>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-white/5">
+                      {pedidos.map((pedido) => {
+                        const statusInfo = getStatusInfo(pedido.status);
+                        return (
+                          <div key={pedido.id}>
+                            <button onClick={() => setExpandidoId(expandidoId === pedido.id ? null : pedido.id)} className="w-full p-5 hover:bg-white/5 transition-colors text-left">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center"><span className="text-lg">📄</span></div>
+                                  <div><p className="text-white/90 font-medium text-sm">{pedido.folio || pedido.id.slice(0, 8)}</p><p className="text-white/40 text-xs">{new Date(pedido.created_at).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}</p></div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                  <div className="text-right">
+                                    <p className="text-white/90 font-light text-lg">${pedido.total.toLocaleString()}</p>
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusInfo.color}`}>{statusInfo.text}</span>
+                                  </div>
+                                  <motion.span animate={{ rotate: expandidoId === pedido.id ? 180 : 0 }} className="text-white/30">▼</motion.span>
+                                </div>
+                              </div>
+                            </button>
+                            <AnimatePresence>
+                              {expandidoId === pedido.id && (
+                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden" style={{ backgroundColor: "rgba(15, 18, 21, 0.4)" }}>
+                                  <div className="p-5 space-y-4">
+                                    <div className="flex items-center justify-between text-sm">
+                                      <span className="text-white/40">Método de pago</span>
+                                      <span className="text-white/70">{getMetodoPagoTexto(pedido.metodo_pago)}</span>
+                                    </div>
+                                    <div>
+                                      <p className="text-white/40 text-xs uppercase tracking-wider mb-2">Productos</p>
+                                      <div className="space-y-2">
+                                        {pedido.items?.map((item, idx) => (
+                                          <div key={idx} className="flex justify-between text-sm bg-white/5 rounded-lg p-3">
+                                            <div><p className="text-white/80">{item.nombre}</p><p className="text-white/30 text-xs">Cantidad: {item.cantidad}</p></div>
+                                            <p className="text-white/60">${(item.precio * item.cantidad).toLocaleString()}</p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    {pedido.numero_guia && (
+                                      <div className="flex items-center justify-between text-sm bg-white/5 rounded-lg p-3">
+                                        <span className="text-white/40">Número de guía</span>
+                                        <span className="text-white/70 font-mono">{pedido.numero_guia}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </motion.div>
               )}
 
               {/* ===== NUEVO: MIS SERVICIOS (FINANCIAMIENTO) ===== */}
               {seccionActiva === 'servicios' && (
                 <motion.div key="servicios" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="space-y-6">
-                  
                   <div className="rounded-2xl border border-white/5 overflow-hidden" style={{ background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)" }}>
                     <div className="p-6 border-b border-white/5">
                       <h2 className="text-xl font-light text-white/90">Mis Servicios y Mano de Obra</h2>
@@ -389,7 +553,6 @@ export default function PerfilPage() {
                                     className="w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-medium text-white transition hover:scale-105 active:scale-95"
                                     style={{ background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))" }}
                                     onClick={() => {
-                                      // Aquí iría la lógica para generar el link de pago parcial
                                       alert("Generando link de pago para la parcialidad...");
                                     }}
                                   >
@@ -397,7 +560,6 @@ export default function PerfilPage() {
                                   </button>
                                 )}
                               </div>
-
                             </div>
                           );
                         })}
@@ -417,15 +579,84 @@ export default function PerfilPage() {
                         <li>Este financiamiento aplica <strong>únicamente para el costo de mano de obra</strong>. Las refacciones no son financiables.</li>
                      </ul>
                   </div>
-
                 </motion.div>
               )}
 
-              {/* ===== GARANTÍAS (Se mantiene igual) ===== */}
+              {/* ===== GARANTÍAS ===== */}
               {seccionActiva === 'garantias' && (
-                 <motion.div key="garantias" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="rounded-2xl border border-white/5 p-6" style={{ background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)" }}>
-                   <h2 className="text-xl font-light text-white/90">Garantías</h2>
-                   <p className="text-sm text-white/40 mt-2">Consulta las políticas de garantía de tus refacciones.</p>
+                <motion.div key="garantias" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="space-y-6">
+                  <div className="rounded-2xl border border-white/5 overflow-hidden" style={{ background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)" }}>
+                    <div className="p-6 border-b border-white/5">
+                      <h2 className="text-xl font-light text-white/90">Garantías KADI</h2>
+                      <p className="text-white/40 text-xs mt-1">Información sobre nuestras políticas</p>
+                    </div>
+                    <div className="p-6 space-y-6">
+                      <div>
+                        <h3 className="text-white/80 text-sm font-medium mb-3 flex items-center gap-2"><span>🔧</span> Garantía de productos</h3>
+                        <div className="space-y-2">
+                          {[{ nombre: "Transmisiones nuevas", tiempo: "3 meses" }, { nombre: "Transmisiones reconstruidas", tiempo: "3 meses" }, { nombre: "Transmisiones usadas", tiempo: "1 mes" }, { nombre: "Diferenciales", tiempo: "3 meses" }].map((item, idx) => (
+                            <div key={idx} className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                              <span className="text-white/70 text-sm">{item.nombre}</span>
+                              <span className="text-sm font-medium" style={{ color: "var(--kadi-gold)" }}>{item.tiempo}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-white/80 text-sm font-medium mb-3 flex items-center gap-2"><span>✅</span> ¿Qué cubre la garantía?</h3>
+                        <ul className="space-y-2 text-sm text-white/60">
+                          {["Defectos de fabricación", "Fallas mecánicas internas", "Reemplazo de piezas defectuosas", "Diagnóstico en nuestros talleres"].map((item, idx) => (
+                            <li key={idx} className="flex gap-2"><span style={{ color: "var(--kadi-gold)" }}>✓</span> {item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <h3 className="text-white/80 text-sm font-medium mb-3 flex items-center gap-2"><span>❌</span> ¿Qué NO cubre la garantía?</h3>
+                        <ul className="space-y-2 text-sm text-white/60">
+                          {["Daños por instalación incorrecta", "Uso inadecuado o sobrecarga", "Falta de mantenimiento", "Modificaciones no autorizadas"].map((item, idx) => (
+                            <li key={idx} className="flex gap-2"><span className="text-red-400">✗</span> {item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* MIS RECLAMACIONES */}
+                  <div className="rounded-2xl border border-white/5 overflow-hidden" style={{ background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)" }}>
+                    <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                      <div><h2 className="text-xl font-light text-white/90">Mis reclamaciones</h2><p className="text-white/40 text-xs mt-1">{reclamaciones.length} reclamaciones registradas</p></div>
+                      <button onClick={() => setMostrandoFormulario(true)} className="text-white px-4 py-2 rounded-lg text-xs transition" style={{ background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))" }}>+ Nueva reclamación</button>
+                    </div>
+                    {reclamaciones.length === 0 ? (
+                      <div className="text-center py-12"><p className="text-white/40 text-sm">No has realizado ninguna reclamación</p><p className="text-white/20 text-xs mt-2">Si tienes un problema con un producto, puedes reclamar tu garantía aquí.</p></div>
+                    ) : (
+                      <div className="divide-y divide-white/5">
+                        {reclamaciones.map((rec) => {
+                          const vigente = garantiaVigente(rec.fecha_fin_garantia);
+                          const statusInfo = getReclamacionStatusInfo(rec.status);
+                          return (
+                            <div key={rec.id} className="p-5">
+                              <div className="flex items-center justify-between mb-3">
+                                <div><p className="text-white/90 font-medium text-sm">{rec.folio_pedido}</p><p className="text-white/40 text-xs">{rec.producto_nombre}</p></div>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusInfo.color}`}>{statusInfo.text}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-3 text-xs">
+                                <div><p className="text-white/30">Fecha de compra</p><p className="text-white/60">{new Date(rec.fecha_compra).toLocaleDateString('es-MX')}</p></div>
+                                <div><p className="text-white/30">Vigencia garantía</p><p style={{ color: vigente ? "var(--kadi-gold)" : "#f87171" }}>{new Date(rec.fecha_fin_garantia).toLocaleDateString('es-MX')} {vigente ? '(Vigente)' : '(Vencida)'}</p></div>
+                                <div className="col-span-2"><p className="text-white/30">Motivo</p><p className="text-white/60">{rec.motivo}</p></div>
+                              </div>
+                              {rec.resolucion && (
+                                <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: "rgba(212, 175, 55, 0.1)", border: "1px solid rgba(212, 175, 55, 0.25)" }}>
+                                  <p className="text-xs font-medium mb-1" style={{ color: "var(--kadi-gold)" }}>Resolución:</p>
+                                  <p className="text-white/70 text-xs">{rec.resolucion}</p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </motion.div>
               )}
 
@@ -433,6 +664,45 @@ export default function PerfilPage() {
           </div>
         </div>
       </div>
+
+      {/* ===== FORMULARIO DE NUEVA RECLAMACIÓN (MODAL) ===== */}
+      <AnimatePresence>
+        {mostrandoFormulario && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 backdrop-blur-sm" style={{ backgroundColor: "rgba(15, 18, 21, 0.8)" }} onClick={() => setMostrandoFormulario(false)} />
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-lg rounded-2xl border border-white/10 p-6" style={{ background: "linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%)" }}>
+              <h3 className="text-xl font-light text-white/90 mb-4">Nueva reclamación de garantía</h3>
+              <form onSubmit={crearReclamacion} className="space-y-4">
+                <div>
+                  <label className="text-white/40 text-xs block mb-1">Pedido</label>
+                  <select value={nuevaReclamacion.pedido_id} onChange={(e) => { const pedido = pedidos.find(p => p.id === e.target.value); setNuevaReclamacion({ ...nuevaReclamacion, pedido_id: e.target.value, folio_pedido: pedido?.folio || '', producto_nombre: pedido?.items?.[0]?.nombre || '', producto_codigo: pedido?.items?.[0]?.codigo_caja || '', tipo_producto: pedido?.items?.[0]?.tipo || 'Nueva' }); }} required className="w-full rounded-lg p-3 text-white/80 text-sm focus:outline-none transition" style={{ backgroundColor: "rgba(15, 18, 21, 0.6)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                    <option value="">Selecciona un pedido</option>
+                    {pedidos.map((p) => (<option key={p.id} value={p.id}>{p.folio} - {p.items?.[0]?.nombre}</option>))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-white/40 text-xs block mb-1">Motivo</label>
+                  <select value={nuevaReclamacion.motivo} onChange={(e) => setNuevaReclamacion({ ...nuevaReclamacion, motivo: e.target.value })} required className="w-full rounded-lg p-3 text-white/80 text-sm focus:outline-none transition" style={{ backgroundColor: "rgba(15, 18, 21, 0.6)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                    <option value="">Selecciona el motivo</option>
+                    <option value="Falla mecánica">Falla mecánica</option>
+                    <option value="Pieza defectuosa">Pieza defectuosa</option>
+                    <option value="No funciona correctamente">No funciona correctamente</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-white/40 text-xs block mb-1">Descripción del problema</label>
+                  <textarea value={nuevaReclamacion.descripcion} onChange={(e) => setNuevaReclamacion({ ...nuevaReclamacion, descripcion: e.target.value })} required rows={4} placeholder="Describe el problema con el mayor detalle posible..." className="w-full rounded-lg p-3 text-white/80 text-sm focus:outline-none resize-none transition" style={{ backgroundColor: "rgba(15, 18, 21, 0.6)", border: "1px solid rgba(255,255,255,0.1)" }} />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button type="submit" className="flex-1 text-white py-3 rounded-lg text-sm transition" style={{ background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))" }}>Enviar reclamación</button>
+                  <button type="button" onClick={() => setMostrandoFormulario(false)} className="px-6 bg-white/5 border border-white/10 text-white/70 py-3 rounded-lg text-sm hover:bg-white/10 transition">Cancelar</button>
+                </div>
+              </form>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
