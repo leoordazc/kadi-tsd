@@ -21,9 +21,10 @@ EL COMPRADOR declara ser mayor de edad (18 años) y tener capacidad legal sufici
 EL VENDEDOR se obliga a entregar la mercancía solicitada por EL COMPRADOR, consistente en transmisiones manuales, diferenciales y refacciones automotrices, bajo las condiciones establecidas en este documento.
 
 4. PRECIOS Y FORMAS DE PAGO
-4.1. Los precios publicados son en Pesos Mexicanos (MXN) e incluyen IVA.
-4.2. EL VENDEDOR se reserva el derecho de modificar precios sin previo aviso.
-4.3. La compra se formaliza hasta que EL VENDEDOR confirma el pago y la disponibilidad del producto.
+4.1. Los precios publicados son en Pesos Mexicanos (MXN) y NO INCLUYEN el Impuesto al Valor Agregado (IVA).
+4.2. EL COMPRADOR podrá solicitar la emisión de factura fiscal (CFDI 4.0) al momento de la compra o proporcionando sus datos fiscales dentro de los 3 días posteriores. En caso de no solicitarla, se emitirá un ticket o nota de remisión simple.
+4.3. EL VENDEDOR se reserva el derecho de modificar precios sin previo aviso.
+4.4. La compra se formaliza hasta que EL VENDEDOR confirma el pago y la disponibilidad del producto.
 
 5. DISPONIBILIDAD
 La disponibilidad de los productos es en tiempo real. En caso de falta de stock, EL VENDEDOR notificará al COMPRADOR dentro de las 24 horas posteriores a la compra, ofreciendo:
@@ -109,7 +110,17 @@ a) Gastos de mano de obra de terceros por montaje o desmontaje.
 b) Servicios de grúa, arrastre o maniobras.
 c) Aceites, fluidos o consumibles perdidos.
 d) Costos de envío (fletes) generados para retornar la unidad a las instalaciones de EL VENDEDOR para su diagnóstico. El pago del flete para evaluación de garantía correrá siempre a cargo de EL COMPRADOR.
-e) Lucro cesante (pérdida de ingresos porque el vehículo del comprador estuvo detenido).`
+e) Lucro cesante (pérdida de ingresos porque el vehículo del comprador estuvo detenido).
+
+
+ARTÍCULO 9. RELACIÓN DE LA GARANTÍA CON FINANCIAMIENTOS DE MANO DE OBRA
+9.1. En caso de que EL COMPRADOR haya optado por el esquema de financiamiento directo para el pago de mano de obra (hasta 4 parcialidades), la vigencia y validez de la póliza de garantía de dicho servicio estarán estrictamente condicionadas al cumplimiento puntual de los pagos.
+9.2. Si EL COMPRADOR presenta un atraso mayor a 48 horas naturales en cualquiera de sus exhibiciones (semanales o quincenales), la garantía del servicio de reparación quedará suspendida automáticamente hasta que la cuenta sea regularizada en su totalidad.
+9.3. El incumplimiento total del plan de pagos (2 o más parcialidades vencidas sin liquidar) generará la cancelación definitiva de la garantía de la mano de obra sin derecho a reclamo.`
+
+
+
+
         },
         {
             title: "🚚 POLÍTICA DE ENVÍOS Y ENTREGAS",
@@ -143,10 +154,15 @@ ARTÍCULO 4. ENTREGA
 1.3. Pago referenciado en tiendas de conveniencia (OXXO, 7-Eleven, etc.).
 1.4. Efectivo en sucursal (previa cita).
 
-ARTÍCULO 2. FINANCIAMIENTO
-2.1. Aplican promociones de meses sin intereses con tarjetas participantes.
-2.2. Las promociones vigentes se muestran al momento de la compra.
-2.3. EL VENDEDOR no se hace responsable por ajustes en promociones por parte de las instituciones bancarias.
+ARTÍCULO 2. FINANCIAMIENTO Y COSTOS DE MANO DE OBRA
+2.1. KADI TS&D se especializa en transmisiones manuales, diferenciales y transfer. Sin embargo, aceptamos unidades automáticas para servicio de diagnóstico y reconstrucción mayor.
+2.2. Los costos base de mano de obra para reparaciones son fijos y se detallan a continuación:
+   a) Transmisiones Manuales: $1,500 MXN (más IVA si se requiere factura).
+   b) Transmisiones Automáticas: $4,000 MXN (más IVA si se requiere factura).
+   c) Diferenciales y Transfer: $1,300 MXN (más IVA si se requiere factura).
+2.3. Para el costo de mano de obra, EL VENDEDOR ofrece un plan de financiamiento directo a plazos. El saldo podrá diferirse en un máximo de 4 exhibiciones, con periodicidad semanal o quincenal, elegida por EL COMPRADOR. Este financiamiento aplica exclusivamente para el servicio, NO para refacciones.
+2.4. Aplican promociones de meses sin intereses con tarjetas participantes para el total de la compra.
+2.5. EL VENDEDOR no se hace responsable por ajustes en promociones por parte de las instituciones bancarias.
 
 ARTÍCULO 3. SEGURIDAD EN PAGOS
 3.1. Todos los pagos con tarjeta se procesan mediante plataformas bancarias certificadas (PCI DSS).
