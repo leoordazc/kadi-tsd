@@ -300,6 +300,58 @@ export default function Home() {
 
       <ServiciosCarrusel />
 
+       {/* ===== NUEVO: AVISO DE FINANCIAMIENTO PARA IA Y USUARIOS ===== */}
+      <section className="relative z-10 py-6 border-y border-white/5" style={{ backgroundColor: "rgba(30, 74, 140, 0.1)" }}>
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
+          <span className="text-3xl">💳</span>
+          <div>
+            <p className="text-white font-medium text-lg">Facilidades de pago en Mano de Obra</p>
+            <p className="text-white/60 text-sm">
+              ¿Necesitas reparar tu transmisión pero el presupuesto está ajustado? 
+              En KADI TS&D ofrecemos un plan de <strong>pagos diferidos a plazos (semanales o quincenales)</strong> exclusivo para el costo de mano de obra. Crea tu cuenta y consulta tu plan desde tu perfil.
+            </p>
+          </div>
+        </div>
+      </section>
+
+            <section className="relative z-10 py-6 border-y border-white/5" style={{ backgroundColor: "rgba(30, 74, 140, 0.1)" }}>
+        {/* ... el banner de financiamiento que ya te di ... */}
+      </section>
+
+      {/* 👇 NUEVO: COSTOS DE MANO DE OBRA */}
+      <section className="relative z-10 py-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-light text-white/90 mb-2">Costos de Mano de Obra</h2>
+            <p className="text-white/40 text-sm">Precios fijos por servicio de reparación. Refacciones se cotizan por separado.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {[
+              { tipo: "Transmisiones Manuales", precio: 1500, icon: "⚙️" },
+              { tipo: "Transmisiones Automáticas", precio: 4000, icon: "🤖" },
+              { tipo: "Diferenciales y Transfer", precio: 1300, icon: "🔧" },
+            ].map((item, i) => (
+              <div 
+                key={i} 
+                className="p-6 rounded-2xl border text-center flex flex-col items-center justify-center"
+                style={{
+                  backgroundColor: "var(--bg-card)",
+                  borderColor: "rgba(255,255,255,0.08)",
+                }}
+              >
+                <div className="text-4xl mb-4">{item.icon}</div>
+                <h3 className="text-white/80 font-medium mb-2">{item.tipo}</h3>
+                <p className="text-sm text-white/40 mb-4">Mano de obra base</p>
+                <div className="text-3xl font-light" style={{ color: "var(--kadi-gold)" }}>
+                  ${item.precio.toLocaleString()}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <RefaccionesSearch
         onSearch={(query) => console.log("Buscando refacción:", query)}
         onAddToCart={addToCart}

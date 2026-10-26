@@ -141,7 +141,40 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
             Compra y diagnóstico de <strong className="font-medium text-white/80">transmisiones manuales y diferenciales</strong> en{" "}
             <span className="font-medium" style={{ color: "var(--kadi-gold)" }}>segundos</span>.
           </motion.p>
+                     {/* Subtítulo original */}
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="text-xl md:text-2xl text-white/60 max-w-2xl mb-6 font-light"
+          >
+            Compra y diagnóstico de <strong className="font-medium text-white/80">transmisiones manuales y diferenciales</strong> en <span className="font-medium" style={{ color: "var(--kadi-gold)" }}>segundos</span>.
+          </motion.p>
 
+          {/* 👇 NUEVO: BADGE DE FINANCIAMIENTO */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.25 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-10 backdrop-blur-md cursor-default"
+            style={{
+              backgroundColor: "rgba(212, 175, 55, 0.1)",
+              border: "1px solid rgba(212, 175, 55, 0.3)",
+            }}
+          >
+            <span className="text-xl">🔧</span>
+            <span className="text-sm text-white/90">
+              Financiamiento exclusivo para <strong>Mano de Obra</strong> en reparaciones
+            </span>
+          </motion.div>
+
+          {/* Botón principal */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="mb-20"
+          ></motion.div>
           {/* Botón principal (mantiene rojo por ser CTA urgente) */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
