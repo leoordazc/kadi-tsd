@@ -141,15 +141,6 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
             Compra y diagnóstico de <strong className="font-medium text-white/80">transmisiones manuales y diferenciales</strong> en{" "}
             <span className="font-medium" style={{ color: "var(--kadi-gold)" }}>segundos</span>.
           </motion.p>
-                     {/* Subtítulo original */}
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-xl md:text-2xl text-white/60 max-w-2xl mb-6 font-light"
-          >
-            Compra y diagnóstico de <strong className="font-medium text-white/80">transmisiones manuales y diferenciales</strong> en <span className="font-medium" style={{ color: "var(--kadi-gold)" }}>segundos</span>.
-          </motion.p>
 
           {/* 👇 NUEVO: BADGE DE FINANCIAMIENTO */}
           <motion.div
@@ -162,7 +153,7 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
               border: "1px solid rgba(212, 175, 55, 0.3)",
             }}
           >
-            <span className="text-xl">🔧</span>
+            <span className="text-xl"></span>
             <span className="text-sm text-white/90">
               Financiamiento exclusivo para <strong>Mano de Obra</strong> en reparaciones
             </span>
@@ -189,7 +180,7 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
               className="relative group px-8 py-4 bg-transparent border-2 border-[#ef4444] text-white font-medium rounded-2xl overflow-hidden transition-all hover:bg-[#ef4444]/10 hover:shadow-[0_0_40px_rgba(239,68,68,0.3)]"
             >
               <span className="relative z-10 flex items-center gap-2 text-base">
-                📖 CONOCE KADI
+                 CONOCE KADI
               </span>
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-[#ef4444]/30 to-[#D4AF37]/30"

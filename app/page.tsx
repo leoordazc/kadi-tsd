@@ -328,9 +328,9 @@ export default function Home() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
-              { tipo: "Transmisiones Manuales", precio: 1500, icon: "⚙️" },
-              { tipo: "Transmisiones Automáticas", precio: 4000, icon: "🤖" },
-              { tipo: "Diferenciales y Transfer", precio: 1300, icon: "🔧" },
+              { tipo: "Transmisiones Manuales", precio: 1500, icon: "" },
+              { tipo: "Transmisiones Automáticas", precio: 4000, icon: "" },
+              { tipo: "Diferenciales y Transfer", precio: 1300, icon: "" },
             ].map((item, i) => (
               <div 
                 key={i} 
