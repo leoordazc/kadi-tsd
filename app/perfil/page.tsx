@@ -66,6 +66,7 @@ export default function PerfilPage() {
   const [loading, setLoading] = useState(true);
   const [editando, setEditando] = useState<string | null>(null);
   const [expandidoId, setExpandidoId] = useState<string | null>(null);
+  const [procesandoPago, setProcesandoPago] = useState(false);
   const [seccionActiva, setSeccionActiva] = useState<SeccionActiva>('info');
   const [formData, setFormData] = useState({
     nombre: "",
@@ -549,16 +550,50 @@ export default function PerfilPage() {
                                 </div>
                                 
                                 {fin.pagos_realizados < fin.pagos_totales && (
-                                  <button 
-                                    className="w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-medium text-white transition hover:scale-105 active:scale-95"
-                                    style={{ background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))" }}
-                                    onClick={() => {
-                                      alert("Generando link de pago para la parcialidad...");
-                                    }}
-                                  >
-                                    Pagar Parcialidad
-                                  </button>
-                                )}
+  <button 
+    disabled={procesandoPago}
+    className="w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-medium text-white transition hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+    style={{ background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))" }}
+    onClick={async () => {
+      try {
+        setProcesandoPago(true);
+        const res = await fetch('/api/pagar-parcialidad', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            monto: fin.monto_por_pago,
+            folio_servicio: fin.folio_servicio,
+            descripcion: fin.descripcion_servicio,
+            email: user?.email
+          })
+        });
+        
+        const data = await res.json();
+        
+        if (data.init_point) {
+          // Redirigimos al cliente a Mercado Pago
+          window.location.href = data.init_point;
+        } else {
+          alert("Hubo un error al generar el pago.");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Error de conexión al procesar el pago.");
+      } finally {
+        setProcesandoPago(false);
+      }
+    }}
+  >
+    {procesandoPago ? (
+      <>
+        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        Procesando...
+      </>
+    ) : (
+      "Pagar Parcialidad"
+    )}
+  </button>
+)}
                               </div>
                             </div>
                           );
