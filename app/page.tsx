@@ -27,6 +27,32 @@ import HeroKadiStyle from "@/components/HeroKadiStyle";
 import ServiciosCarrusel from "@/components/ServiciosCarrusel";
 import PuntosLuz from "@/components/PuntosLuz";   // ← Cuando lo crees, descomenta esta línea
 
+
+// ===== COMPONENTES Y DATA PARA COSTOS DE MANO DE OBRA =====
+const SERVICIOS_MANO_OBRA = [
+  { tipo: "Transmisiones Manuales", precio: 1500, icon: "manual" },
+  { tipo: "Transmisiones Automáticas", precio: 4000, icon: "automatica" },
+  { tipo: "Diferenciales y Transfer", precio: 1300, icon: "diferencial" },
+];
+
+function IconoManoObra({ tipo }: { tipo: string }) {
+  const props = {
+    width: 34, height: 34, viewBox: "0 0 32 32", fill: "none",
+    stroke: "var(--kadi-gold)", strokeWidth: 1.5, strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const, "aria-hidden": true,
+  };
+
+  if (tipo === "manual") return (
+    <svg {...props}><circle cx="16" cy="7" r="3.5" /><path d="M16 10.5V20" /><path d="M8 20h16M8 20v6M16 20v6M24 20v6" /></svg>
+  );
+  if (tipo === "automatica") return (
+    <svg {...props}><circle cx="16" cy="16" r="4.5" /><path d="M16 3v4M16 25v4M3 16h4M25 16h4M6.8 6.8l2.8 2.8M22.4 22.4l2.8 2.8M25.2 6.8l-2.8 2.8M9.6 22.4l-2.8 2.8" /></svg>
+  );
+  return (
+    <svg {...props}><path d="M2 16h7M23 16h7" /><circle cx="16" cy="16" r="7" /><circle cx="16" cy="16" r="2.5" /><path d="M16 9v4M16 19v4" /></svg>
+  );
+}
+// ==========================================================
 // Tipos para los mensajes
 interface Message {
     role: 'user' | 'assistant';
@@ -319,38 +345,63 @@ export default function Home() {
       </section>
 
       {/* 👇 NUEVO: COSTOS DE MANO DE OBRA */}
-      <section className="relative z-10 py-16">
+            <ServiciosCarrusel />
+
+      {/* ===== SECCIÓN: COSTOS DE MANO DE OBRA ===== */}
+      <section className="relative z-10 py-20 border-t border-white/5" style={{ backgroundColor: "var(--bg-primary)" }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-light text-white/90 mb-2">Costos de Mano de Obra</h2>
-            <p className="text-white/40 text-sm">Precios fijos por servicio de reparación. Refacciones se cotizan por separado.</p>
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-light text-white/90 mb-3">Costos de Mano de Obra</h2>
+            <div className="mx-auto mb-4 h-px w-24" style={{ background: "linear-gradient(90deg, transparent, var(--kadi-gold), transparent)" }} />
+            <p className="text-white/40 text-sm max-w-md mx-auto">
+              Precios fijos por servicio de reparación. Refacciones se cotizan por separado. No incluye IVA.
+            </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {[
-              { tipo: "Transmisiones Manuales", precio: 1500, icon: "" },
-              { tipo: "Transmisiones Automáticas", precio: 4000, icon: "" },
-              { tipo: "Diferenciales y Transfer", precio: 1300, icon: "" },
-            ].map((item, i) => (
-              <div 
-                key={i} 
-                className="p-6 rounded-2xl border text-center flex flex-col items-center justify-center"
-                style={{
-                  backgroundColor: "var(--bg-card)",
-                  borderColor: "rgba(255,255,255,0.08)",
-                }}
+            {SERVICIOS_MANO_OBRA.map((item) => (
+              <article
+                key={item.tipo}
+                className="group relative overflow-hidden rounded-2xl border p-7 flex flex-col transition-all duration-300 hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                style={{ backgroundColor: "var(--bg-card)", borderColor: "rgba(255,255,255,0.08)" }}
               >
-                <div className="text-4xl mb-4">{item.icon}</div>
-                <h3 className="text-white/80 font-medium mb-2">{item.tipo}</h3>
-                <p className="text-sm text-white/40 mb-4">Mano de obra base</p>
-                <div className="text-3xl font-light" style={{ color: "var(--kadi-gold)" }}>
-                  ${item.precio.toLocaleString()}
+                <div className="absolute inset-x-0 top-0 h-[2px] opacity-60 group-hover:opacity-100 transition-opacity" style={{ background: "linear-gradient(90deg, transparent, var(--kadi-gold), transparent)" }} />
+                <div className="pointer-events-none absolute -top-16 -right-16 h-44 w-44 rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-500 blur-3xl" style={{ background: "var(--kadi-gold)" }} />
+                
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl border" style={{ borderColor: "rgba(255,255,255,0.1)", backgroundColor: "rgba(255,255,255,0.03)" }}>
+                  <IconoManoObra tipo={item.icon} />
                 </div>
-              </div>
+
+                <h3 className="text-lg font-medium text-white/90 mb-1">{item.tipo}</h3>
+                <p className="text-sm text-white/40 mb-8">Mano de obra base</p>
+
+                <div className="mt-auto">
+                  <div className="flex items-start gap-1">
+                    <span className="text-xl font-light mt-2" style={{ color: "var(--kadi-gold)" }}>$</span>
+                    <span className="text-5xl font-light tracking-tight" style={{ color: "var(--kadi-gold)", textShadow: "0 0 28px color-mix(in srgb, var(--kadi-gold) 30%, transparent)" }}>
+                      {item.precio.toLocaleString()}
+                    </span>
+                  </div>
+                  <p className="text-xs text-white/35 mt-2">+ IVA (si requiere factura) · Refacciones aparte</p>
+
+                  <a
+                    href={`https://wa.me/525573382923?text=${encodeURIComponent(`Hola, quiero cotizar el servicio de mano de obra para: ${item.tipo}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-6 block w-full rounded-xl border py-3 text-center text-sm text-white/80 transition-colors hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    style={{ borderColor: "var(--kadi-gold)", outlineColor: "var(--kadi-gold)" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--kadi-gold)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                  >
+                    Cotizar por WhatsApp
+                  </a>
+                </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
+      {/* ===== FIN SECCIÓN COSTOS ===== */}
 
       <RefaccionesSearch
         onSearch={(query) => console.log("Buscando refacción:", query)}
