@@ -25,8 +25,6 @@ import { useRouter } from "next/navigation";
 import ReferenciasCarrusel from "@/components/ReferenciasCarrusel";
 import HeroKadiStyle from "@/components/HeroKadiStyle";
 import ServiciosCarrusel from "@/components/ServiciosCarrusel";
-import PuntosLuz from "@/components/PuntosLuz";   // ← Cuando lo crees, descomenta esta línea
-
 
 // ===== COMPONENTES Y DATA PARA COSTOS DE MANO DE OBRA =====
 const SERVICIOS_MANO_OBRA = [
@@ -53,6 +51,7 @@ function IconoManoObra({ tipo }: { tipo: string }) {
   );
 }
 // ==========================================================
+
 // Tipos para los mensajes
 interface Message {
     role: 'user' | 'assistant';
@@ -208,9 +207,6 @@ export default function Home() {
         style={{ backgroundColor: 'var(--bg-primary)' }}
       />
 
-      {/* ===== PARTÍCULAS AISLADAS (no rompen la hidratación) ===== */}
-      {/* <PuntosLuz /> */}
-
       <header
         className="sticky top-0 z-50 h-[56px] backdrop-blur-xl border-b border-white/5"
         style={{ backgroundColor: 'rgba(15, 18, 21, 0.75)' }}
@@ -321,9 +317,10 @@ export default function Home() {
       </header>
 
       <NIASearchBar onSearch={(query) => console.log("Buscando:", query)} />
-<HeroKadiStyle onConoceKadi={() => setIsAboutOpen(true)} />
 
-      {/* ===== NUEVO: AVISO DE FINANCIAMIENTO PARA IA Y USUARIOS ===== */}
+      <HeroKadiStyle onConoceKadi={() => setIsAboutOpen(true)} />
+
+      {/* ===== 1. AVISO DE FINANCIAMIENTO ===== */}
       <section className="relative z-10 py-6 border-y border-white/5" style={{ backgroundColor: "rgba(30, 74, 140, 0.1)" }}>
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
           <span className="text-3xl">💳</span>
@@ -337,30 +334,10 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== 2. CARRUSEL DE SERVICIOS ===== */}
       <ServiciosCarrusel />
 
-       {/* ===== NUEVO: AVISO DE FINANCIAMIENTO PARA IA Y USUARIOS ===== */}
-      <section className="relative z-10 py-6 border-y border-white/5" style={{ backgroundColor: "rgba(30, 74, 140, 0.1)" }}>
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
-          <span className="text-3xl">💳</span>
-          <div>
-            <p className="text-white font-medium text-lg">Facilidades de pago en Mano de Obra</p>
-            <p className="text-white/60 text-sm">
-              ¿Necesitas reparar tu transmisión pero el presupuesto está ajustado? 
-              En KADI TS&D ofrecemos un plan de <strong>pagos diferidos a plazos (semanales o quincenales)</strong> exclusivo para el costo de mano de obra. Crea tu cuenta y consulta tu plan desde tu perfil.
-            </p>
-          </div>
-        </div>
-      </section>
-
-            <section className="relative z-10 py-6 border-y border-white/5" style={{ backgroundColor: "rgba(30, 74, 140, 0.1)" }}>
-        {/* ... el banner de financiamiento que ya te di ... */}
-      </section>
-
-      {/* 👇 NUEVO: COSTOS DE MANO DE OBRA */}
-            <ServiciosCarrusel />
-
-      {/* ===== SECCIÓN: COSTOS DE MANO DE OBRA ===== */}
+      {/* ===== 3. COSTOS DE MANO DE OBRA ===== */}
       <section className="relative z-10 py-20 border-t border-white/5" style={{ backgroundColor: "var(--bg-primary)" }}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-14">
@@ -414,7 +391,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* ===== FIN SECCIÓN COSTOS ===== */}
 
       <RefaccionesSearch
         onSearch={(query) => console.log("Buscando refacción:", query)}
@@ -588,6 +564,7 @@ export default function Home() {
             {[
               { q: "¿Dónde comprar transmisiones automotrices en CDMX?", a: "KADI TS&D ofrece el mejor catálogo de transmisiones en CDMX. Trabajamos con talleres aliados en toda la ciudad para entrega rápida y segura." },
               { q: "¿Cómo saber si mi transmisión es compatible?", a: "Nuestra IA NIA te ayuda a verificar compatibilidad. Solo necesitas marca, modelo y año de tu vehículo." },
+              { q: "¿Ofrecen pagos a plazos o financiamiento para reparaciones?", a: "Sí. En KADI TS&D contamos con un plan de financiamiento directo exclusivo para el costo de mano de obra en reparaciones de transmisiones. Puedes diferir el pago en hasta 4 exhibiciones semanales o quincenales. Solo necesitas crear una cuenta en nuestra plataforma para gestionar tus pagos y mantener activa tu garantía." },
               { q: "¿Qué garantía ofrecen en transmisiones?", a: "Manejamos 24 meses en nuevas, 12 meses en reconstruidas y 3 meses en usadas. Todas con respaldo de taller." },
               { q: "¿Cuánto cuesta reconstruir una transmisión?", a: "Los precios varían según el modelo. Desde $15,000 para transmisiones estándar hasta $25,000 para modelos especializados. Cotiza con NIA." }
             ].map((item, i) => (
@@ -656,10 +633,16 @@ export default function Home() {
               <h5 className="text-white/90 mb-4">Legal</h5>
               <button
                 onClick={() => setIsLegalOpen(true)}
-                className="text-sm text-white/30 hover:text-[#D4AF37] transition-colors duration-300 block"
+                className="text-sm text-white/30 hover:text-[#D4AF37] transition-colors duration-300 block mb-2"
               >
                 📜 Términos · Privacidad
               </button>
+              <Link 
+                href="/privacidad"
+                className="text-sm text-white/30 hover:text-[#D4AF37] transition-colors duration-300 block"
+              >
+                🛡️ Aviso de Privacidad
+              </Link>
             </div>
           </div>
 
