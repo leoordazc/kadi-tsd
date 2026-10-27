@@ -321,8 +321,21 @@ export default function Home() {
       </header>
 
       <NIASearchBar onSearch={(query) => console.log("Buscando:", query)} />
+<HeroKadiStyle onConoceKadi={() => setIsAboutOpen(true)} />
 
-      <HeroKadiStyle onConoceKadi={() => setIsAboutOpen(true)} />
+      {/* ===== NUEVO: AVISO DE FINANCIAMIENTO PARA IA Y USUARIOS ===== */}
+      <section className="relative z-10 py-6 border-y border-white/5" style={{ backgroundColor: "rgba(30, 74, 140, 0.1)" }}>
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
+          <span className="text-3xl">💳</span>
+          <div>
+            <p className="text-white font-medium text-lg">Facilidades de pago en Mano de Obra</p>
+            <p className="text-white/60 text-sm">
+              ¿Necesitas reparar tu transmisión pero el presupuesto está ajustado? 
+              En KADI TS&D ofrecemos un plan de <strong>pagos diferidos a plazos (semanales o quincenales)</strong> exclusivo para el costo de mano de obra. Crea tu cuenta y consulta tu plan desde tu perfil.
+            </p>
+          </div>
+        </div>
+      </section>
 
       <ServiciosCarrusel />
 
