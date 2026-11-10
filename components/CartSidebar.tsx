@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BankInfoModal from "./BankInfoModal";
 import { supabase } from "@/lib/supabase";
@@ -28,17 +28,24 @@ export default function CartSidebar({
   onLoginRequired,
   onOpenLegal,
 }: CartSidebarProps) {
-  // 👇 CAMBIO: método por defecto = tarjeta
   const [paymentMethod, setPaymentMethod] = useState("tarjeta");
   const [showBankModal, setShowBankModal] = useState(false);
   const [pedidoId, setPedidoId] = useState<string | null>(null);
   const [folio, setFolio] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
+  
+  // 👇 NUEVO ESTADO PARA EL IVA
+  const [requiereFactura, setRequiereFactura] = useState(false);
+
+  // 👇 CÁLCULOS FINANCIEROS (Movidos aquí para que el return los pueda leer)
+  const subtotal = totalPrice;
+  const costoEnvio = subtotal >= 15000 ? 0 : 450; // $450 promedio del rango
+  const iva = requiereFactura ? (subtotal + costoEnvio) * 0.16 : 0;
+  const granTotal = subtotal + costoEnvio + iva;
 
   const crearObtenerPedido = async (): Promise<{ id: string; folio: string } | null> => {
     if (pedidoId && folio) {
-      console.log('📦 Usando pedido existente:', { id: pedidoId, folio });
       return { id: pedidoId, folio };
     }
 
@@ -52,12 +59,11 @@ export default function CartSidebar({
       }
 
       const nuevoFolio = data.folio_completo;
-      console.log(' Nuevo folio generado:', nuevoFolio);
 
       const pedido = {
         user_id: user?.id || null,
-        user_email: user?.email || 'anonimo',
-        total: Number(totalPrice),
+        user_email: user?.email || 'invitado@kaditsd.com.mx', // 👈 Cambiado para invitados
+        total: Number(granTotal), // 👈 Enviamos el Gran Total con IVA y Envío
         items: cartItems.map(item => ({
           id: item.id,
           nombre: item.nombre,
@@ -80,19 +86,18 @@ export default function CartSidebar({
         .single();
 
       if (error) {
-        console.error('❌ Error al crear pedido:', error);
         alert(`Error al crear pedido: ${error.message}`);
         return null;
       }
 
       setPedidoId(pedidoCreado.id);
       setFolio(pedidoCreado.folio);
-      console.log('✅ Pedido creado:', pedidoCreado);
 
+      // Meta Ads Tracking
       try {
         const uniqueEventId = `order_${nuevoFolio}`;
-        const customerEmail = user?.email || user?.user_metadata?.email || 'contacto@kaditsd.com.mx';
-        const customerPhone = user?.user_metadata?.phone || user?.phone || '5500000000';
+        const customerEmail = user?.email || 'contacto@kaditsd.com.mx';
+        const customerPhone = user?.user_metadata?.phone || '5500000000';
 
         await fetch('/api/fb-events', {
           method: 'POST',
@@ -102,7 +107,7 @@ export default function CartSidebar({
             eventId: uniqueEventId,
             eventSourceUrl: 'https://www.kaditsd.com.mx/checkout',
             eventData: {
-              value: Number(totalPrice),
+              value: Number(granTotal), // 👈 Valor real para Meta
               currency: 'MXN',
               content_ids: cartItems.map(item => item.codigo_caja || item.id),
               content_type: 'product',
@@ -116,7 +121,6 @@ export default function CartSidebar({
             }
           })
         });
-        console.log('📊 Evento Purchase enviado exitosamente a Meta con Folio:', uniqueEventId);
       } catch (err) {
         console.error('⚠️ Error enviando evento a Meta:', err);
       }
@@ -124,7 +128,6 @@ export default function CartSidebar({
       return { id: pedidoCreado.id, folio: pedidoCreado.folio };
 
     } catch (error) {
-      console.error('❌ Error:', error);
       alert('Error al crear el pedido');
       return null;
     }
@@ -132,50 +135,24 @@ export default function CartSidebar({
 
   const actualizarMetodoPago = async (nuevoMetodo: string) => {
     if (!pedidoId) return false;
-
-    const { error } = await supabase
-      .from('pedidos')
-      .update({ metodo_pago: nuevoMetodo })
-      .eq('id', pedidoId);
-
-    if (error) {
-      console.error('❌ Error al actualizar método de pago:', error);
-      return false;
-    }
-    
-    console.log(`✅ Método de pago actualizado a: ${nuevoMetodo}`);
-    return true;
+    const { error } = await supabase.from('pedidos').update({ metodo_pago: nuevoMetodo }).eq('id', pedidoId);
+    return !error;
   };
 
   const handleTransferencia = async () => {
     setGuardando(true);
-    
     const pedido = await crearObtenerPedido();
-    if (!pedido) {
-      setGuardando(false);
-      return;
-    }
-    
-    if (paymentMethod !== 'transferencia') {
-      await actualizarMetodoPago('transferencia');
-    }
-    
+    if (!pedido) { setGuardando(false); return; }
+    if (paymentMethod !== 'transferencia') await actualizarMetodoPago('transferencia');
     setShowBankModal(true);
     setGuardando(false);
   };
 
   const handleCardPayment = async () => {
     setGuardando(true);
-    
     const pedido = await crearObtenerPedido();
-    if (!pedido) {
-      setGuardando(false);
-      return;
-    }
-    
-    if (paymentMethod !== 'tarjeta') {
-      await actualizarMetodoPago('tarjeta');
-    }
+    if (!pedido) { setGuardando(false); return; }
+    if (paymentMethod !== 'tarjeta') await actualizarMetodoPago('tarjeta');
     
     try {
       const preferenceRes = await fetch("/api/create-preference", {
@@ -192,16 +169,13 @@ export default function CartSidebar({
       });
 
       const preferenceData = await preferenceRes.json();
-
       if (preferenceData.error) {
         alert('Error al crear la preferencia de pago');
         setGuardando(false);
         return;
       }
-
       window.location.href = preferenceData.init_point;
     } catch (error) {
-      console.error('Error en Mercado Pago:', error);
       alert('Error al procesar el pago con tarjeta');
       setGuardando(false);
     }
@@ -209,16 +183,9 @@ export default function CartSidebar({
 
   const handleWhatsApp = async () => {
     setGuardando(true);
-    
     const pedido = await crearObtenerPedido();
-    if (!pedido) {
-      setGuardando(false);
-      return;
-    }
-    
-    if (paymentMethod !== 'whatsapp') {
-      await actualizarMetodoPago('whatsapp');
-    }
+    if (!pedido) { setGuardando(false); return; }
+    if (paymentMethod !== 'whatsapp') await actualizarMetodoPago('whatsapp');
     
     const productosResumen = cartItems.map(item => 
       `• ${item.cantidad}x ${item.nombre} - $${(item.precio * item.cantidad).toLocaleString()}`
@@ -227,9 +194,9 @@ export default function CartSidebar({
     const mensaje = encodeURIComponent(
       `Hola, quiero realizar un pedido en KADI TS&D.%0A%0A` +
       `📦 **PRODUCTOS:**%0A${productosResumen}%0A%0A` +
-      ` **TOTAL:** $${totalPrice.toLocaleString()}%0A%0A` +
-      ` **FOLIO:** ${pedido.folio}%0A%0A` +
-      ` **DATOS DEL CLIENTE:**%0A` +
+      `💰 **TOTAL:** $${granTotal.toLocaleString()}%0A%0A` +
+      `📋 **FOLIO:** ${pedido.folio}%0A%0A` +
+      `📋 **DATOS DEL CLIENTE:**%0A` +
       `Nombre: ${user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Cliente'}%0A` +
       `Email: ${user?.email || 'No especificado'}`
     );
@@ -240,12 +207,7 @@ export default function CartSidebar({
   };
 
   const handleCheckout = async () => {
-    if (!user) {
-      onClose();
-      onLoginRequired?.();
-      return;
-    }
-
+    // 👈 QUITAMOS EL BLOQUEO DE LOGIN AQUÍ
     if (!aceptaTerminos) {
       alert('Debes aceptar los términos y condiciones para continuar');
       return;
@@ -352,40 +314,60 @@ export default function CartSidebar({
             {/* SECCIÓN DE PAGO */}
             {cartItems.length > 0 && (
               <div className="border-t border-white/5 p-6">
-                {!user && (
-                  <div 
-                    className="mb-3 p-3 rounded-lg"
-                    style={{
-                      backgroundColor: "rgba(212, 175, 55, 0.08)",
-                      border: "1px solid rgba(212, 175, 55, 0.25)",
-                    }}
-                  >
-                    <div className="flex items-start gap-2">
-                      <span className="text-sm" style={{ color: "var(--kadi-gold)" }}>🔒</span>
-                      <div>
-                        <p className="text-white/70 text-xs font-medium">
-                          Regístrate o inicia sesión para comprar
-                        </p>
-                        <button
-                          onClick={() => {
-                            onClose();
-                            onLoginRequired?.();
-                          }}
-                          className="text-xs hover:underline transition-colors"
-                          style={{ color: "var(--kadi-gold)" }}
-                        >
-                          Crear cuenta →
-                        </button>
-                      </div>
-                    </div>
+                
+                {/* DESGLOSE FINANCIERO */}
+                <div className="mb-4 space-y-2 text-sm">
+                  <div className="flex justify-between text-white/60">
+                    <span>Subtotal</span>
+                    <span>${subtotal.toLocaleString()}</span>
                   </div>
-                )}
-
-                <div className="flex justify-between mb-4">
-                  <span className="text-white/40">Total:</span>
-                  <span className="text-xl text-white/90">${totalPrice.toLocaleString()}</span>
+                  <div className="flex justify-between text-white/60">
+                    <span>Envío estimado</span>
+                    <span>{costoEnvio === 0 ? "Gratis" : `$${costoEnvio.toLocaleString()}`}</span>
+                  </div>
+                  {requiereFactura && (
+                    <div className="flex justify-between text-white/60">
+                      <span>IVA (16%)</span>
+                      <span>${iva.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-white font-medium pt-2 border-t border-white/10">
+                    <span>Total a pagar</span>
+                    <span className="text-xl" style={{ color: "var(--kadi-gold)" }}>${granTotal.toLocaleString()}</span>
+                  </div>
                 </div>
 
+                {/* CHECKBOX DE FACTURA */}
+                <div className="mb-4">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <div className="relative flex items-center mt-0.5">
+                      <input
+                        type="checkbox"
+                        checked={requiereFactura}
+                        onChange={(e) => setRequiereFactura(e.target.checked)}
+                        className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md transition-all cursor-pointer"
+                        style={{
+                          backgroundColor: requiereFactura ? "var(--kadi-gold)" : "transparent",
+                          borderColor: requiereFactura ? "var(--kadi-gold)" : "rgba(255,255,255,0.2)",
+                        }}
+                      />
+                      <svg 
+                        className="absolute w-3 h-3 text-white left-1 top-1 pointer-events-none transition-opacity"
+                        style={{ opacity: requiereFactura ? 1 : 0 }}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span className="text-xs text-white/50 leading-relaxed group-hover:text-white/70 transition">
+                      Requiero factura fiscal (se sumará el 16% de IVA al total).
+                    </span>
+                  </label>
+                </div>
+
+                {/* MÉTODO DE PAGO */}
                 <div className="mb-4">
                   <label className="text-white/40 text-xs block mb-2">Método de pago</label>
                   <select
@@ -397,9 +379,9 @@ export default function CartSidebar({
                       borderColor: "rgba(212, 175, 55, 0.2)",
                     }}
                   >
-                    <option value="tarjeta"> Tarjeta de crédito/débito</option>
-                    <option value="transferencia"> Transferencia BBVA</option>
-                    <option value="whatsapp"> Coordinar por WhatsApp</option>
+                    <option value="tarjeta">💳 Tarjeta (Mercado Pago)</option>
+                    <option value="transferencia">🏦 Transferencia BBVA</option>
+                    <option value="whatsapp">📱 Coordinar por WhatsApp</option>
                   </select>
                 </div>
 
@@ -448,14 +430,14 @@ export default function CartSidebar({
                 {/* BOTÓN DE PAGO */}
                 <button
                   onClick={handleCheckout}
-                  disabled={guardando || !user || !aceptaTerminos}
+                  disabled={guardando || !aceptaTerminos}
                   className={`w-full py-3 rounded-lg font-medium transition ${
-                    !user || !aceptaTerminos
+                    !aceptaTerminos
                       ? 'bg-white/10 text-white/30 cursor-not-allowed'
                       : 'text-white'
                   }`}
                   style={
-                    !user || !aceptaTerminos
+                    !aceptaTerminos
                       ? {}
                       : {
                           background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
@@ -463,13 +445,11 @@ export default function CartSidebar({
                         }
                   }
                 >
-                  {!user
-                    ? "🔒 Inicia sesión para comprar"
-                    : !aceptaTerminos
-                      ? "☑️ Acepta los términos para continuar"
-                      : guardando
-                        ? "Procesando..."
-                        : "Proceder al pago"}
+                  {!aceptaTerminos
+                    ? "☑️ Acepta los términos para continuar"
+                    : guardando
+                      ? "Procesando..."
+                      : "Proceder al pago"}
                 </button>
               </div>
             )}
@@ -483,7 +463,7 @@ export default function CartSidebar({
           setPedidoId(null);
           setFolio(null);
         }}
-        total={totalPrice}
+        total={granTotal}
         folio={folio || undefined}
       />
     </AnimatePresence>
