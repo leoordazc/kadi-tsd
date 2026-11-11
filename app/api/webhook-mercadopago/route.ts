@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { createClient } from '@supabase/supabase-js'; // <-- NUEVO
+import { createClient } from '@supabase/supabase-js';
 
-// <-- NUEVO: Cliente administrador para saltar el RLS en los Webhooks
+// Cliente administrador para saltar el RLS en los Webhooks
 const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || '',
     process.env.SUPABASE_SERVICE_ROLE_KEY || '' 
@@ -27,17 +27,24 @@ export async function POST(req: Request) {
             if (payment.status === 'approved') {
                 const referencia = payment.external_reference;
                 
+                // 👇 NUEVO: Extraer datos del comprador (Payer) de forma segura
+                const payerData = payment.payer || {};
+                const nombreComprador = payerData.name 
+                    ? `${payerData.name} ${payerData.surname || ''}`.trim() 
+                    : 'Invitado';
+                const emailComprador = payerData.email || 'No proporcionado';
+                const telefonoComprador = payerData.phone?.number || 'No proporcionado';
+                
                 if (referencia) {
                     
                     // ========================================================
-                    // 1. LÓGICA PARA MANO DE OBRA (NUEVO)
+                    // 1. LÓGICA PARA MANO DE OBRA
                     // ========================================================
                     if (referencia.startsWith('MANO_OBRA_')) {
-                        // Extraemos el folio: MANO_OBRA_KADI-SRV-001_1712345678
                         const partes = referencia.split('_');
                         const folioServicio = partes[2]; // KADI-SRV-001
                         
-                        console.log(`🔧 Procesando pago de Mano de Obra: ${folioServicio}`);
+                        console.log(`🔧 Procesando pago de Mano de Obra: ${folioServicio} para ${nombreComprador}`);
 
                         const { data: fin, error: fetchError } = await supabaseAdmin
                             .from('financiamientos_mano_obra')
@@ -58,7 +65,6 @@ export async function POST(req: Request) {
                                 .update({
                                     pagos_realizados: nuevosPagos,
                                     fecha_proximo_pago: nuevaFecha.toISOString(),
-                                    // Si ya terminó de pagar, la garantía se queda activa
                                     garantia_activa: true 
                                 })
                                 .eq('id', fin.id);
@@ -67,22 +73,30 @@ export async function POST(req: Request) {
                         }
 
                     // ========================================================
-                    // 2. LÓGICA PARA PEDIDOS FÍSICOS (TU LÓGICA ORIGINAL)
+                    // 2. LÓGICA PARA PEDIDOS FÍSICOS
                     // ========================================================
                     } else {
                         const folio = referencia;
+                        
+                        // 👇 ACTUALIZAMOS CON LOS DATOS DEL COMPRADOR
                         const { error } = await supabase
                             .from('pedidos')
-                            .update({ status: 'pagado', updated_at: new Date().toISOString() })
+                            .update({ 
+                                status: 'pagado', 
+                                updated_at: new Date().toISOString(),
+                                nombre_cliente: nombreComprador, // Guardamos el nombre
+                                email_cliente: emailComprador,   // Guardamos el correo
+                                telefono_cliente: telefonoComprador // Guardamos el teléfono
+                            })
                             .eq('folio', folio);
                         
                         if (error) {
                             console.error('❌ Error actualizando pedido:', error);
                         } else {
-                            console.log(`✅ Pedido ${folio} actualizado a pagado`);
+                            console.log(`✅ Pedido ${folio} actualizado a pagado. Comprador: ${nombreComprador} (${emailComprador})`);
                             
-                            // 📧 Opcional: Enviar correo al cliente
-                            // await enviarCorreoConfirmacion(folio);
+                            // 📧 Aquí podrías disparar un correo de confirmación
+                            // await enviarCorreoConfirmacion(folio, emailComprador, nombreComprador);
                         }
                     }
                 }
