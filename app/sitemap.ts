@@ -6,7 +6,7 @@ export const revalidate = 3600; // Se actualiza cada hora
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.kaditsd.com.mx';
 
-  // 1. Rutas estáticas de tu sitio
+  // 1. Rutas estáticas
   const rutasEstaticas: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
@@ -28,11 +28,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // 2. Rutas dinámicas: Fichas de producto desde Supabase
+  // 2. Rutas dinámicas (Fichas de producto desde Supabase)
   try {
+    // 👇 CAMBIO AQUÍ: Usamos created_at en lugar de updated_at
     const { data: productos, error } = await supabase
       .from('productos')
-      .select('codigo_caja, updated_at') // Asumiendo que tienes una columna updated_at
+      .select('codigo_caja, created_at')
       .eq('activo', true)
       .gt('stock', 0);
 
@@ -43,7 +44,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const rutasProductos: MetadataRoute.Sitemap = (productos || []).map((prod) => ({
       url: `${baseUrl}/catalogo/${prod.codigo_caja}`,
-      lastModified: prod.updated_at ? new Date(prod.updated_at) : new Date(),
+      // 👇 CAMBIO AQUÍ: Usamos prod.created_at
+      lastModified: prod.created_at ? new Date(prod.created_at) : new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
     }));
