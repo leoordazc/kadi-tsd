@@ -64,13 +64,16 @@ export default function SeguimientoPage() {
     }
   };
 
-  const getEstadoInfo = (status: string) => {
-    // Estados basados en el nuevo flujo de KADI
+    const getEstadoInfo = (status: string) => {
     const estados: Record<string, { label: string; color: string; bg: string; step: number; icon: string }> = {
       pendiente_pago: { label: "Pendiente de pago", color: "text-yellow-400", bg: "bg-yellow-400/10", step: 1, icon: "💳" },
-      en_preparacion: { label: "En preparación (CEDIS)", color: "text-blue-400", bg: "bg-blue-400/10", step: 2, icon: "📦" },
-      en_paqueteria: { label: "Entregado a paquetería", color: "text-purple-400", bg: "bg-purple-400/10", step: 3, icon: "🚚" },
-      entregado: { label: "Entregado al cliente", color: "text-green-400", bg: "bg-green-400/10", step: 4, icon: "✅" },
+      
+      // 👇 AGREGAMOS ESTE ESTADO PARA QUE LA BARRA AVANCE CUANDO PAGAN
+      pagado: { label: "Pago confirmado", color: "text-blue-400", bg: "bg-blue-400/10", step: 2, icon: "✅" },
+      
+      preparacion: { label: "En preparación (CEDIS)", color: "text-blue-400", bg: "bg-blue-400/10", step: 2, icon: "📦" },
+      paqueteria: { label: "Entregado a paquetería", color: "text-purple-400", bg: "bg-purple-400/10", step: 3, icon: "🚚" },
+      entregado: { label: "Entregado al cliente", color: "text-green-400", bg: "bg-green-400/10", step: 4, icon: "🏁" },
       cancelado: { label: "Cancelado", color: "text-red-400", bg: "bg-red-400/10", step: 0, icon: "❌" }
     };
     return estados[status] || estados.pendiente_pago;
