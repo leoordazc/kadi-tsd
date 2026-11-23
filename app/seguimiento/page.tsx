@@ -7,135 +7,116 @@ import { supabase } from "@/lib/supabase";
 
 interface Pedido {
   id: string;
-  fecha: string;
+  folio: string;
+  created_at: string;
   total: number;
-  estado: string;
+  status: string; // Cambiado a status para coincidir con tu tabla
   metodo_pago: string;
   numero_guia: string;
   paqueteria?: string;
   items: any[];
 }
 
-// URLs de rastreo por paquetería
-const urlsRastreo: Record<string, string> = {
-  "omnibus": "https://www.omnibusdemexico.com.mx/rastreo?numero_guia=",
-  "estafeta": "https://www.estafeta.com/rastreo?numero_guia=",
-  "dhl": "https://www.dhl.com/mx-es/home/tracking.html?tracking-id=",
-  "fedex": "https://www.fedex.com/apps/fedextrack/?tracknumbers=",
-  "redpack": "https://www.redpack.com.mx/rastreo/?guia=",
-  "mercadoenvios": "https://www.mercadolibre.com.mx/envios/tracking?id=",
-  "default": "https://www.omnibusdemexico.com.mx/rastreo?numero_guia="
-};
-
-const nombresPaqueteria: Record<string, string> = {
-  "omnibus": "Ómnibus de México",
-  "estafeta": "Estafeta",
-  "dhl": "DHL",
-  "fedex": "FedEx",
-  "redpack": "Redpack",
-  "mercadoenvios": "Mercado Envíos",
-  "default": "Paquetería"
-};
-
 export default function SeguimientoPage() {
-  const [numeroGuia, setNumeroGuia] = useState("");
+  const [busqueda, setBusqueda] = useState("");
   const [pedido, setPedido] = useState<Pedido | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [iframeLoading, setIframeLoading] = useState(true);
 
   const buscarPedido = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!numeroGuia.trim()) return;
+    if (!busqueda.trim()) return;
 
     setLoading(true);
     setError("");
     setPedido(null);
 
+    // Buscamos por número de guía O por folio de pedido
     const { data, error } = await supabase
       .from('pedidos')
       .select('*')
-      .eq('numero_guia', numeroGuia.trim())
+      .or(`numero_guia.eq.${busqueda.trim()},folio.eq.${busqueda.trim()}`)
       .single();
 
     if (error || !data) {
-      setError("No encontramos un pedido con ese número de guía");
+      setError("No encontramos un pedido con ese número de guía o folio. Verifica los datos.");
     } else {
       setPedido(data);
-      setIframeLoading(true);
     }
     setLoading(false);
   };
 
-  const getTrackingUrl = (guia: string, paqueteria?: string) => {
-    const baseUrl = urlsRastreo[paqueteria || 'default'] || urlsRastreo.default;
-    return `${baseUrl}${guia}`;
-  };
-
-  const getPaqueteriaNombre = (paqueteria?: string) => {
-    return nombresPaqueteria[paqueteria || 'default'];
-  };
-
-  const getEstadoInfo = (estado: string) => {
-    const estados: Record<string, { label: string; color: string; bg: string; step: number }> = {
-      pendiente: { label: "Pendiente de pago", color: "text-yellow-400", bg: "bg-yellow-400/10", step: 1 },
-      pagado: { label: "Pago confirmado", color: "text-blue-400", bg: "bg-blue-400/10", step: 2 },
-      enviado: { label: "En camino", color: "text-purple-400", bg: "bg-purple-400/10", step: 3 },
-      entregado: { label: "Entregado", color: "text-green-400", bg: "bg-green-400/10", step: 4 },
-      cancelado: { label: "Cancelado", color: "text-red-400", bg: "bg-red-400/10", step: 0 }
+  const getEstadoInfo = (status: string) => {
+    // Estados basados en el nuevo flujo de KADI
+    const estados: Record<string, { label: string; color: string; bg: string; step: number; icon: string }> = {
+      pendiente_pago: { label: "Pendiente de pago", color: "text-yellow-400", bg: "bg-yellow-400/10", step: 1, icon: "💳" },
+      en_preparacion: { label: "En preparación (CEDIS)", color: "text-blue-400", bg: "bg-blue-400/10", step: 2, icon: "📦" },
+      en_paqueteria: { label: "Entregado a paquetería", color: "text-purple-400", bg: "bg-purple-400/10", step: 3, icon: "🚚" },
+      entregado: { label: "Entregado al cliente", color: "text-green-400", bg: "bg-green-400/10", step: 4, icon: "✅" },
+      cancelado: { label: "Cancelado", color: "text-red-400", bg: "bg-red-400/10", step: 0, icon: "❌" }
     };
-    return estados[estado] || estados.pendiente;
+    return estados[status] || estados.pendiente_pago;
   };
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/75 border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 group">
-              <motion.span className="text-[#ef4444] text-xl group-hover:-translate-x-1 transition-transform">
-                ←
-              </motion.span>
-              <span className="text-white/70 group-hover:text-white">Volver al inicio</span>
-            </Link>
-            <h1 className="text-2xl font-light">Seguimiento de <span className="text-[#ef4444]">pedidos</span></h1>
-          </div>
+    <main className="min-h-screen text-white pb-20" style={{ backgroundColor: "var(--bg-primary)" }}>
+      
+      {/* Header Minimalista */}
+      <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5" style={{ backgroundColor: "rgba(15, 18, 21, 0.75)" }}>
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 group text-white/60 hover:text-white transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            <span className="text-sm">Volver al inicio</span>
+          </Link>
+          <h1 className="text-lg font-light text-white/90">Seguimiento de pedidos</h1>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-6 py-12">
+      <div className="max-w-3xl mx-auto px-6 py-12">
         
         {/* Formulario de búsqueda */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 p-8 mb-8"
+          className="rounded-2xl border p-8 mb-8"
+          style={{
+            backgroundColor: "var(--bg-card)",
+            borderColor: "rgba(255,255,255,0.08)",
+          }}
         >
           <div className="text-center mb-6">
             <div className="text-5xl mb-3">📦</div>
-            <h2 className="text-xl font-light">Rastrear mi pedido</h2>
-            <p className="text-white/40 text-sm mt-1">Ingresa tu número de guía para ver el estado</p>
+            <h2 className="text-xl font-light text-white/90">Rastrear mi pedido</h2>
+            <p className="text-white/40 text-sm mt-1">Ingresa tu número de guía o folio de pedido</p>
           </div>
 
           <form onSubmit={buscarPedido} className="space-y-4">
             <div>
-              <label className="text-white/40 text-xs block mb-1">Número de guía</label>
               <input
                 type="text"
-                value={numeroGuia}
-                onChange={(e) => setNumeroGuia(e.target.value)}
-                placeholder="Ej: KADI-12345 o 123456789"
-                className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-white/80 placeholder-white/30 focus:outline-none focus:border-[#ef4444]/50 transition-colors"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Ej: KADI-00001 o 123456789"
+                className="w-full rounded-lg p-3 text-white/90 placeholder-white/30 focus:outline-none transition"
+                style={{
+                  backgroundColor: "rgba(15, 18, 21, 0.6)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }}
+                onFocus={(e) => e.currentTarget.style.borderColor = "var(--kadi-gold)"}
+                onBlur={(e) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}
                 required
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#ef4444] text-white py-3 rounded-lg hover:bg-[#ef4444]/90 transition disabled:opacity-50"
+              className="w-full py-3 rounded-lg font-medium text-white transition disabled:opacity-50"
+              style={{
+                background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
+                boxShadow: "0 8px 20px rgba(30, 74, 140, 0.3)",
+              }}
             >
-              {loading ? "Buscando..." : "Rastrear pedido"}
+              {loading ? "Buscando..." : "Buscar pedido"}
             </button>
           </form>
         </motion.div>
@@ -151,37 +132,35 @@ export default function SeguimientoPage() {
           </motion.div>
         )}
 
-        {/* Resultados con iframe incrustado */}
+        {/* Resultados */}
         {pedido && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-2xl border border-white/5 overflow-hidden"
+            className="rounded-2xl border overflow-hidden"
+            style={{
+              backgroundColor: "var(--bg-card)",
+              borderColor: "rgba(255,255,255,0.08)",
+            }}
           >
             {/* Info del pedido */}
-            <div className="p-6 border-b border-white/10">
+            <div className="p-6 border-b border-white/5 bg-white/5">
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <h3 className="text-white/90 font-medium">Pedido #{pedido.id.slice(0, 8)}</h3>
-                  <p className="text-white/30 text-xs">{new Date(pedido.fecha).toLocaleDateString('es-MX')}</p>
+                  <h3 className="text-white/90 font-medium text-lg">Pedido {pedido.folio || pedido.id.slice(0, 8)}</h3>
+                  <p className="text-white/40 text-xs mt-1">
+                    Fecha: {new Date(pedido.created_at).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs ${getEstadoInfo(pedido.estado).bg} ${getEstadoInfo(pedido.estado).color}`}>
-                  {getEstadoInfo(pedido.estado).label}
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getEstadoInfo(pedido.status).bg} ${getEstadoInfo(pedido.status).color}`}>
+                  {getEstadoInfo(pedido.status).label}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-white/40 text-xs">Número de guía</p>
-                  <p className="text-white/80 font-mono">{pedido.numero_guia}</p>
-                </div>
-                <div>
-                  <p className="text-white/40 text-xs">Paquetería</p>
-                  <p className="text-white/80">{getPaqueteriaNombre(pedido.paqueteria)}</p>
-                </div>
+              <div className="grid grid-cols-2 gap-4 text-sm mt-6">
                 <div>
                   <p className="text-white/40 text-xs">Total</p>
-                  <p className="text-white/80">${pedido.total.toLocaleString()}</p>
+                  <p className="text-white/90 text-lg">${pedido.total.toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-white/40 text-xs">Método de pago</p>
@@ -191,61 +170,76 @@ export default function SeguimientoPage() {
             </div>
 
             {/* Barra de progreso */}
-            {pedido.estado !== 'cancelado' && (
-              <div className="px-6 pt-4">
-                <div className="flex justify-between mb-2 text-xs text-white/40">
-                  <span>Pendiente</span>
-                  <span>Pagado</span>
-                  <span>Enviado</span>
-                  <span>Entregado</span>
+            {pedido.status !== 'cancelado' && (
+              <div className="px-6 py-8">
+                <div className="flex justify-between mb-3 text-xs font-medium text-white/50">
+                  <span className={getEstadoInfo(pedido.status).step >= 1 ? "text-white" : ""}>Pago</span>
+                  <span className={getEstadoInfo(pedido.status).step >= 2 ? "text-white" : ""}>Preparación</span>
+                  <span className={getEstadoInfo(pedido.status).step >= 3 ? "text-white" : ""}>Paquetería</span>
+                  <span className={getEstadoInfo(pedido.status).step >= 4 ? "text-white" : ""}>Entregado</span>
                 </div>
-                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-full h-2 rounded-full overflow-hidden bg-white/10">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${(getEstadoInfo(pedido.estado).step / 4) * 100}%` }}
-                    transition={{ duration: 0.5 }}
-                    className="h-full bg-gradient-to-r from-[#ef4444] to-[#f97316]"
+                    animate={{ width: `${(getEstadoInfo(pedido.status).step / 4) * 100}%` }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="h-full rounded-full"
+                    style={{
+                      background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-gold))",
+                    }}
                   />
                 </div>
               </div>
             )}
 
-            {/* IFRAME DE RASTREO */}
-            <div className="p-6">
-              <div className="bg-black/40 rounded-lg overflow-hidden border border-white/10">
-                <div className="bg-black/60 px-4 py-2 border-b border-white/10 flex justify-between items-center">
-                  <span className="text-white/50 text-xs">Rastreo en tiempo real</span>
-                  <span className="text-white/30 text-xs">{getPaqueteriaNombre(pedido.paqueteria)}</span>
-                </div>
-                
-                {iframeLoading && (
-                  <div className="h-[500px] flex items-center justify-center bg-black/40">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-8 h-8 border-2 border-[#ef4444] border-t-transparent rounded-full animate-spin" />
-                      <p className="text-white/40 text-sm">Cargando información de rastreo...</p>
+            {/* Datos de envío (Solo si ya está en paquetería o entregado) */}
+            {(pedido.status === 'en_paqueteria' || pedido.status === 'entregado') && (
+              <div className="p-6 pt-0">
+                <div 
+                  className="rounded-xl p-5 border"
+                  style={{ 
+                    backgroundColor: "rgba(212, 175, 55, 0.05)", 
+                    borderColor: "rgba(212, 175, 55, 0.2)" 
+                  }}
+                >
+                  <h4 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: "var(--kadi-gold)" }}>
+                    <span>🚚</span> Información de envío
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-white/40 text-xs mb-1">Paquetería</p>
+                      <p className="text-white/90 font-medium">{pedido.paqueteria || "No especificada"}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/40 text-xs mb-1">Número de guía</p>
+                      <p className="text-white/90 font-mono bg-black/40 px-2 py-1 rounded inline-block">
+                        {pedido.numero_guia || "Pendiente"}
+                      </p>
                     </div>
                   </div>
-                )}
-                
-                <iframe
-                  src={getTrackingUrl(pedido.numero_guia, pedido.paqueteria)}
-                  className={`w-full h-[500px] border-0 ${iframeLoading ? 'hidden' : 'block'}`}
-                  title="Rastreo de paquetería"
-                  onLoad={() => setIframeLoading(false)}
-                  onError={() => setIframeLoading(false)}
-                />
+                  
+                  {pedido.numero_guia && (
+                    <p className="text-xs text-white/40 mt-4">
+                      * Puedes usar este número en la página oficial de {pedido.paqueteria || "la paquetería"} para rastrear tu envío.
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Ayuda */}
-            <div className="p-6 pt-0 text-center border-t border-white/10">
-              <p className="text-white/30 text-xs mb-2">¿Problemas con tu envío?</p>
-              <button
-                onClick={() => window.open("https://wa.me/5215512345678", "_blank")}
-                className="text-[#ef4444] text-sm hover:text-white transition"
+            <div className="p-6 border-t border-white/5 text-center">
+              <p className="text-white/30 text-xs mb-2">¿Tienes dudas sobre tu pedido?</p>
+              <a
+                href={`https://wa.me/525573382923?text=Hola, tengo una duda sobre mi pedido ${pedido.folio || pedido.id.slice(0, 8)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-medium transition-colors hover:text-white"
+                style={{ color: "var(--kadi-gold)" }}
               >
-                Contactar a soporte 📱
-              </button>
+                Contactar a soporte por WhatsApp
+              </a>
             </div>
           </motion.div>
         )}
