@@ -9,7 +9,6 @@ export async function POST(req: Request) {
   try {
     const { items, external_reference } = await req.json();
 
-    // Validamos que al menos haya un producto
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "No hay productos en el carrito" }, { status: 400 });
     }
@@ -17,11 +16,15 @@ export async function POST(req: Request) {
     const preference = {
       items: items.map((item: any) => ({
         title: item.nombre,
-        quantity: Number(item.quantity), // Aseguramos que sea número
+        quantity: Number(item.quantity),
         currency_id: "MXN",
-        unit_price: Number(item.precio), // Aseguramos que sea número
+        unit_price: Number(item.precio),
       })),
-      external_reference: external_reference,
+      external_reference: external_reference, 
+      
+      // 👇 NUEVO: Aquí le decimos a Mercado Pago que muestre el folio
+      statement_descriptor: `KADI ${external_reference}`, 
+      
       back_urls: {
         success: `${process.env.NEXT_PUBLIC_URL}/perfil`,
         failure: `${process.env.NEXT_PUBLIC_URL}/catalogo`,
