@@ -19,10 +19,11 @@ interface Producto {
     marca_vehiculo?: string[];
     modelo_vehiculo?: string[];
     imagen_url?: string;
+    // 👇 AGREGAMOS ESTAS PROPIEDADES PARA QUE TYPESCRIPT NO MARQUE ERROR
+    año_inicio?: number;
+    año_fin?: number;
 }
 
-// ===== PRIORIDAD DE BÚSQUEDA: productos más pedidos primero =====
-// Los que aparecen aquí se ordenan primero (en ese orden exacto)
 const PRIORIDAD_BUSQUEDA: string[] = [
     "spark classic",
     "chevrolet beat",
@@ -41,11 +42,15 @@ export default function CatalogoPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type?: "success" | "error" | "info" } | null>(null);
-    const [showBrands, setShowBrands] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
+    
+    // Estados de los nuevos filtros
+    const [selectedAnio, setSelectedAnio] = useState<string | null>(null);
+    const [selectedCategoria, setSelectedCategoria] = useState<string | null>(null);
+    const [selectedEstado, setSelectedEstado] = useState<string | null>(null);
+    const [precioMax, setPrecioMax] = useState<number | null>(null);
 
-    // Ref para hacer scroll al inicio del grid
     const gridRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -58,7 +63,7 @@ export default function CatalogoPage() {
                     .eq('activo', true)
                     .gt('stock', 0)
                     .order('nombre')
-                    .limit(100); // Subimos el límite para tener más productos y ordenar bien
+                    .limit(150);
 
                 if (error) throw error;
                 setProductos(data || []);
@@ -73,7 +78,6 @@ export default function CatalogoPage() {
         fetchProductos();
     }, []);
 
-    // ===== ORDENAR PRODUCTOS: prioridad primero, luego el resto alfabético =====
     const productosOrdenados = useMemo(() => {
         if (productos.length === 0) return [];
 
@@ -85,7 +89,6 @@ export default function CatalogoPage() {
             const modeloStr = (producto.modelo_vehiculo || []).join(" ").toLowerCase();
             const marcaStr = (producto.marca_vehiculo || []).join(" ").toLowerCase();
 
-            // Buscar si el producto coincide con algún término prioritario
             const esPrioritario = PRIORIDAD_BUSQUEDA.some((termino) =>
                 nombreLower.includes(termino) ||
                 modeloStr.includes(termino) ||
@@ -99,7 +102,6 @@ export default function CatalogoPage() {
             }
         });
 
-        // Ordenar los prioritarios según el orden exacto de PRIORIDAD_BUSQUEDA
         prioritarios.sort((a, b) => {
             const nombreA = `${a.nombre} ${(a.modelo_vehiculo || []).join(" ")} ${(a.marca_vehiculo || []).join(" ")}`.toLowerCase();
             const nombreB = `${b.nombre} ${(b.modelo_vehiculo || []).join(" ")} ${(b.marca_vehiculo || []).join(" ")}`.toLowerCase();
@@ -136,6 +138,19 @@ export default function CatalogoPage() {
         return Array.from(modelosSet);
     }, [productos, selectedMarca]);
 
+    // Lista de años disponibles extraída de los productos
+    const aniosDisponibles = useMemo(() => {
+        const aniosSet = new Set<number>();
+        productos.forEach(p => {
+            if (p.año_inicio && p.año_fin) {
+                for (let i = p.año_inicio; i <= p.año_fin; i++) {
+                    aniosSet.add(i);
+                }
+            }
+        });
+        return Array.from(aniosSet).sort((a, b) => b - a);
+    }, [productos]);
+
     const filteredProductos = useMemo(() => {
         let result = productosOrdenados;
 
@@ -145,16 +160,34 @@ export default function CatalogoPage() {
         if (selectedModelo) {
             result = result.filter(p => p.modelo_vehiculo?.includes(selectedModelo));
         }
+        if (selectedAnio) {
+            const anioNum = parseInt(selectedAnio);
+            result = result.filter(p => {
+                if (!p.año_inicio || !p.año_fin) return true; 
+                return anioNum >= p.año_inicio && anioNum <= p.año_fin;
+            });
+        }
+
+        if (selectedEstado) {
+            result = result.filter(p => p.tipo.toLowerCase() === selectedEstado.toLowerCase());
+        }
+        if (precioMax) {
+            result = result.filter(p => p.precio <= precioMax);
+        }
+        if (selectedCategoria) {
+             result = result.filter(p => p.nombre.toLowerCase().includes(selectedCategoria.toLowerCase()));
+        }
+
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
-            result = result.filter(p =>
+            result = result.filter(p => 
                 p.nombre.toLowerCase().includes(query) ||
                 p.codigo_caja.toLowerCase().includes(query)
             );
         }
-
+        
         return result;
-    }, [productosOrdenados, selectedMarca, selectedModelo, searchQuery]);
+    }, [productosOrdenados, selectedMarca, selectedModelo, selectedAnio, selectedCategoria, selectedEstado, precioMax, searchQuery]);
 
     const totalPages = Math.ceil(filteredProductos.length / itemsPerPage);
     const paginatedProductos = filteredProductos.slice(
@@ -162,10 +195,9 @@ export default function CatalogoPage() {
         currentPage * itemsPerPage
     );
 
-    // ===== SCROLL AL INICIO DEL GRID AL CAMBIAR PÁGINA =====
     useEffect(() => {
         if (gridRef.current && !loading) {
-            const yOffset = -80; // Compensa el header sticky
+            const yOffset = -80;
             const y = gridRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
             window.scrollTo({ top: y, behavior: "smooth" });
         }
@@ -223,7 +255,6 @@ export default function CatalogoPage() {
             className="min-h-screen text-white"
             style={{ backgroundColor: "var(--bg-primary)" }}
         >
-            {/* ===== HEADER MINIMALISTA ===== */}
             <header
                 className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5"
                 style={{ backgroundColor: "rgba(15, 18, 21, 0.75)" }}
@@ -250,9 +281,9 @@ export default function CatalogoPage() {
                                 value={searchQuery}
                                 onChange={(e) => {
                                     setSearchQuery(e.target.value);
-                                    setCurrentPage(1); // Reset a página 1 al buscar
+                                    setCurrentPage(1);
                                 }}
-                                placeholder="Buscar..."
+                                placeholder="Buscar por nombre o código..."
                                 className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pl-9 text-sm text-white/80 placeholder-white/30 focus:outline-none transition"
                                 style={{
                                     borderColor: searchQuery ? "rgba(212, 175, 55, 0.5)" : "rgba(255,255,255,0.1)",
@@ -273,145 +304,85 @@ export default function CatalogoPage() {
 
             <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
 
-                {/* ===== FILTRO DE MARCAS ===== */}
-                {marcas.length > 0 && (
-                    <div className="mb-4 sm:mb-6">
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setShowBrands(!showBrands)}
-                                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white/70 hover:bg-white/10 transition text-sm"
-                            >
-                                <span>Filtrar</span>
-                                {selectedMarca && (
-                                    <span
-                                        className="text-white text-[10px] px-1.5 rounded-full"
-                                        style={{ backgroundColor: "var(--kadi-gold)", color: "#0f1215" }}
-                                    >
-                                        1
-                                    </span>
-                                )}
-                                <svg className={`w-3 h-3 transition-transform ${showBrands ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
+                {/* ===== SELECTOR DE VEHÍCULO Y FILTROS ===== */}
+                <div className="mb-6 bg-white/5 border border-white/10 rounded-xl p-4">
+                  <div className="flex flex-col md:flex-row gap-4">
+                    
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <select
+                        value={selectedMarca || ""}
+                        onChange={(e) => { setSelectedMarca(e.target.value || null); setSelectedModelo(null); setSelectedAnio(null); setCurrentPage(1); }}
+                        className="bg-[#1a1d22] border border-white/10 rounded-lg p-2.5 text-sm text-white/80 focus:outline-none focus:border-[var(--kadi-gold)]"
+                      >
+                        <option value="">Marca (Todas)</option>
+                        {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                      </select>
 
-                            {selectedMarca && (
-                                <button
-                                    onClick={() => {
-                                        setSelectedMarca(null);
-                                        setSelectedModelo(null);
-                                        setCurrentPage(1);
-                                    }}
-                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs transition"
-                                    style={{
-                                        backgroundColor: "rgba(212, 175, 55, 0.15)",
-                                        border: "1px solid rgba(212, 175, 55, 0.4)",
-                                        color: "var(--kadi-gold)",
-                                    }}
-                                >
-                                    {selectedMarca}
-                                    <span>✕</span>
-                                </button>
-                            )}
-                        </div>
+                      <select
+                        value={selectedModelo || ""}
+                        onChange={(e) => { setSelectedModelo(e.target.value || null); setCurrentPage(1); }}
+                        disabled={!selectedMarca}
+                        className="bg-[#1a1d22] border border-white/10 rounded-lg p-2.5 text-sm text-white/80 focus:outline-none focus:border-[var(--kadi-gold)] disabled:opacity-50"
+                      >
+                        <option value="">Modelo (Todos)</option>
+                        {modelos.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
 
-                        {showBrands && (
-                            <div
-                                className="mt-3 p-3 sm:p-4 backdrop-blur-sm border border-white/10 rounded-xl"
-                                style={{ backgroundColor: "rgba(15, 18, 21, 0.6)" }}
-                            >
-                                <div className="flex justify-between items-center mb-3">
-                                    <span className="text-white/40 text-xs">Selecciona una marca</span>
-                                </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                    <button
-                                        onClick={() => {
-                                            setSelectedMarca(null);
-                                            setSelectedModelo(null);
-                                            setCurrentPage(1);
-                                            setShowBrands(false);
-                                        }}
-                                        className={`px-3 py-2 rounded-lg text-sm transition-all text-left ${
-                                            !selectedMarca
-                                                ? 'text-white'
-                                                : 'bg-white/5 text-white/60 hover:bg-white/10'
-                                        }`}
-                                        style={!selectedMarca ? { backgroundColor: "var(--kadi-blue)" } : {}}
-                                    >
-                                        Todas
-                                    </button>
-                                    {marcas.map((marca) => (
-                                        <button
-                                            key={marca.id}
-                                            onClick={() => {
-                                                setSelectedMarca(marca.id);
-                                                setSelectedModelo(null);
-                                                setCurrentPage(1);
-                                                setShowBrands(false);
-                                            }}
-                                            className={`px-3 py-2 rounded-lg text-sm transition-all text-left ${
-                                                selectedMarca === marca.id
-                                                    ? 'text-white'
-                                                    : 'bg-white/5 text-white/60 hover:bg-white/10'
-                                            }`}
-                                            style={selectedMarca === marca.id ? { backgroundColor: "var(--kadi-blue)" } : {}}
-                                        >
-                                            <span className="mr-2">{marca.icono}</span>
-                                            {marca.nombre}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                      <select
+                        value={selectedAnio || ""}
+                        onChange={(e) => { setSelectedAnio(e.target.value || null); setCurrentPage(1); }}
+                        className="bg-[#1a1d22] border border-white/10 rounded-lg p-2.5 text-sm text-white/80 focus:outline-none focus:border-[var(--kadi-gold)]"
+                      >
+                        <option value="">Año (Todos)</option>
+                        {aniosDisponibles.map(a => (
+                            <option key={a} value={a}>{a}</option>
+                        ))}
+                      </select>
                     </div>
-                )}
 
-                {/* Filtro de modelos */}
-                {selectedMarca && modelos.length > 0 && (
-                    <div className="mb-4 sm:mb-6">
-                        <div className="flex flex-wrap gap-2">
-                            <button
-                                onClick={() => {
-                                    setSelectedModelo(null);
-                                    setCurrentPage(1);
-                                }}
-                                className={`px-3 py-1 rounded-full text-xs border transition ${
-                                    !selectedModelo
-                                        ? ''
-                                        : 'border-white/10 text-white/40'
-                                }`}
-                                style={!selectedModelo ? {
-                                    backgroundColor: "rgba(212, 175, 55, 0.15)",
-                                    borderColor: "var(--kadi-gold)",
-                                    color: "white",
-                                } : {}}
-                            >
-                                Todos
-                            </button>
-                            {modelos.map((modelo) => (
-                                <button
-                                    key={modelo}
-                                    onClick={() => {
-                                        setSelectedModelo(modelo);
-                                        setCurrentPage(1);
-                                    }}
-                                    className={`px-3 py-1 rounded-full text-xs border transition ${
-                                        selectedModelo === modelo
-                                            ? ''
-                                            : 'border-white/10 text-white/40'
-                                    }`}
-                                    style={selectedModelo === modelo ? {
-                                        backgroundColor: "rgba(212, 175, 55, 0.15)",
-                                        borderColor: "var(--kadi-gold)",
-                                        color: "white",
-                                    } : {}}
-                                >
-                                    {modelo.toUpperCase()}
-                                </button>
-                            ))}
-                        </div>
+                    <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <select
+                        value={selectedEstado || ""}
+                        onChange={(e) => { setSelectedEstado(e.target.value || null); setCurrentPage(1); }}
+                        className="bg-[#1a1d22] border border-white/10 rounded-lg p-2.5 text-sm text-white/80 focus:outline-none focus:border-[var(--kadi-gold)]"
+                      >
+                        <option value="">Estado (Todos)</option>
+                        <option value="nueva">Nueva</option>
+                        <option value="reconstruida">Reconstruida</option>
+                        <option value="usada">Usada</option>
+                      </select>
+
+                      <select
+                        value={precioMax || ""}
+                        onChange={(e) => { setPrecioMax(Number(e.target.value) || null); setCurrentPage(1); }}
+                        className="bg-[#1a1d22] border border-white/10 rounded-lg p-2.5 text-sm text-white/80 focus:outline-none focus:border-[var(--kadi-gold)]"
+                      >
+                        <option value="">Precio (Cualquiera)</option>
+                        <option value="5000">Hasta $5,000</option>
+                        <option value="10000">Hasta $10,000</option>
+                        <option value="20000">Hasta $20,000</option>
+                        <option value="50000">Hasta $50,000</option>
+                      </select>
+
+                      <button
+                        onClick={() => {
+                            setSelectedMarca(null);
+                            setSelectedModelo(null);
+                            setSelectedAnio(null);
+                            setSelectedEstado(null);
+                            setPrecioMax(null);
+                            setSelectedCategoria(null);
+                            setSearchQuery("");
+                            setCurrentPage(1);
+                        }}
+                        className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-2.5 text-sm text-white/60 transition-colors"
+                      >
+                        Limpiar Filtros
+                      </button>
                     </div>
-                )}
+
+                  </div>
+                </div>
 
                 {/* ===== GRID DE PRODUCTOS ===== */}
                 <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -430,7 +401,6 @@ export default function CatalogoPage() {
                                 e.currentTarget.style.boxShadow = "none";
                             }}
                         >
-                            {/* Imagen */}
                             <div className="relative w-full aspect-square overflow-hidden bg-white">
                                 {producto.imagen_url ? (
                                     <Image
@@ -448,7 +418,6 @@ export default function CatalogoPage() {
                                     </div>
                                 )}
 
-                                {/* Etiqueta de tipo */}
                                 <span
                                     className="absolute top-2 left-2 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded font-medium"
                                     style={{
@@ -466,7 +435,6 @@ export default function CatalogoPage() {
                                 </span>
                             </div>
 
-                            {/* Info del producto */}
                             <div className="p-2.5 sm:p-3 flex flex-col flex-1">
                                 <div className="mb-1">
                                     <span className="text-white font-bold text-lg sm:text-xl">
@@ -504,7 +472,6 @@ export default function CatalogoPage() {
                     ))}
                 </div>
 
-                {/* Paginación */}
                 {totalPages > 1 && (
                     <div className="flex justify-center gap-2 mt-8 sm:mt-12">
                         <button
