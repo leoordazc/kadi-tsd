@@ -72,7 +72,7 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: "url('/transmision-hero-bg.jpg')",
+            backgroundImage: "url('/transmision-hero-bg.png')",
           }}
         />
 
