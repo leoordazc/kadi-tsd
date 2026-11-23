@@ -23,27 +23,45 @@ export default function SeguimientoPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const buscarPedido = async (e: React.FormEvent) => {
+    const buscarPedido = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!busqueda.trim()) return;
 
     setLoading(true);
     setError("");
     setPedido(null);
+    const termino = busqueda.trim().toUpperCase(); // Convertimos a mayúsculas por si acaso
 
-    // Buscamos por número de guía O por folio de pedido
-    const { data, error } = await supabase
-      .from('pedidos')
-      .select('*')
-      .or(`numero_guia.eq.${busqueda.trim()},folio.eq.${busqueda.trim()}`)
-      .single();
+    try {
+      // 1. Buscamos primero por folio (ej. KADI-00088)
+      let { data, error } = await supabase
+        .from('pedidos')
+        .select('*')
+        .eq('folio', termino)
+        .maybeSingle();
 
-    if (error || !data) {
-      setError("No encontramos un pedido con ese número de guía o folio. Verifica los datos.");
-    } else {
-      setPedido(data);
+      // 2. Si no hay resultados, buscamos por número de guía
+      if (!data) {
+        const resGuia = await supabase
+          .from('pedidos')
+          .select('*')
+          .eq('numero_guia', termino)
+          .maybeSingle();
+        
+        data = resGuia.data;
+        error = resGuia.error;
+      }
+
+      if (error || !data) {
+        setError("No encontramos un pedido con ese folio o número de guía. Verifica que esté escrito exactamente igual.");
+      } else {
+        setPedido(data);
+      }
+    } catch (err) {
+      setError("Ocurrió un error al buscar el pedido.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const getEstadoInfo = (status: string) => {
