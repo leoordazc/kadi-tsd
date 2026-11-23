@@ -66,30 +66,23 @@ export default function HeroKadiStyle({ onConoceKadi }: HeroKadiStyleProps) {
 
   return (
     <>
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden text-white pt-[140px] pb-20">
+      <section className="relative min-h-screen md:min-h-[90vh] flex items-center justify-center overflow-hidden text-white pt-[120px] pb-20">
         
-        {/* ===== IMAGEN DE FONDO ===== */}
-        <div
-          className="absolute inset-0 bg-no-repeat"
+              {/* ===== IMAGEN DE FONDO ===== */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-            backgroundImage: "url('/transmision-hero-bg.png')",
-            // En celular usamos contain (se ve completa) y en PC cover (llena la pantalla)
-          backgroundSize: "cover", 
-          backgroundPosition: "center",
+          backgroundImage: "url('/transmision-hero-bg.png')",
         }}
-      >
-        {/* Agregamos una regla de CSS para móviles */}
-        <style jsx>{`
-          @media (max-width: 768px) {
-            div {
-              /* Forzamos a que en móvil la imagen se vea completa y centrada */
-              background-size: contain !important; 
-              background-position: center center !important;
-              background-color: var(--bg-primary); /* Relleno por si quedan bordes */
-            }
-          }
-        `}</style>
-      </div>
+      />
+
+      {/* ===== OVERLAY OSCURO PARA QUE EL TEXTO SE LEA ===== */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: "linear-gradient(to bottom, rgba(15, 18, 21, 0.85) 0%, rgba(15, 18, 21, 0.7) 50%, rgba(15, 18, 21, 0.95) 100%)",
+        }}
+      />
 
         {/* Glow dinámico (dorado + azul metálico) */}
         <motion.div
