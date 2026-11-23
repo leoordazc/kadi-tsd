@@ -9,14 +9,19 @@ export async function POST(req: Request) {
   try {
     const { items, external_reference } = await req.json();
 
+    // Validamos que al menos haya un producto
+    if (!items || items.length === 0) {
+      return NextResponse.json({ error: "No hay productos en el carrito" }, { status: 400 });
+    }
+
     const preference = {
       items: items.map((item: any) => ({
         title: item.nombre,
-        quantity: item.quantity,
+        quantity: Number(item.quantity), // Aseguramos que sea número
         currency_id: "MXN",
-        unit_price: item.precio,
+        unit_price: Number(item.precio), // Aseguramos que sea número
       })),
-      external_reference: external_reference, // 👈 Folio KADI-XXXXX
+      external_reference: external_reference,
       back_urls: {
         success: `${process.env.NEXT_PUBLIC_URL}/perfil`,
         failure: `${process.env.NEXT_PUBLIC_URL}/catalogo`,

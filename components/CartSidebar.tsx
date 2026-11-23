@@ -148,34 +148,64 @@ export default function CartSidebar({
     setGuardando(false);
   };
 
-  const handleCardPayment = async () => {
+    const handleCardPayment = async () => {
     setGuardando(true);
+    
     const pedido = await crearObtenerPedido();
-    if (!pedido) { setGuardando(false); return; }
-    if (paymentMethod !== 'tarjeta') await actualizarMetodoPago('tarjeta');
+    if (!pedido) {
+      setGuardando(false);
+      return;
+    }
+    
+    if (paymentMethod !== 'tarjeta') {
+      await actualizarMetodoPago('tarjeta');
+    }
     
     try {
+      // 👇 ARMAMOS LOS ÍTEMS PARA MERCADO PAGO
+      const itemsParaMP = cartItems.map((item) => ({
+        nombre: item.nombre,
+        quantity: item.quantity,
+        precio: item.precio,
+      }));
+
+      // 👇 AGREGAMOS EL ENVÍO Y EL IVA SI APLICAN
+      if (costoEnvio > 0) {
+        itemsParaMP.push({
+          nombre: "Costo de envío",
+          quantity: 1,
+          precio: costoEnvio,
+        });
+      }
+
+      if (requiereFactura && iva > 0) {
+        itemsParaMP.push({
+          nombre: "IVA (16%)",
+          quantity: 1,
+          precio: iva,
+        });
+      }
+
       const preferenceRes = await fetch("/api/create-preference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: cartItems.map((item) => ({
-            nombre: item.nombre,
-            quantity: item.quantity,
-            precio: item.precio,
-          })),
+          items: itemsParaMP, // 👈 Enviamos los items con los extras sumados
           external_reference: pedido.folio,
         }),
       });
 
       const preferenceData = await preferenceRes.json();
+
       if (preferenceData.error) {
         alert('Error al crear la preferencia de pago');
         setGuardando(false);
         return;
       }
+
       window.location.href = preferenceData.init_point;
     } catch (error) {
+      console.error('Error en Mercado Pago:', error);
       alert('Error al procesar el pago con tarjeta');
       setGuardando(false);
     }
@@ -192,10 +222,15 @@ export default function CartSidebar({
     ).join('%0A');
 
     const mensaje = encodeURIComponent(
-      `Hola, quiero realizar un pedido en KADI TS&D.%0A%0A` +
-      `📦 **PRODUCTOS:**%0A${productosResumen}%0A%0A` +
-      `💰 **TOTAL:** $${granTotal.toLocaleString()}%0A%0A` +
-      `📋 **FOLIO:** ${pedido.folio}%0A%0A` +
+  `Hola, quiero realizar un pedido en KADI TS&D.%0A%0A` +
+  `📦 **PRODUCTOS:**%0A${productosResumen}%0A%0A` +
+  // 👇 CAMBIAMOS totalPrice POR granTotal Y AGREGAMOS EL DESGLOSE
+  `💰 **TOTAL A PAGAR:** $${granTotal.toLocaleString()}%0A%0A` + 
+  `📋 **DESGLOSE:**%0A` +
+  `Subtotal: $${subtotal.toLocaleString()}%0A` +
+  `Envío: ${costoEnvio === 0 ? 'Gratis' : `$${costoEnvio.toLocaleString()}`}%0A` +
+  `${requiereFactura ? `IVA: $${iva.toLocaleString()}%0A` : ''}` +
+  `%0A📋 **FOLIO:** ${pedido.folio}%0A%0A` +
       `📋 **DATOS DEL CLIENTE:**%0A` +
       `Nombre: ${user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Cliente'}%0A` +
       `Email: ${user?.email || 'No especificado'}`
