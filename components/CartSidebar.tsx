@@ -38,11 +38,24 @@ export default function CartSidebar({
   // 👇 NUEVO ESTADO PARA EL IVA
   const [requiereFactura, setRequiereFactura] = useState(false);
 
-  // 👇 CÁLCULOS FINANCIEROS (Movidos aquí para que el return los pueda leer)
-  const subtotal = totalPrice;
-  const costoEnvio = subtotal >= 15000 ? 0 : 450; // $450 promedio del rango
-  const iva = requiereFactura ? (subtotal + costoEnvio) * 0.16 : 0;
-  const granTotal = subtotal + costoEnvio + iva;
+      // 👇 CÁLCULO DE ENVÍO BASADO EN EL TAMAÑO/PESO DEL PRODUCTO
+    const subtotal = totalPrice;
+    
+    // Si hay un producto caro (asumimos que > $3000 es una transmisión, housing o pieza pesada)
+    const tienePiezaPesada = cartItems.some(item => item.precio >= 3000);
+    
+    let costoEnvio = 0;
+
+    if (subtotal >= 15000) {
+        costoEnvio = 0; // Envío gratis para compras mayores a 15k
+    } else if (tienePiezaPesada) {
+        costoEnvio = 700; // Tarifa real para transmisiones o piezas de más de 40kg
+    } else {
+        costoEnvio = 300; // Tarifa mínima para paquete tipo folder (bronces, baleros, etc.)
+    }
+
+    const iva = requiereFactura ? (subtotal + costoEnvio) * 0.16 : 0;
+    const granTotal = subtotal + costoEnvio + iva;
 
   const crearObtenerPedido = async (): Promise<{ id: string; folio: string } | null> => {
     if (pedidoId && folio) {
