@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import ReferenciasCarrusel from "@/components/ReferenciasCarrusel";
 import HeroKadiStyle from "@/components/HeroKadiStyle";
 import ServiciosCarrusel from "@/components/ServiciosCarrusel";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 // ===== COMPONENTES Y DATA PARA COSTOS DE MANO DE OBRA =====
 const SERVICIOS_MANO_OBRA = [
