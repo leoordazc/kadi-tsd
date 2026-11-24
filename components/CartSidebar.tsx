@@ -51,7 +51,7 @@ export default function CartSidebar({
     } else if (tienePiezaPesada) {
         costoEnvio = 700; // Tarifa real para transmisiones o piezas de más de 40kg
     } else {
-        costoEnvio = 300; // Tarifa mínima para paquete tipo folder (bronces, baleros, etc.)
+        costoEnvio = 350; // Tarifa mínima para paquete tipo folder (bronces, baleros, etc.)
     }
 
     const iva = requiereFactura ? (subtotal + costoEnvio) * 0.16 : 0;
