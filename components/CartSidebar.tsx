@@ -54,9 +54,9 @@ if (subtotal >= 15000) {
     costoEnvio = 700; // Si hay transmisión, cobramos la tarifa de carga pesada
 } else if (subtotal >= 3000 || cantidadProductos >= 3) {
     // Si no hay transmisión, pero el subtotal pasa de 3000 o llevan 3+ piezas
-    costoEnvio = 700; // Cobramos como pesado (porque el volumen ya es mucho)
+    costoEnvio = 770; // Cobramos como pesado (porque el volumen ya es mucho)
 } else {
-    costoEnvio = 300; // Paquete normal (folder, 1 o 2 piezas chicas)
+    costoEnvio = 385; // Paquete normal (folder, 1 o 2 piezas chicas)
 }
 
 const iva = requiereFactura ? (subtotal + costoEnvio) * 0.16 : 0;
