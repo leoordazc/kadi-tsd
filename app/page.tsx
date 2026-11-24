@@ -735,6 +735,34 @@ export default function Home() {
         .custom-scroll::-webkit-scrollbar-thumb:hover {
           background: rgba(212, 175, 55, 0.25);
         }
+         <LoginModal 
+        isOpen={isLoginOpen} 
+        onClose={() => setIsLoginOpen(false)} 
+        onLoginSuccess={() => {
+            supabase.auth.getUser().then(({ data }) => setUser(data.user));
+        }}
+      />
+      
+     {/* 👇 NUEVO: BARRA INFERIOR MÓVIL */}
+      <MobileBottomNav 
+        onOpenCart={() => setIsCartOpen(true)} 
+        onOpenLogin={() => setIsLoginOpen(true)} 
+        onOpenNia={() => {
+          // Aquí debes poner la lógica que abre tu chat de NIA.
+          // Si tu NIA se abre con un estado, usa ese setState. Ej: setIsNiaOpen(true);
+          // Si es un botón flotante, quizás quieras hacer scroll hacia él o abrirlo.
+          console.log("Abrir NIA");
+        }} 
+      />
+      
+      <style jsx>{`
+        /* Aseguramos que el contenido no sea tapado por la barra en móvil */
+        @media (max-width: 768px) {
+          main {
+            padding-bottom: 80px !important;
+          }
+        }
+        /* ... tus estilos del scrollbar ... */
       `}</style>
     </main>
   );
