@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BankInfoModal from "./BankInfoModal";
 import { supabase } from "@/lib/supabase";
@@ -34,38 +34,61 @@ export default function CartSidebar({
   const [folio, setFolio] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
-  
-  // 👇 NUEVO ESTADO PARA EL IVA
   const [requiereFactura, setRequiereFactura] = useState(false);
 
-      // 👇 CÁLCULO DE ENVÍO BASADO EN EL TAMAÑO/PESO DEL PRODUCTO
-  // 👇 NUEVA LÓGICA DE ENVÍO POR VOLUMEN DE COMPRA
-const subtotal = totalPrice;
-const cantidadProductos = cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
+  // 👇 NUEVOS ESTADOS PARA LOS DATOS DEL COMPRADOR
+  const [datosComprador, setDatosComprador] = useState({
+    nombre: "",
+    email: "",
+    telefono: "",
+    direccion: "",
+    cp: "",
+  });
+  const [erroresForm, setErroresForm] = useState<{ [key: string]: string }>({});
 
-// Si hay una transmisión (producto caro), ya cubre el envío pesado
-const tieneTransmision = cartItems.some(item => item.precio >= 5000);
+  // Autocompletar si el usuario ya inició sesión
+  useEffect(() => {
+    if (user) {
+      setDatosComprador(prev => ({
+        ...prev,
+        email: prev.email || user.email || "",
+        nombre: prev.nombre || user.user_metadata?.full_name || "",
+      }));
+    }
+  }, [user]);
 
-let costoEnvio = 0;
+  // Cálculos de envío e IVA
+  const subtotal = totalPrice;
+  const cantidadProductos = cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
+  const tieneTransmision = cartItems.some(item => item.precio >= 5000);
+  
+  let costoEnvio = 0;
+  if (subtotal >= 15000) {
+      costoEnvio = 0;
+  } else if (tieneTransmision || subtotal >= 3000 || cantidadProductos >= 3) {
+      costoEnvio = 700;
+  } else {
+      costoEnvio = 300;
+  }
 
-if (subtotal >= 15000) {
-    costoEnvio = 0; // Envío gratis
-} else if (tieneTransmision) {
-    costoEnvio = 700; // Si hay transmisión, cobramos la tarifa de carga pesada
-} else if (subtotal >= 3000 || cantidadProductos >= 3) {
-    // Si no hay transmisión, pero el subtotal pasa de 3000 o llevan 3+ piezas
-    costoEnvio = 770; // Cobramos como pesado (porque el volumen ya es mucho)
-} else {
-    costoEnvio = 385; // Paquete normal (folder, 1 o 2 piezas chicas)
-}
+  const iva = requiereFactura ? (subtotal + costoEnvio) * 0.16 : 0;
+  const granTotal = subtotal + costoEnvio + iva;
 
-const iva = requiereFactura ? (subtotal + costoEnvio) * 0.16 : 0;
-const granTotal = subtotal + costoEnvio + iva;
+  // Validar formulario
+  const validarFormulario = () => {
+    const nuevosErrores: { [key: string]: string } = {};
+    if (!datosComprador.nombre.trim()) nuevosErrores.nombre = "El nombre es obligatorio";
+    if (!datosComprador.email.trim() || !/\S+@\S+\.\S+/.test(datosComprador.email)) nuevosErrores.email = "Correo inválido";
+    if (!datosComprador.telefono.trim() || datosComprador.telefono.length < 10) nuevosErrores.telefono = "Teléfono inválido (mín. 10 dígitos)";
+    if (!datosComprador.direccion.trim()) nuevosErrores.direccion = "La dirección es obligatoria";
+    if (!datosComprador.cp.trim() || datosComprador.cp.length < 5) nuevosErrores.cp = "C.P. inválido";
+
+    setErroresForm(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
+  };
 
   const crearObtenerPedido = async (): Promise<{ id: string; folio: string } | null> => {
-    if (pedidoId && folio) {
-      return { id: pedidoId, folio };
-    }
+    if (pedidoId && folio) return { id: pedidoId, folio };
 
     try {
       const res = await fetch('/api/folio?tipo=transferencia');
@@ -79,9 +102,15 @@ const granTotal = subtotal + costoEnvio + iva;
       const nuevoFolio = data.folio_completo;
 
       const pedido = {
-        user_id: user?.id || null,
-        user_email: user?.email || 'invitado@kaditsd.com.mx', // 👈 Cambiado para invitados
-        total: Number(granTotal), // 👈 Enviamos el Gran Total con IVA y Envío
+        // 👇 GUARDAMOS LOS DATOS DEL FORMULARIO
+        user_id: user?.id || 'anonymous', 
+        user_email: datosComprador.email,
+        nombre_cliente: datosComprador.nombre,
+        telefono_cliente: datosComprador.telefono,
+        direccion_envio: datosComprador.direccion,
+        codigo_postal: datosComprador.cp,
+        
+        total: Number(granTotal),
         items: cartItems.map(item => ({
           id: item.id,
           nombre: item.nombre,
@@ -114,8 +143,8 @@ const granTotal = subtotal + costoEnvio + iva;
       // Meta Ads Tracking
       try {
         const uniqueEventId = `order_${nuevoFolio}`;
-        const customerEmail = user?.email || 'contacto@kaditsd.com.mx';
-        const customerPhone = user?.user_metadata?.phone || '5500000000';
+        const customerEmail = datosComprador.email || 'contacto@kaditsd.com.mx';
+        const customerPhone = datosComprador.telefono || '5500000000';
 
         await fetch('/api/fb-events', {
           method: 'POST',
@@ -125,7 +154,7 @@ const granTotal = subtotal + costoEnvio + iva;
             eventId: uniqueEventId,
             eventSourceUrl: 'https://www.kaditsd.com.mx/checkout',
             eventData: {
-              value: Number(granTotal), // 👈 Valor real para Meta
+              value: Number(granTotal),
               currency: 'MXN',
               content_ids: cartItems.map(item => item.codigo_caja || item.id),
               content_type: 'product',
@@ -146,7 +175,7 @@ const granTotal = subtotal + costoEnvio + iva;
       return { id: pedidoCreado.id, folio: pedidoCreado.folio };
 
     } catch (error) {
-      alert('Error al crear el pedido');
+      console.error("Error al crear pedido:", error);
       return null;
     }
   };
@@ -166,64 +195,39 @@ const granTotal = subtotal + costoEnvio + iva;
     setGuardando(false);
   };
 
-    const handleCardPayment = async () => {
+  const handleCardPayment = async () => {
     setGuardando(true);
-    
     const pedido = await crearObtenerPedido();
-    if (!pedido) {
-      setGuardando(false);
-      return;
-    }
-    
-    if (paymentMethod !== 'tarjeta') {
-      await actualizarMetodoPago('tarjeta');
-    }
+    if (!pedido) { setGuardando(false); return; }
+    if (paymentMethod !== 'tarjeta') await actualizarMetodoPago('tarjeta');
     
     try {
-      // 👇 ARMAMOS LOS ÍTEMS PARA MERCADO PAGO
       const itemsParaMP = cartItems.map((item) => ({
         nombre: item.nombre,
         quantity: item.quantity,
         precio: item.precio,
       }));
 
-      // 👇 AGREGAMOS EL ENVÍO Y EL IVA SI APLICAN
-      if (costoEnvio > 0) {
-        itemsParaMP.push({
-          nombre: "Costo de envío",
-          quantity: 1,
-          precio: costoEnvio,
-        });
-      }
-
-      if (requiereFactura && iva > 0) {
-        itemsParaMP.push({
-          nombre: "IVA (16%)",
-          quantity: 1,
-          precio: iva,
-        });
-      }
+      if (costoEnvio > 0) itemsParaMP.push({ nombre: "Costo de envío", quantity: 1, precio: costoEnvio });
+      if (requiereFactura && iva > 0) itemsParaMP.push({ nombre: "IVA (16%)", quantity: 1, precio: iva });
 
       const preferenceRes = await fetch("/api/create-preference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: itemsParaMP, // 👈 Enviamos los items con los extras sumados
+          items: itemsParaMP,
           external_reference: pedido.folio,
         }),
       });
 
       const preferenceData = await preferenceRes.json();
-
       if (preferenceData.error) {
         alert('Error al crear la preferencia de pago');
         setGuardando(false);
         return;
       }
-
       window.location.href = preferenceData.init_point;
     } catch (error) {
-      console.error('Error en Mercado Pago:', error);
       alert('Error al procesar el pago con tarjeta');
       setGuardando(false);
     }
@@ -236,22 +240,19 @@ const granTotal = subtotal + costoEnvio + iva;
     if (paymentMethod !== 'whatsapp') await actualizarMetodoPago('whatsapp');
     
     const productosResumen = cartItems.map(item => 
-      `• ${item.cantidad}x ${item.nombre} - $${(item.precio * item.cantidad).toLocaleString()}`
+      `• ${item.quantity}x ${item.nombre} - $${(item.precio * item.quantity).toLocaleString()}`
     ).join('%0A');
 
     const mensaje = encodeURIComponent(
-  `Hola, quiero realizar un pedido en KADI TS&D.%0A%0A` +
-  `📦 **PRODUCTOS:**%0A${productosResumen}%0A%0A` +
-  // 👇 CAMBIAMOS totalPrice POR granTotal Y AGREGAMOS EL DESGLOSE
-  `💰 **TOTAL A PAGAR:** $${granTotal.toLocaleString()}%0A%0A` + 
-  `📋 **DESGLOSE:**%0A` +
-  `Subtotal: $${subtotal.toLocaleString()}%0A` +
-  `Envío: ${costoEnvio === 0 ? 'Gratis' : `$${costoEnvio.toLocaleString()}`}%0A` +
-  `${requiereFactura ? `IVA: $${iva.toLocaleString()}%0A` : ''}` +
-  `%0A📋 **FOLIO:** ${pedido.folio}%0A%0A` +
+      `Hola, quiero realizar un pedido en KADI TS&D.%0A%0A` +
+      `📦 **PRODUCTOS:**%0A${productosResumen}%0A%0A` +
+      `💰 **TOTAL A PAGAR:** $${granTotal.toLocaleString()}%0A%0A` + 
       `📋 **DATOS DEL CLIENTE:**%0A` +
-      `Nombre: ${user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Cliente'}%0A` +
-      `Email: ${user?.email || 'No especificado'}`
+      `Nombre: ${datosComprador.nombre}%0A` +
+      `Email: ${datosComprador.email}%0A` +
+      `Teléfono: ${datosComprador.telefono}%0A` +
+      `Dirección: ${datosComprador.direccion}, C.P. ${datosComprador.cp}%0A%0A` +
+      `📋 **FOLIO:** ${pedido.folio}`
     );
 
     window.open(`https://wa.me/5573382923?text=${mensaje}`, "_blank");
@@ -260,19 +261,20 @@ const granTotal = subtotal + costoEnvio + iva;
   };
 
   const handleCheckout = async () => {
-    // 👈 QUITAMOS EL BLOQUEO DE LOGIN AQUÍ
     if (!aceptaTerminos) {
       alert('Debes aceptar los términos y condiciones para continuar');
       return;
     }
-
-    if (paymentMethod === "transferencia") {
-      await handleTransferencia();
-    } else if (paymentMethod === "tarjeta") {
-      await handleCardPayment();
-    } else if (paymentMethod === "whatsapp") {
-      await handleWhatsApp();
+    
+    // 👇 VALIDAMOS EL FORMULARIO ANTES DE AVANZAR
+    if (!validarFormulario()) {
+      alert("Por favor, completa todos los datos de envío correctamente.");
+      return;
     }
+
+    if (paymentMethod === "transferencia") await handleTransferencia();
+    else if (paymentMethod === "tarjeta") await handleCardPayment();
+    else if (paymentMethod === "whatsapp") await handleWhatsApp();
   };
 
   const handleClose = () => {
@@ -304,27 +306,17 @@ const granTotal = subtotal + costoEnvio + iva;
               background: "linear-gradient(to bottom, var(--bg-card) 0%, var(--bg-card-hover) 100%)",
             }}
           >
-            {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-white/5">
               <h2 className="text-xl font-light text-white/90">Tu carrito</h2>
-              <button onClick={handleClose} className="text-white/40 hover:text-white/60">
-                ✕
-              </button>
+              <button onClick={handleClose} className="text-white/40 hover:text-white/60">✕</button>
             </div>
 
-            {/* Contenido */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {cartItems.length === 0 ? (
                 <div className="text-center text-white/40 mt-20">
                   <p className="text-6xl mb-4">🛒</p>
                   <p>Tu carrito está vacío</p>
-                  <button 
-                    onClick={handleClose} 
-                    className="mt-4 hover:underline transition-colors"
-                    style={{ color: "var(--kadi-gold)" }}
-                  >
-                    Ver catálogo
-                  </button>
+                  <button onClick={handleClose} className="mt-4 hover:underline" style={{ color: "var(--kadi-gold)" }}>Ver catálogo</button>
                 </div>
               ) : (
                 cartItems.map((item, index) => (
@@ -333,176 +325,132 @@ const granTotal = subtotal + costoEnvio + iva;
                       <div>
                         <h4 className="text-white/90 text-sm font-medium">{item.nombre}</h4>
                         <p className="text-white/30 text-xs">${item.precio.toLocaleString()}</p>
-                        {item.codigo_caja && (
-                          <p className="text-white/20 text-[10px]">Código: {item.codigo_caja}</p>
-                        )}
                       </div>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="text-red-400 text-xs hover:text-red-300"
-                      >
-                        Eliminar
-                      </button>
+                      <button onClick={() => removeFromCart(item.id)} className="text-red-400 text-xs hover:text-red-300">Eliminar</button>
                     </div>
                     <div className="flex items-center gap-3 mt-2">
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-6 h-6 bg-white/10 rounded-full text-white/60"
-                      >
-                        -
-                      </button>
+                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-6 h-6 bg-white/10 rounded-full text-white/60">-</button>
                       <span className="text-white/80 text-sm">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-6 h-6 bg-white/10 rounded-full text-white/60"
-                      >
-                        +
-                      </button>
+                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-6 h-6 bg-white/10 rounded-full text-white/60">+</button>
                     </div>
                   </div>
                 ))
               )}
             </div>
 
-            {/* SECCIÓN DE PAGO */}
             {cartItems.length > 0 && (
               <div className="border-t border-white/5 p-6">
                 
-                {/* DESGLOSE FINANCIERO */}
-                <div className="mb-4 space-y-2 text-sm">
-                  <div className="flex justify-between text-white/60">
-                    <span>Subtotal</span>
-                    <span>${subtotal.toLocaleString()}</span>
+                {/* 👇 NUEVO FORMULARIO DE DATOS DEL COMPRADOR */}
+                <div className="mb-6 space-y-3">
+                  <h3 className="text-sm font-medium text-white/90 mb-2">Datos de envío</h3>
+                  
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Nombre completo *"
+                      value={datosComprador.nombre}
+                      onChange={(e) => setDatosComprador({ ...datosComprador, nombre: e.target.value })}
+                      className="w-full bg-[#1a1d22] border border-white/10 rounded-lg p-2.5 text-sm text-white/80 focus:outline-none focus:border-[var(--kadi-gold)]"
+                    />
+                    {erroresForm.nombre && <span className="text-red-400 text-[10px]">{erroresForm.nombre}</span>}
                   </div>
-                  <div className="flex justify-between text-white/60">
-                    <span>Envío estimado</span>
-                    <span>{costoEnvio === 0 ? "Gratis" : `$${costoEnvio.toLocaleString()}`}</span>
-                  </div>
-                  {requiereFactura && (
-                    <div className="flex justify-between text-white/60">
-                      <span>IVA (16%)</span>
-                      <span>${iva.toLocaleString()}</span>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <input
+                        type="email"
+                        placeholder="Correo *"
+                        value={datosComprador.email}
+                        onChange={(e) => setDatosComprador({ ...datosComprador, email: e.target.value })}
+                        className="w-full bg-[#1a1d22] border border-white/10 rounded-lg p-2.5 text-sm text-white/80 focus:outline-none focus:border-[var(--kadi-gold)]"
+                      />
+                      {erroresForm.email && <span className="text-red-400 text-[10px]">{erroresForm.email}</span>}
                     </div>
-                  )}
+                    <div>
+                      <input
+                        type="tel"
+                        placeholder="WhatsApp *"
+                        value={datosComprador.telefono}
+                        onChange={(e) => setDatosComprador({ ...datosComprador, telefono: e.target.value })}
+                        className="w-full bg-[#1a1d22] border border-white/10 rounded-lg p-2.5 text-sm text-white/80 focus:outline-none focus:border-[var(--kadi-gold)]"
+                      />
+                      {erroresForm.telefono && <span className="text-red-400 text-[10px]">{erroresForm.telefono}</span>}
+                    </div>
+                  </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Dirección completa (Calle, número, colonia, ciudad) *"
+                      value={datosComprador.direccion}
+                      onChange={(e) => setDatosComprador({ ...datosComprador, direccion: e.target.value })}
+                      className="w-full bg-[#1a1d22] border border-white/10 rounded-lg p-2.5 text-sm text-white/80 focus:outline-none focus:border-[var(--kadi-gold)]"
+                    />
+                    {erroresForm.direccion && <span className="text-red-400 text-[10px]">{erroresForm.direccion}</span>}
+                  </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Código Postal *"
+                      value={datosComprador.cp}
+                      onChange={(e) => setDatosComprador({ ...datosComprador, cp: e.target.value })}
+                      className="w-full bg-[#1a1d22] border border-white/10 rounded-lg p-2.5 text-sm text-white/80 focus:outline-none focus:border-[var(--kadi-gold)]"
+                    />
+                    {erroresForm.cp && <span className="text-red-400 text-[10px]">{erroresForm.cp}</span>}
+                  </div>
+                </div>
+                {/* FIN FORMULARIO */}
+
+                <div className="mb-4 space-y-2 text-sm">
+                  <div className="flex justify-between text-white/60"><span>Subtotal</span><span>${subtotal.toLocaleString()}</span></div>
+                  <div className="flex justify-between text-white/60"><span>Envío estimado</span><span>{costoEnvio === 0 ? "Gratis" : `$${costoEnvio.toLocaleString()}`}</span></div>
+                  {requiereFactura && <div className="flex justify-between text-white/60"><span>IVA (16%)</span><span>${iva.toLocaleString()}</span></div>}
                   <div className="flex justify-between text-white font-medium pt-2 border-t border-white/10">
                     <span>Total a pagar</span>
                     <span className="text-xl" style={{ color: "var(--kadi-gold)" }}>${granTotal.toLocaleString()}</span>
                   </div>
                 </div>
 
-                {/* CHECKBOX DE FACTURA */}
                 <div className="mb-4">
                   <label className="flex items-start gap-3 cursor-pointer group">
                     <div className="relative flex items-center mt-0.5">
-                      <input
-                        type="checkbox"
-                        checked={requiereFactura}
-                        onChange={(e) => setRequiereFactura(e.target.checked)}
-                        className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md transition-all cursor-pointer"
-                        style={{
-                          backgroundColor: requiereFactura ? "var(--kadi-gold)" : "transparent",
-                          borderColor: requiereFactura ? "var(--kadi-gold)" : "rgba(255,255,255,0.2)",
-                        }}
-                      />
-                      <svg 
-                        className="absolute w-3 h-3 text-white left-1 top-1 pointer-events-none transition-opacity"
-                        style={{ opacity: requiereFactura ? 1 : 0 }}
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
+                      <input type="checkbox" checked={requiereFactura} onChange={(e) => setRequiereFactura(e.target.checked)} className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md transition-all cursor-pointer" style={{ backgroundColor: requiereFactura ? "var(--kadi-gold)" : "transparent", borderColor: requiereFactura ? "var(--kadi-gold)" : "rgba(255,255,255,0.2)" }} />
+                      <svg className="absolute w-3 h-3 text-white left-1 top-1 pointer-events-none transition-opacity" style={{ opacity: requiereFactura ? 1 : 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                     </div>
-                    <span className="text-xs text-white/50 leading-relaxed group-hover:text-white/70 transition">
-                      Requiero factura fiscal (se sumará el 16% de IVA al total).
-                    </span>
+                    <span className="text-xs text-white/50 leading-relaxed group-hover:text-white/70 transition">Requiero factura fiscal (se sumará el 16% de IVA al total).</span>
                   </label>
                 </div>
 
-                {/* MÉTODO DE PAGO */}
                 <div className="mb-4">
                   <label className="text-white/40 text-xs block mb-2">Método de pago</label>
-                  <select
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full border border-white/10 rounded-lg p-2 text-white/80 text-sm focus:outline-none transition"
-                    style={{
-                      backgroundColor: "rgba(15, 18, 21, 0.6)",
-                      borderColor: "rgba(212, 175, 55, 0.2)",
-                    }}
-                  >
+                  <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full border border-white/10 rounded-lg p-2 text-white/80 text-sm focus:outline-none transition" style={{ backgroundColor: "rgba(15, 18, 21, 0.6)", borderColor: "rgba(212, 175, 55, 0.2)" }}>
                     <option value="tarjeta">💳 Tarjeta (Mercado Pago)</option>
                     <option value="transferencia">🏦 Transferencia BBVA</option>
                     <option value="whatsapp">📱 Coordinar por WhatsApp</option>
                   </select>
                 </div>
 
-                {/* CASILLA DE TÉRMINOS */}
                 <div className="mb-4">
                   <label className="flex items-start gap-3 cursor-pointer group">
                     <div className="relative flex items-center mt-0.5">
-                      <input
-                        type="checkbox"
-                        checked={aceptaTerminos}
-                        onChange={(e) => setAceptaTerminos(e.target.checked)}
-                        className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md transition-all cursor-pointer"
-                        style={{
-                          backgroundColor: aceptaTerminos ? "var(--kadi-gold)" : "transparent",
-                          borderColor: aceptaTerminos ? "var(--kadi-gold)" : "rgba(255,255,255,0.2)",
-                        }}
-                      />
-                      <svg 
-                        className="absolute w-3 h-3 text-white left-1 top-1 pointer-events-none transition-opacity"
-                        style={{ opacity: aceptaTerminos ? 1 : 0 }}
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
+                      <input type="checkbox" checked={aceptaTerminos} onChange={(e) => setAceptaTerminos(e.target.checked)} className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md transition-all cursor-pointer" style={{ backgroundColor: aceptaTerminos ? "var(--kadi-gold)" : "transparent", borderColor: aceptaTerminos ? "var(--kadi-gold)" : "rgba(255,255,255,0.2)" }} />
+                      <svg className="absolute w-3 h-3 text-white left-1 top-1 pointer-events-none transition-opacity" style={{ opacity: aceptaTerminos ? 1 : 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                     </div>
                     <span className="text-xs text-white/50 leading-relaxed group-hover:text-white/70 transition">
-                      Acepto los{" "}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onOpenLegal?.();
-                        }}
-                        className="hover:underline transition-colors"
-                        style={{ color: "var(--kadi-gold)" }}
-                      >
-                        términos y condiciones
-                      </button>
-                      {" "}del servicio, incluyendo la política de garantía y devoluciones.
+                      Acepto los <button type="button" onClick={(e) => { e.stopPropagation(); onOpenLegal?.(); }} className="hover:underline transition-colors" style={{ color: "var(--kadi-gold)" }}>términos y condiciones</button> del servicio, incluyendo la política de garantía y devoluciones.
                     </span>
                   </label>
                 </div>
 
-                {/* BOTÓN DE PAGO */}
                 <button
                   onClick={handleCheckout}
                   disabled={guardando || !aceptaTerminos}
-                  className={`w-full py-3 rounded-lg font-medium transition ${
-                    !aceptaTerminos
-                      ? 'bg-white/10 text-white/30 cursor-not-allowed'
-                      : 'text-white'
-                  }`}
-                  style={
-                    !aceptaTerminos
-                      ? {}
-                      : {
-                          background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))",
-                          boxShadow: "0 8px 20px rgba(30, 74, 140, 0.3)",
-                        }
-                  }
+                  className={`w-full py-3 rounded-lg font-medium transition ${!aceptaTerminos ? 'bg-white/10 text-white/30 cursor-not-allowed' : 'text-white'}`}
+                  style={!aceptaTerminos ? {} : { background: "linear-gradient(90deg, var(--kadi-blue), var(--kadi-blue-bright))", boxShadow: "0 8px 20px rgba(30, 74, 140, 0.3)" }}
                 >
-                  {!aceptaTerminos
-                    ? "☑️ Acepta los términos para continuar"
-                    : guardando
-                      ? "Procesando..."
-                      : "Proceder al pago"}
+                  {!aceptaTerminos ? "☑️ Acepta los términos para continuar" : guardando ? "Procesando..." : "Proceder al pago"}
                 </button>
               </div>
             )}
@@ -511,11 +459,7 @@ const granTotal = subtotal + costoEnvio + iva;
       )}
       <BankInfoModal
         isOpen={showBankModal}
-        onClose={() => {
-          setShowBankModal(false);
-          setPedidoId(null);
-          setFolio(null);
-        }}
+        onClose={() => { setShowBankModal(false); setPedidoId(null); setFolio(null); }}
         total={granTotal}
         folio={folio || undefined}
       />
