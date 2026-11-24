@@ -39,23 +39,28 @@ export default function CartSidebar({
   const [requiereFactura, setRequiereFactura] = useState(false);
 
       // 👇 CÁLCULO DE ENVÍO BASADO EN EL TAMAÑO/PESO DEL PRODUCTO
-    const subtotal = totalPrice;
-    
-    // Si hay un producto caro (asumimos que > $3000 es una transmisión, housing o pieza pesada)
-    const tienePiezaPesada = cartItems.some(item => item.precio >= 3000);
-    
-    let costoEnvio = 0;
+  // 👇 NUEVA LÓGICA DE ENVÍO POR VOLUMEN DE COMPRA
+const subtotal = totalPrice;
+const cantidadProductos = cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
 
-    if (subtotal >= 15000) {
-        costoEnvio = 0; // Envío gratis para compras mayores a 15k
-    } else if (tienePiezaPesada) {
-        costoEnvio = 700; // Tarifa real para transmisiones o piezas de más de 40kg
-    } else {
-        costoEnvio = 350; // Tarifa mínima para paquete tipo folder (bronces, baleros, etc.)
-    }
+// Si hay una transmisión (producto caro), ya cubre el envío pesado
+const tieneTransmision = cartItems.some(item => item.precio >= 5000);
 
-    const iva = requiereFactura ? (subtotal + costoEnvio) * 0.16 : 0;
-    const granTotal = subtotal + costoEnvio + iva;
+let costoEnvio = 0;
+
+if (subtotal >= 15000) {
+    costoEnvio = 0; // Envío gratis
+} else if (tieneTransmision) {
+    costoEnvio = 700; // Si hay transmisión, cobramos la tarifa de carga pesada
+} else if (subtotal >= 3000 || cantidadProductos >= 3) {
+    // Si no hay transmisión, pero el subtotal pasa de 3000 o llevan 3+ piezas
+    costoEnvio = 700; // Cobramos como pesado (porque el volumen ya es mucho)
+} else {
+    costoEnvio = 300; // Paquete normal (folder, 1 o 2 piezas chicas)
+}
+
+const iva = requiereFactura ? (subtotal + costoEnvio) * 0.16 : 0;
+const granTotal = subtotal + costoEnvio + iva;
 
   const crearObtenerPedido = async (): Promise<{ id: string; folio: string } | null> => {
     if (pedidoId && folio) {
